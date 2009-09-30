@@ -23,6 +23,9 @@ import android.provider.BaseColumns;
  *
  */
 public class AlarmProvider extends ContentProvider {
+
+    private static final TAG = "ALARM_PROVIDER";
+
     private DatabaseOpenHelper mDbOpenHelper;
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -41,22 +44,40 @@ public class AlarmProvider extends ContentProvider {
         private final String DATABASE_TABLE_NAME = "alarms";
         private final int DATABASE_VERSION = 1;
 
+        private final String DATABASE_CREATE_CMD =
+            "CREATE TABLE " + DATABASE_TABLE_NAME + "(" +
+            Alarms.AlarmColumns._ID   + "INTEGER PRIMARY KEY," +
+            Alarms.AlarmColumns.LABEL + "TEXT," +
+            Alarms.AlarmColumns.HOUR  + "INTEGER,"
+            Alarms.AlarmColumns.DAYS_OF_WEEK + "INTEGER," +
+            Alarms.AlarmColumns.ENABLED + "INTEGER," +
+            Alarms.AlarmColumns.VIBRATE + "INTEGER," +
+            Alarms.AlarmColumns.ALERT_URI + "TEXT);";
+
+        private final String DATABASE_DROP_CMD =
+            "DROP TABLE IF EXISTS " + DATABASE_TABLE_NAME;
+
         public DbOpenHelper(Context cxt) {
             super(cxt, DATABASE_NAME, null, DATABASE_VERSION);
         }
 
-        // TODO:
         @Override
         public void onCreate(SQLiteDatabase db) {
-            // Execute SQLite database creation statement
+            Log.d(TAG, "DatabaseOpenHelper.onCreate(" +
+                  DATABASE_CREATE_CMD + ")");
+            db.execSQL(DATABASE_CREATE_CMD);
+
+            // @note: should we insert default alarm entries???
         }
 
-        // TODO:
         @Override
         public void onUpgrade(SQLiteDatabase db,
                               int oldVersion,
                               int newVersion) {
-            // Execute SQLite database upgrade statement
+            Log.d(TAG, "DatabaseOpenHelper.onUpgrade(" +
+                  DATABASE_DROP_CMD + ")");
+            db.execSQL(DATABASE_DROP_CMD);
+            onCreate(db);
         }
     }
 
