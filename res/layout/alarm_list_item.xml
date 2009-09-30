@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="?android:attr/listPreferredItemHeight"
+                >
+
+  <ImageView
+     android:id="@+id/icon"
+     android:layout_width="wrap_content"
+     android:layout_height="fill_parent"
+     android:layout_marginRight="6dip"
+     android:layout_alignParentTop="true"
+     android:layout_alignParentBottom="true"
+     android:src="@drawable/default_alarm_action_type"
+     />
+
+  <TextView
+     android:id="@+id/label"
+     android:layout_width="fill_parent"
+     android:layout_height="26dip"
+     android:layout_toRightOf="@id/icon"
+     android:layout_above="@id/setting"
+     android:layout_alignParentTop="true"
+     android:text="Alarm label"
+     />
+
+  <CheckBox
+     android:id="@+id/enabled"
+     android:layout_width="wrap_parent"
+     android:layout_height="   "
+     android:layout_above="@id/setting"
+     android:layout_alignBottom="@id/label"
+     android:layout_toRightOf="@id/label"
+     android:layout_alignParentRight="true"
+     android:layout_alignParentTop="true"
+     />
+
+  <TextView
+     android:id="@+id/setting"
+     android:layout_width="wrap_parent"
+     android:layout_height="   "
+     android:layout_toRightOf="@id/icon"
+     android:layout_alignParentRight="true"
+     android:layout_alignParentBottom="true"
+     android:layout_alignLeft="@id/label"
+     android:singleLine="true"
+     android:ellipsize="marquee"
+     android:alignWithParentIfMissing="true"
+     />
+</LinearLayout>
+
