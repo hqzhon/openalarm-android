@@ -13,8 +13,6 @@ package org.startsmall.alarmclockplus;
 import android.provider.BaseColumns;
 
 
-
-
 /**
  *
  *
