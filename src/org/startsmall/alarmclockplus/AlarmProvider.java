@@ -36,7 +36,7 @@ public class AlarmProvider extends ContentProvider {
         sURIMatcher.addURI(Alarms.AlarmColumns.CONTENT_URI,
                            "/alarms", URI_MATCH_ID_ALARMS);
         sURIMatcher.addURI(Alarms.AlarmColumns.CONTENT_URI,
-                           "/alarm/#", URI_MATCH_ID_ALARM);
+                           "/alarms/#", URI_MATCH_ID_ALARM);
     }
 
     private static class DatabaseOpenHelper extends SQLiteOpenHelper {
@@ -89,7 +89,10 @@ public class AlarmProvider extends ContentProvider {
 
     // TODO:
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String selectionArgs, String sortOrder) {
+    public Cursor query(Uri uri, String[] projection,
+                        String selection,
+                        String selectionArgs,
+                        String sortOrder) {
 
 
 
@@ -104,7 +107,10 @@ public class AlarmProvider extends ContentProvider {
 
     // TODO:
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(Uri uri,
+                      ContentValues values,
+                      String selection,
+                      String[] selectionArgs) {
 
 
     }
@@ -118,13 +124,11 @@ public class AlarmProvider extends ContentProvider {
     public String getType(Uri uri) {
         switch(sURIMatcher.match(uri)) {
         case URI_MATCH_ID_ALARMS:
-            return "vnd.android.cursor.dir/alarms";
+            return "vnd.android.cursor.dir/vnd.startsmall.alarms";
         case URI_MATCH_ID_ALARM:
-            return "vnd.android.cursor.item/alarm"
+            return "vnd.android.cursor.item/vnd.startsmall.alarms"
         default:
             return new IllegalArgumentException("unkown content URI");
         }
     }
 }
-
-
