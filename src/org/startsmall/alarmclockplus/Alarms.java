@@ -9,7 +9,8 @@
  */
 package org.startsmall.alarmclockplus;
 
-
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
 
@@ -28,15 +29,13 @@ public class Alarms {
      *
      */
     public static class AlarmColumns implements BaseColumns {
-        public static final String CONTENT_URI = "content://org.startsmall.alarmclockplus";
+        public static final String CONTENT_URI =
+            "content://org.startsmall.alarmclockplus";
 
         /// Default sort order
         public static final String DEFAULT_SORT_ORDER = "_id ASC";
 
-        /**
-         * Inherited fields : _ID
-         *
-         */
+        //// Inherited fields : _ID
 
         /// Label of this alarm
         public static final String LABEL = "label";
@@ -63,10 +62,14 @@ public class Alarms {
          * Projection indexes.
          *
          */
-        static final String[] ALARM_QUERY_COLUMNS = {
+        private static final String[] ALARM_QUERY_COLUMNS = {
             _ID, LABEL, HOUR, MINUTES, DAYS_OF_WEEK,
             ENABLED, VIBRATE, ALERT_URI};
 
+        /**
+         *
+         *
+         */
         public static final int ALARM_PROJECTION_ID_INDEX = 0;
         public static final int ALARM_PROJECTION_LABEL_INDEX = 1;
         public static final int ALARM_PROJECTION_HOUR_INDEX = 2;
@@ -78,21 +81,22 @@ public class Alarms {
     }
 
     /**
-     * TODO: Alarms convenient methods
      *
+     *
+     * @param contentResolver
+     *
+     * @return database cursor
      */
-
-
-
-
-
-
-
-
-
+    public static Cursor getCursor(ContentResolver contentResolver) {
+        return
+            contentResolver.query(
+                Uri.parse(AlarmColumns.CONTENT_URI + "/alarms"), // get all rows
+                AlarmColumns.ALARM_QUERY_COLUMNS,
+                null,
+                null,
+                AlarmColumns.DEFAULT_SORT_ORDER);
+    }
 
 
 
 }
-
-

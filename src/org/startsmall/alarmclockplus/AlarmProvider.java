@@ -28,7 +28,7 @@ import android.util.Log;
  *
  */
 public class AlarmProvider extends ContentProvider {
-    private static final String TAG = "ALARM_PROVIDER";
+    private static final String TAG = "AlarmProvider";
     private static final String DATABASE_TABLE_NAME = "alarms";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -45,6 +45,7 @@ public class AlarmProvider extends ContentProvider {
     }
 
     private static class DatabaseOpenHelper extends SQLiteOpenHelper {
+        private static final String TAG = "DatabaseOpenHelper";
         private static final String DATABASE_NAME = "alarmclockplus.db";
         private static final int DATABASE_VERSION = 1;
 
@@ -53,7 +54,7 @@ public class AlarmProvider extends ContentProvider {
             Alarms.AlarmColumns._ID   + "INTEGER PRIMARY KEY," +
             Alarms.AlarmColumns.LABEL + "TEXT," +
             Alarms.AlarmColumns.HOUR  + "INTEGER," +
-            Alarms.AlarmColumns.DAYS_OF_WEEK + "INTEGER," + // TODO:
+            // TODO: Alarms.AlarmColumns.DAYS_OF_WEEK + "INTEGER," +
             // TODO: Time in millis
             Alarms.AlarmColumns.ENABLED + "INTEGER," +
             Alarms.AlarmColumns.VIBRATE + "INTEGER," +
@@ -64,6 +65,8 @@ public class AlarmProvider extends ContentProvider {
 
         public DatabaseOpenHelper(Context cxt) {
             super(cxt, DATABASE_NAME, null, DATABASE_VERSION);
+
+            Log.d(TAG, "onCreate()");
         }
 
         @Override
@@ -101,6 +104,9 @@ public class AlarmProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+
+        Log.d(TAG, "onCreate()");
+
         mDbOpenHelper = new DatabaseOpenHelper(getContext());
         return true;
     }
@@ -111,10 +117,15 @@ public class AlarmProvider extends ContentProvider {
                         String selection,
                         String[] selectionArgs,
                         String sortOrder) {
+        Log.d(TAG, "query(): uri='" + uri);
+
         int matchId = sURIMatcher.match(uri);
+
+        Log.d(TAG, "query(): matchId = " + matchId);
+
         if(matchId != URI_MATCH_ID_ALARM &&
            matchId != URI_MATCH_ID_ALARMS) {
-            throw new IllegalArgumentException("unknown alarm URL");
+            throw new IllegalArgumentException(TAG + ": query(): unknown alarm URL");
         }
 
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
@@ -132,7 +143,7 @@ public class AlarmProvider extends ContentProvider {
                             null, /* having */
                             sortOrder);
         if(c == null) {
-            Log.d(TAG, "failed alarm query");
+            Log.d(TAG, "AlarmProvider.query(): failed alarm query");
         } else {
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
