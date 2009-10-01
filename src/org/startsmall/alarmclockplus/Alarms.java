@@ -11,6 +11,7 @@ package org.startsmall.alarmclockplus;
 
 
 import android.provider.BaseColumns;
+import android.net.Uri;
 
 
 /**
@@ -27,7 +28,7 @@ public class Alarms {
      *
      */
     public static class AlarmColumns implements BaseColumns {
-        public static final Uri CONTENT_URI = Uri.parse("content://org.startsmall.alarmclockplus");
+        public static final String CONTENT_URI = "content://org.startsmall.alarmclockplus";
 
         /// Default sort order
         public static final String DEFAULT_SORT_ORDER = "_id ASC";
@@ -50,10 +51,10 @@ public class Alarms {
         public static final String DAYS_OF_WEEK = "daysofweek";
 
         /// Whether or not this alarm is active currently
-        public static final boolean ENABLED = "enabled";
+        public static final String ENABLED = "enabled";
 
         /// Whether or not this alarm vibrate
-        public static final boolean VIBRATE = "vibrate";
+        public static final String VIBRATE = "vibrate";
 
         /// Audio to play when alarm triggers.
         public static final String ALERT_URI = "alert_uri";
