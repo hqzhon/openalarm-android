@@ -28,6 +28,9 @@ public class AlarmClockPlus extends ListActivity {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+
+            Log.d(TAG, "bindView " + view + " from " + cursor.getPosition());
+
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hour = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
@@ -54,7 +57,7 @@ public class AlarmClockPlus extends ListActivity {
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             View view =
                 mLayoutInflater.inflate(R.layout.alarm_list_item, parent, false);
-            Log.d(TAG, "newView " + cursor.getPosition());
+            Log.d(TAG, "newView " + view + " from cursor position " + cursor.getPosition());
             return view;
         }
     }
@@ -68,9 +71,7 @@ public class AlarmClockPlus extends ListActivity {
         if(contentResolver == null) {
 
             // TODO: throw error message
-
             Log.d(TAG, "onCreate(): no content resolver");
-
 
         }
 
