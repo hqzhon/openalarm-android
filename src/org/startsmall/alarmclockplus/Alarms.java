@@ -20,17 +20,50 @@ import android.net.Uri;
  *
  */
 public class Alarms {
-
-    /// Alarm alert action string.
-    static final String ALARM_ACTION = "org.startsmall.alarmclockplus.ALARM_ALERT";
+    /******************************************************************
+     * Convenient data that are used throughout the application       *
+     ******************************************************************/
 
     /**
-     *
-     *
+     * Authority of this application.
+     * <p>Value: org.startsmall.alarmclockplus</p>
      */
+    public static final String CONTENT_URI_AUTH = "org.startsmall.alarmclockplus";
+
+    /**
+     * Alarm alert action string.
+     * <p>Value: org.startsmall.alarmclockplus.ALARM_ALERT</p>
+     */
+    public static final String ALARM_ACTION = CONTENT_URI_AUTH + ".ALARM_ALERT";
+
+    /**
+     * Content URI of this application.
+     *
+     * <p>Value: content://org.startsmall.alarmclockplus</p>
+     */
+    public static final String CONTENT_URI = "content://" + CONTENT_URI_AUTH;
+
+    /**
+     * Content URI for all alarms
+     *
+     * <p>Value: content://org.startsmall.alarmclockplus/alarms</p>
+     */
+    public static final String CONTENT_URI_PATH = "alarms";
+    public static final String CONTENT_URI_ALL_ALARMS =
+        CONTENT_URI + "/" + CONTENT_URI_PATH;
+
+    /**
+     * Content URI for a single alarm
+     *
+     * <p>Value: content://org.startsmall.alarmclockplus/alarms/#</p>
+     */
+    public static final String CONTENT_URI_SINGLE_ALARM =
+        CONTENT_URI_ALL_ALARMS + "/#";
+
+    /*****************************************************************
+     * For constants used in content provider and SQLiteDatabase.    *
+     *****************************************************************/
     public static class AlarmColumns implements BaseColumns {
-        public static final String CONTENT_URI =
-            "content://org.startsmall.alarmclockplus";
 
         /// Default sort order
         public static final String DEFAULT_SORT_ORDER = "_id ASC";
@@ -62,22 +95,22 @@ public class Alarms {
          * Projection indexes.
          *
          */
-        private static final String[] ALARM_QUERY_COLUMNS = {
-            _ID, LABEL, HOUR, MINUTES, DAYS_OF_WEEK,
+        private static final String[] QUERY_COLUMNS = {
+            _ID, LABEL, HOUR, MINUTES, // TODO: DAYS_OF_WEEK,
             ENABLED, VIBRATE, ALERT_URI};
 
         /**
          *
          *
          */
-        public static final int ALARM_PROJECTION_ID_INDEX = 0;
-        public static final int ALARM_PROJECTION_LABEL_INDEX = 1;
-        public static final int ALARM_PROJECTION_HOUR_INDEX = 2;
-        public static final int ALARM_PROJECTION_MINUTES_INDEX = 3;
-        public static final int ALARM_PROJECTION_DAYS_OF_WEEK_INDEX = 4;
-        public static final int ALARM_PROJECTION_ENABLED_INDEX = 5;
-        public static final int ALARM_PROJECTION_VIBRATE_INDEX = 6;
-        public static final int ALARM_PROJECTION_ALERT_URI_INDEX = 7;
+        public static final int PROJECTION_ID_INDEX = 0;
+        public static final int PROJECTION_LABEL_INDEX = 1;
+        public static final int PROJECTION_HOUR_INDEX = 2;
+        public static final int PROJECTION_MINUTES_INDEX = 3;
+        // public static final int PROJECTION_DAYS_OF_WEEK_INDEX = 4;
+        public static final int PROJECTION_ENABLED_INDEX = 4;
+        public static final int PROJECTION_VIBRATE_INDEX = 5;
+        public static final int PROJECTION_ALERT_URI_INDEX = 6;
     }
 
     /**
@@ -90,8 +123,8 @@ public class Alarms {
     public static Cursor getCursor(ContentResolver contentResolver) {
         return
             contentResolver.query(
-                Uri.parse(AlarmColumns.CONTENT_URI + "/alarms"), // get all rows
-                AlarmColumns.ALARM_QUERY_COLUMNS,
+                Uri.parse(CONTENT_URI_ALL_ALARMS),
+                AlarmColumns.QUERY_COLUMNS,
                 null,
                 null,
                 AlarmColumns.DEFAULT_SORT_ORDER);

@@ -28,16 +28,16 @@ public class AlarmClockPlus extends ListActivity {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            final int id = cursor.getInt(Alarms.AlarmColumns.ALARM_PROJECTION_ID_INDEX);
-            final String label = cursor.getString(Alarms.AlarmColumns.ALARM_PROJECTION_LABEL_INDEX);
-            final int hour = cursor.getInt(Alarms.AlarmColumns.ALARM_PROJECTION_HOUR_INDEX);
-            final int minutes = cursor.getInt(Alarms.AlarmColumns.ALARM_PROJECTION_MINUTES_INDEX);
+            final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
+            final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
+            final int hour = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
+            final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
 
             // TODO: DAYS_OF_WEEK and TIME_IN_MILLIS
 
-            final boolean enabled = cursor.getInt(Alarms.AlarmColumns.ALARM_PROJECTION_ENABLED_INDEX) == 1 ? true : false;
-            final boolean vibrate = cursor.getInt(Alarms.AlarmColumns.ALARM_PROJECTION_VIBRATE_INDEX) == 1 ? true : false;
-            final String audioAlert = cursor.getString(Alarms.AlarmColumns.ALARM_PROJECTION_ALERT_URI_INDEX);
+            final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
+            final boolean vibrate = cursor.getInt(Alarms.AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
+            final String audioAlert = cursor.getString(Alarms.AlarmColumns.PROJECTION_ALERT_URI_INDEX);
 
             // TODO: Alarm icon
 

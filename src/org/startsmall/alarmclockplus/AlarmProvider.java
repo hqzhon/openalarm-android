@@ -29,65 +29,68 @@ import android.util.Log;
  */
 public class AlarmProvider extends ContentProvider {
     private static final String TAG = "AlarmProvider";
-    private static final String DATABASE_TABLE_NAME = "alarms";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-    private static final int URI_MATCH_ID_ALARMS = 1;
-    private static final int URI_MATCH_ID_ALARM = 2;
+    private static final int MATCH_CODE_ALL_ALARMS = 1;
+    private static final int MATCH_CODE_SINGLE_ALARM = 2;
 
     private DatabaseOpenHelper mDbOpenHelper;
 
     static {
-        sURIMatcher.addURI(Alarms.AlarmColumns.CONTENT_URI,
-                           "/alarms", URI_MATCH_ID_ALARMS);
-        sURIMatcher.addURI(Alarms.AlarmColumns.CONTENT_URI,
-                           "/alarms/#", URI_MATCH_ID_ALARM);
+        /// org.startsmall.alarmclockplus/alarms
+        sURIMatcher.addURI(Alarms.CONTENT_URI_AUTH,
+                           Alarms.CONTENT_URI_PATH,
+                           MATCH_CODE_ALL_ALARMS);
+
+        /// org.startsmall.alarmclockplus/alarms/#
+        sURIMatcher.addURI(Alarms.CONTENT_URI_AUTH,
+                           Alarms.CONTENT_URI_PATH + "/#",
+                           MATCH_CODE_SINGLE_ALARM);
     }
 
-    private static class DatabaseOpenHelper extends SQLiteOpenHelper {
+    private class DatabaseOpenHelper extends SQLiteOpenHelper {
         private static final String TAG = "DatabaseOpenHelper";
         private static final String DATABASE_NAME = "alarmclockplus.db";
+        public static final String DATABASE_TABLE_NAME = "alarms";
         private static final int DATABASE_VERSION = 1;
 
-        private final String DATABASE_CREATE_CMD =
+        private static final String DATABASE_CREATE_CMD =
             "CREATE TABLE " + DATABASE_TABLE_NAME + "(" +
-            Alarms.AlarmColumns._ID   + "INTEGER PRIMARY KEY," +
-            Alarms.AlarmColumns.LABEL + "TEXT," +
-            Alarms.AlarmColumns.HOUR  + "INTEGER," +
-            // TODO: Alarms.AlarmColumns.DAYS_OF_WEEK + "INTEGER," +
+            Alarms.AlarmColumns._ID   + " INTEGER PRIMARY KEY, " +
+            Alarms.AlarmColumns.LABEL + " TEXT, " +
+            Alarms.AlarmColumns.HOUR  + " INTEGER, " +
+            Alarms.AlarmColumns.MINUTES  + " INTEGER, " +
+            // TODO: Alarms.AlarmColumns.DAYS_OF_WEEK + " INTEGER, " +
             // TODO: Time in millis
-            Alarms.AlarmColumns.ENABLED + "INTEGER," +
-            Alarms.AlarmColumns.VIBRATE + "INTEGER," +
-            Alarms.AlarmColumns.ALERT_URI + "TEXT);";
+            Alarms.AlarmColumns.ENABLED + " INTEGER, " +
+            Alarms.AlarmColumns.VIBRATE + " INTEGER, " +
+            Alarms.AlarmColumns.ALERT_URI + " TEXT);";
 
-        private final String DATABASE_DROP_CMD =
+        private static final String DATABASE_DROP_CMD =
             "DROP TABLE IF EXISTS " + DATABASE_TABLE_NAME;
 
         public DatabaseOpenHelper(Context cxt) {
             super(cxt, DATABASE_NAME, null, DATABASE_VERSION);
-
-            Log.d(TAG, "onCreate()");
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            Log.d(TAG, "DatabaseOpenHelper.onCreate(" +
-                  DATABASE_CREATE_CMD + ")");
+            Log.d(TAG, "onCreate(" + DATABASE_CREATE_CMD + ")");
             db.execSQL(DATABASE_CREATE_CMD);
-            insertDefaultAlarms();
+
+            insertDefaultAlarms(db);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db,
                               int oldVersion,
                               int newVersion) {
-            Log.d(TAG, "DatabaseOpenHelper.onUpgrade(" +
-                  DATABASE_DROP_CMD + ")");
+            Log.d(TAG, "Upgrading database from " + oldVersion + " to " + newVersion);
             db.execSQL(DATABASE_DROP_CMD);
             onCreate(db);
         }
 
-        private void insertDefaultAlarms() {
+        private void insertDefaultAlarms(SQLiteDatabase db) {
             String cmd = "INSERT INTO " + DATABASE_TABLE_NAME + " (" +
                          Alarms.AlarmColumns.LABEL + ", " +
                          Alarms.AlarmColumns.HOUR + ", " +
@@ -95,7 +98,6 @@ public class AlarmProvider extends ContentProvider {
                          Alarms.AlarmColumns.ENABLED + ", " +
                          Alarms.AlarmColumns.VIBRATE + ", " +
                          Alarms.AlarmColumns.ALERT_URI + ") VALUES ";
-            SQLiteDatabase db = getWritableDatabase();
             db.execSQL(cmd + "('default1', 7, 00, 0, 1, '');");
             db.execSQL(cmd + "('default2', 8, 30, 0, 0, '');");
             db.execSQL(cmd + "('default3', 9, 00, 0, 1, '');");
@@ -104,7 +106,6 @@ public class AlarmProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-
         Log.d(TAG, "onCreate()");
 
         mDbOpenHelper = new DatabaseOpenHelper(getContext());
@@ -117,23 +118,18 @@ public class AlarmProvider extends ContentProvider {
                         String selection,
                         String[] selectionArgs,
                         String sortOrder) {
-        Log.d(TAG, "query(): uri='" + uri);
-
         int matchId = sURIMatcher.match(uri);
-
-        Log.d(TAG, "query(): matchId = " + matchId);
-
-        if(matchId != URI_MATCH_ID_ALARM &&
-           matchId != URI_MATCH_ID_ALARMS) {
-            throw new IllegalArgumentException(TAG + ": query(): unknown alarm URL");
+        if(matchId != MATCH_CODE_SINGLE_ALARM &&
+           matchId != MATCH_CODE_ALL_ALARMS) {
+            throw new IllegalArgumentException("Unknown alarm URI");
         }
 
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setTables(DATABASE_TABLE_NAME);
+        qb.setTables(DatabaseOpenHelper.DATABASE_TABLE_NAME);
 
-        if(matchId == URI_MATCH_ID_ALARM) {
+        if(matchId == MATCH_CODE_SINGLE_ALARM) {
             long rowId = ContentUris.parseId(uri);
-            qb.appendWhere(Alarms.AlarmColumns._ID + "=" + rowId);
+            qb.appendWhere(Alarms.AlarmColumns._ID + "=" + rowId); // append _id=#
         }
 
         Cursor c = qb.query(mDbOpenHelper.getReadableDatabase(),
@@ -152,7 +148,7 @@ public class AlarmProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues initialValues) {
-        if(sURIMatcher.match(uri) != URI_MATCH_ID_ALARMS) {
+        if(sURIMatcher.match(uri) != MATCH_CODE_ALL_ALARMS) {
             throw new IllegalArgumentException(
                 "unable to insert into URL - " + uri);
         }
@@ -194,12 +190,13 @@ public class AlarmProvider extends ContentProvider {
         }
 
         SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
-        long rowId = db.insertOrThrow(DATABASE_TABLE_NAME,
+        long rowId = db.insertOrThrow(DatabaseOpenHelper.DATABASE_TABLE_NAME,
                                       Alarms.AlarmColumns.LABEL,
                                       values);
+        Log.d(TAG, "Trying to insert a row into " + uri);
 
         Uri insertedUri =
-            Uri.parse(Alarms.AlarmColumns.CONTENT_URI + "/alarms/" + rowId);
+            Uri.parse(Alarms.CONTENT_URI_ALL_ALARMS + "/" + rowId);
         getContext().getContentResolver().notifyChange(insertedUri, null);
         Log.d(TAG, "Added alarm - " + insertedUri);
         return insertedUri;
@@ -209,14 +206,15 @@ public class AlarmProvider extends ContentProvider {
     public int update(Uri uri,
                       ContentValues values,
                       String selection, String[] selectionArgs) {
-        if(sURIMatcher.match(uri) != URI_MATCH_ID_ALARM) {
+        if(sURIMatcher.match(uri) != MATCH_CODE_SINGLE_ALARM) {
             throw new IllegalArgumentException(
                 "unsupported content provider operation");
         }
 
         SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
         long rowId = ContentUris.parseId(uri);
-        int count = db.update(DATABASE_TABLE_NAME, values,
+        int count = db.update(DatabaseOpenHelper.DATABASE_TABLE_NAME,
+                              values,
                               Alarms.AlarmColumns._ID + "=" + rowId,
                               null);
 
@@ -232,16 +230,16 @@ public class AlarmProvider extends ContentProvider {
         int matchId = sURIMatcher.match(uri);
         int count;
         switch(matchId) {
-        case URI_MATCH_ID_ALARM: // delete one specific row.
+        case MATCH_CODE_SINGLE_ALARM: // delete one specific row.
             long rowId = ContentUris.parseId(uri);
             String where = Alarms.AlarmColumns._ID + "=" + rowId;
             if(selection.length() != 0) {
                 where = where + " AND (" + selection + ")";
             }
-            count = db.delete(DATABASE_TABLE_NAME, where, selectionArgs);
+            count = db.delete(DatabaseOpenHelper.DATABASE_TABLE_NAME, where, selectionArgs);
             break;
-        case URI_MATCH_ID_ALARMS: // delete rows
-            count = db.delete(DATABASE_TABLE_NAME,
+        case MATCH_CODE_ALL_ALARMS: // delete rows
+            count = db.delete(DatabaseOpenHelper.DATABASE_TABLE_NAME,
                               selection,
                               selectionArgs);
             break;
@@ -258,9 +256,9 @@ public class AlarmProvider extends ContentProvider {
     @Override
     public String getType(Uri uri) {
         switch(sURIMatcher.match(uri)) {
-        case URI_MATCH_ID_ALARMS:
+        case MATCH_CODE_ALL_ALARMS:
             return "vnd.android.cursor.dir/vnd.startsmall.alarms";
-        case URI_MATCH_ID_ALARM:
+        case MATCH_CODE_SINGLE_ALARM:
             return "vnd.android.cursor.item/vnd.startsmall.alarms";
         default:
             throw new IllegalArgumentException("unkown content URI");
