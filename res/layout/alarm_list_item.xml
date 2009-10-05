@@ -14,13 +14,14 @@
      android:src="@drawable/default_alarm_action_type"
      />
 
-  <TextView
-     android:id="@+id/setting"
+  <CheckBox
+     android:id="@+id/enabled"
+     android:layout_marginLeft="6dip"
      android:layout_width="wrap_content"
      android:layout_height="wrap_content"
-     android:layout_toRightOf="@id/icon"
+     android:layout_alignParentRight="true"
+     android:layout_alignParentTop="true"
      android:layout_alignParentBottom="true"
-     android:layout_alignWithParentIfMissing="true"
      />
 
   <TextView
@@ -28,24 +29,23 @@
      android:id="@+id/label"
      android:layout_width="wrap_content"
      android:layout_height="26dip"
+     android:layout_toLeftOf="@id/enabled"
      android:layout_toRightOf="@id/icon"
-     android:layout_above="@id/setting"
      android:layout_alignParentTop="true"
-     android:layout_weight="1"
      android:singleLine="true"
      android:ellipsize="marquee"
      android:text="Alarm label"
      />
 
-  <CheckBox
-     android:id="@+id/enabled"
-     android:layout_marginLeft="6dip"
-     android:layout_width="26dip"
+  <TextView
+     android:id="@+id/setting"
+     android:layout_width="wrap_content"
      android:layout_height="wrap_content"
-     android:layout_toRightOf="@id/label"
-     android:layout_alignParentRight="true"
-     android:layout_alignParentTop="true"
+     android:layout_alignLeft="@id/label"
+     android:layout_alignRight="@id/label"
+     android:layout_below="@id/label"
      android:layout_alignParentBottom="true"
+     android:layout_alignWithParentIfMissing="true"
      />
 
 </RelativeLayout>
