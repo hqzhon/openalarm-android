@@ -6,6 +6,9 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
@@ -42,7 +45,9 @@ public class AlarmClockPlus extends ListActivity {
             final boolean vibrate = cursor.getInt(Alarms.AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
             final String audioAlert = cursor.getString(Alarms.AlarmColumns.PROJECTION_ALERT_URI_INDEX);
 
-            // TODO: Alarm icon
+            // TODO: Alarm time
+            TextView timeView = (TextView)view.findViewById(R.id.time);
+            timeView.setText(hour + ":" + minutes);
 
             TextView labelView = (TextView)view.findViewById(R.id.label);
             labelView.setText(label);
@@ -51,6 +56,8 @@ public class AlarmClockPlus extends ListActivity {
             enabledChkBox.setChecked(enabled);
 
             // TODO: Alarm settings
+            TextView settingView = (TextView)view.findViewById(R.id.setting);
+
         }
 
         @Override
@@ -69,16 +76,49 @@ public class AlarmClockPlus extends ListActivity {
 
         ContentResolver contentResolver = getContentResolver();
         if(contentResolver == null) {
-
             // TODO: throw error message
             Log.d(TAG, "onCreate(): no content resolver");
-
         }
 
         Cursor cursor = Alarms.getCursor(contentResolver);
         startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, cursor));
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+
+        menuInflater.inflate(R.menu.menu, menu);
+
+        return true;
+    }
+
+    // TODO:
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+        case R.id.menu_item_add:
+            addAlarm();
+            break;
+
+        case R.id.menu_item_preferences:
+
+            break;
+
+        case R.id.menu_item_help:
+            break;
+        }
+
+        return true;
+    }
+
+
+    private void addAlarm() {
+
+
 
     }
+
 }
