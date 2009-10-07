@@ -13,13 +13,16 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
-
+import android.util.Log;
 
 /**
  *
  *
  */
 public class Alarms {
+    private static final String TAG = "Alarms";
+
+
     /******************************************************************
      * Convenient data that are used throughout the application       *
      ******************************************************************/
@@ -129,7 +132,7 @@ public class Alarms {
      *
      * @return database cursor
      */
-    public static Cursor getCursor(ContentResolver contentResolver) {
+    public static Cursor getAlarms(ContentResolver contentResolver) {
         return
             contentResolver.query(
                 Uri.parse(CONTENT_URI_ALL_ALARMS),
@@ -137,6 +140,19 @@ public class Alarms {
                 null,
                 null,
                 AlarmColumns.DEFAULT_SORT_ORDER);
+    }
+
+    public static Cursor getAlarm(ContentResolver contentResolver,
+                                  int alarmId) {
+        Uri alarmUrl =
+            Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
+
+        Log.d(TAG, "getAlarm(" + alarmUrl.toString() + ")");
+        return contentResolver.query(alarmUrl,
+                                     AlarmColumns.QUERY_COLUMNS,
+                                     null,
+                                     null,
+                                     AlarmColumns.DEFAULT_SORT_ORDER);
     }
 
     public static int deleteAlarm(ContentResolver contentResolver,

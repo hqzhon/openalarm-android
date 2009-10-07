@@ -2,15 +2,30 @@
 <PreferenceScreen
    xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <PreferenceCategory android:title="Sound Settings">
-    <CheckBoxPreference android:key="music"
-                        android:title="hahaha1"
-                        android:summary="hahahaah summary"
-                        android:defaultValue="true"/>
+  <PreferenceCategory android:title="Basic Settings">
+    <EditTextPreference
+       android:key="label"
+       android:title="@string/alarm_settings_label_title"
+       android:defaultValue="Alarm"/>
+
+    <org.startsmall.alarmclockplus.AlarmTimePreference
+       android:key="time"
+       android:title="Time"
+       android:defaultValue="0830"
+       />
+
+    <CheckBoxPreference
+       android:key="vibrate"
+       android:title="Vibrate"
+       android:defaultValue="false"
+       android:summaryOn="@string/alarm_settings_vibrate_on_summary"
+       android:summaryOff="@string/alarm_settings_vibrate_off_summary"
+       />
+
   </PreferenceCategory>
 
-  <CheckBoxPreference android:key="hints"
-                      android:title="haha2"
-                      android:summary="haha2 summary"
-                      android:defaultValue="true"/>
+  <PreferenceCategory android:title="Extra Settings">
+
+  </PreferenceCategory>
+
 </PreferenceScreen>

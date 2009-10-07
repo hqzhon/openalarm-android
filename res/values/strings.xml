@@ -14,4 +14,15 @@
     <!-- Delete alarm message -->
     <string name="delete_alarm_message">Are you sure to delete this alarm?</string>
 
+    <!-- Alarm settings -->
+    <string name="alarm_settings_label_title">Label</string>
+
+    <string name="alarm_settings_action_title">Action</string>
+    <string name="alarm_settings_action_summary">Choose Action</string>
+
+
+    <string name="alarm_settings_vibrate_title">Vibrate</string>
+    <string name="alarm_settings_vibrate_on_summary">Vibrate On</string>
+    <string name="alarm_settings_vibrate_off_summary">Vibrate Off</string>
+
 </resources>
