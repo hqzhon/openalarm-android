@@ -24,6 +24,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.CheckBox;
 
+import java.util.Calendar;
+
 public class AlarmClockPlus extends ListActivity {
     private static final String TAG = "AlarmClockPlus";
 
@@ -103,7 +105,7 @@ public class AlarmClockPlus extends ListActivity {
 
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
-            final int hour = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
+            final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
 
             // TODO: DAYS_OF_WEEK and TIME_IN_MILLIS
@@ -112,9 +114,13 @@ public class AlarmClockPlus extends ListActivity {
             final boolean vibrate = cursor.getInt(Alarms.AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
             final String audioAlert = cursor.getString(Alarms.AlarmColumns.PROJECTION_ALERT_URI_INDEX);
 
-            // TODO: Alarm time
+            // Time
             TextView timeView = (TextView)view.findViewById(R.id.time);
-            timeView.setText(hour + ":" + minutes);
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            calendar.set(Calendar.MINUTE, minutes);
+            Alarms.formatDate("HH:mm", calendar);
+            timeView.setText(Alarms.formatDate("HH:mm", calendar));
 
             final TextView labelView = (TextView)view.findViewById(R.id.label);
             labelView.setText(label);

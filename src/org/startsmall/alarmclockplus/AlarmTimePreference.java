@@ -20,6 +20,10 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import java.util.Calendar;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 public class AlarmTimePreference extends Preference {
     private static final String TAG = "AlarmTimePreference";
 
@@ -46,7 +50,10 @@ public class AlarmTimePreference extends Preference {
         int hourOfDay = time / 100;
         int minutes = time % 100;
 
-        timeText.setText(hourOfDay + ":" + minutes);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minutes);
+        timeText.setText(Alarms.formatDate("HH:mm", calendar));
     }
 
     /**

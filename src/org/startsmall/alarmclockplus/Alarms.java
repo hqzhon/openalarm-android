@@ -15,6 +15,9 @@ import android.provider.BaseColumns;
 import android.net.Uri;
 import android.util.Log;
 
+import java.util.Calendar;
+import java.text.SimpleDateFormat;
+
 /**
  *
  *
@@ -116,9 +119,6 @@ public class Alarms {
         public static final int PROJECTION_ALERT_URI_INDEX = 6;
     }
 
-
-
-
     /******************************************************************
      * Key strings used in Intent data.                               *
      ******************************************************************/
@@ -161,5 +161,11 @@ public class Alarms {
             Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
 
         return contentResolver.delete(alarmUri, null, null);
+    }
+
+
+    public static String formatDate(String pattern, Calendar calendar) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
+        return dateFormatter.format(calendar.getTime());
     }
 }

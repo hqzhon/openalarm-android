@@ -21,10 +21,6 @@ import android.widget.TextView;
 public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
 
-
-    private static final String PREF_KEY_LABEL = "label";
-
-
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
@@ -48,10 +44,6 @@ public class AlarmSettings extends PreferenceActivity {
         }
     }
 
-
-
-
-
     private void populateFields(Cursor cursor) {
         final String label =
             cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
@@ -63,20 +55,15 @@ public class AlarmSettings extends PreferenceActivity {
         final boolean vibrate =
             cursor.getInt(Alarms.AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
 
-        Log.d(TAG,
-              "TODO: Label = " + label + ",\n" +
-              "      Time = " + hour + ":" + minutes);
-
         setTitle("Settings for " + label);
 
         PreferenceManager prefManager = getPreferenceManager();
-
-        Preference labelPref = prefManager.findPreference(PREF_KEY_LABEL);
+        Preference labelPref = prefManager.findPreference(
+            getResources().getString(R.string.alarm_settings_label_key));
         labelPref.setSummary(label);
 
-        Preference timePref = prefManager().findPreference("time");
+        Preference timePref = prefManager.findPreference(
+            getResources().getString(R.string.alarm_settings_time_key));
         ((AlarmTimePreference)timePref).setTime(hour * 100 + minutes);
-
-
     }
 }
