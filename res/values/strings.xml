@@ -2,9 +2,16 @@
 <resources>
     <string name="app_name">AlarmClockPlus</string>
 
-    <!-- options menu -->
+    <!-- Options menu item -->
     <string name="menu_item_help">Help</string>
     <string name="menu_item_add">Add</string>
     <string name="menu_item_preferences">Preferences</string>
+
+    <!-- Context menu item -->
+    <string name="menu_item_edit_alarm">Edit Alarm</string>
+    <string name="menu_item_delete_alarm">Delete Alarm</string>
+
+    <!-- Delete alarm message -->
+    <string name="delete_alarm_message">Are you sure to delete this alarm?</string>
 
 </resources>

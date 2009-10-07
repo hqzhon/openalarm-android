@@ -113,6 +113,15 @@ public class Alarms {
         public static final int PROJECTION_ALERT_URI_INDEX = 6;
     }
 
+
+
+
+    /******************************************************************
+     * Key strings used in Intent data.                               *
+     ******************************************************************/
+    public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
+
+
     /**
      *
      *
@@ -130,6 +139,11 @@ public class Alarms {
                 AlarmColumns.DEFAULT_SORT_ORDER);
     }
 
+    public static int deleteAlarm(ContentResolver contentResolver,
+                                  final int alarmId) {
+        Uri alarmUri =
+            Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
 
-
+        return contentResolver.delete(alarmUri, null, null);
+    }
 }
