@@ -24,6 +24,7 @@ import android.preference.ListPreference;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.RadioGroup;
+import android.widget.RadioButton;
 
 import java.util.*;
 
@@ -82,20 +83,22 @@ public class AlarmSettings extends PreferenceActivity {
         queryIntent.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
         List<ResolveInfo> actions = pm.queryBroadcastReceivers(queryIntent, 0);
-        String[] array = new String[actions.size()];
+
+        String[] entries = new String[actions.size()];
+        // Class<? extends BroadcastReceiver>[] entryValues = new Class<? extends BroadcastReceiver>[actions.size()];
         for(int i = 0; i < actions.size(); i++) {
             ActivityInfo info = actions.get(i).activityInfo;
-            array[i] = info.loadLabel(pm).toString();
+            entries[i] = info.loadLabel(pm).toString();
         }
 
-        if(array.length > 0) {
+        if(entries.length > 0) {
             PreferenceManager prefManager = getPreferenceManager();
-            ListPreference actionPref =
-                (ListPreference)prefManager.findPreference(
+            AlarmActionPreference actionPref =
+                (AlarmActionPreference)prefManager.findPreference(
                     getResources().getString(
                         R.string.alarm_settings_action_key));
-            actionPref.setEntries(array);
-            actionPref.setEntryValues(array);
+            actionPref.setEntries(entries);
+            // actionPref.setEntryValues(entryValues);
         }
     }
 }
