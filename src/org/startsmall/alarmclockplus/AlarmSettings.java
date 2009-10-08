@@ -70,11 +70,11 @@ public class AlarmSettings extends PreferenceActivity {
         PreferenceManager prefManager = getPreferenceManager();
         Preference labelPref = prefManager.findPreference(
             getResources().getString(R.string.alarm_settings_label_key));
-        ((AlarmLabelPreference)labelPref).setLabel(label);
+        ((AlarmLabelPreference)labelPref).setPreferenceValue(label);
 
         Preference timePref = prefManager.findPreference(
             getResources().getString(R.string.alarm_settings_time_key));
-        ((AlarmTimePreference)timePref).setTime(hour * 100 + minutes);
+        ((AlarmTimePreference)timePref).setPreferenceValue(hour * 100 + minutes);
     }
 
     private void populateActionReceivers() {

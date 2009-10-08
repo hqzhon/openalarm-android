@@ -24,17 +24,15 @@ import java.util.Calendar;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-public class AlarmTimePreference extends Preference {
+public class AlarmTimePreference extends TextViewPreference {
     private static final String TAG = "AlarmTimePreference";
 
     public AlarmTimePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setWidgetLayoutResource(R.layout.alarm_text_view_preference_widget);
     }
 
-    public void setTime(int time) {
-        persistInt(time);
-        notifyChanged();
+    protected void persistValue(Object value) {
+        persistInt((Integer)value);
     }
 
     @Override
@@ -72,7 +70,7 @@ public class AlarmTimePreference extends Preference {
                 public void onTimeSet(TimePicker view,
                                       int hourOfDay,
                                       int minutes) {
-                    setTime(hourOfDay * 100 + minutes);
+                    setPreferenceValue(hourOfDay * 100 + minutes);
                 }
             },
             hourOfDay,
@@ -100,8 +98,7 @@ public class AlarmTimePreference extends Preference {
 
 
         } else {
-            persistInt((Integer)defValue);
-            notifyChanged();
+            setPreferenceValue(defValue);
         }
     }
 

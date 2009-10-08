@@ -24,19 +24,18 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.EditText;
 
-public class AlarmLabelPreference extends Preference implements DialogInterface.OnClickListener {
+public class AlarmLabelPreference extends TextViewPreference implements DialogInterface.OnClickListener {
     private static final String TAG = "AlarmLabelPreference";
 
     private AlertDialog.Builder mBuilder;
 
     public AlarmLabelPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setWidgetLayoutResource(R.layout.alarm_text_view_preference_widget);
     }
 
-    public void setLabel(String label) {
-        persistString(label);
-        notifyChanged();
+    @Override
+    protected void persistValue(Object value) {
+        persistString((String)value);
     }
 
     @Override
@@ -45,8 +44,7 @@ public class AlarmLabelPreference extends Preference implements DialogInterface.
         switch(which) {
         case DialogInterface.BUTTON_POSITIVE:
             EditText editText = (EditText)dialog.findViewById(R.id.input);
-            persistString(editText.getText().toString());
-            notifyChanged();
+            setPreferenceValue(editText.getText().toString());
             break;
         }
     }
@@ -64,10 +62,6 @@ public class AlarmLabelPreference extends Preference implements DialogInterface.
         textView.setText(text);
     }
 
-    /**
-     * Bring up a TimePicker dialog.
-     *
-     */
     @Override
     protected void onClick() {
         String label = getPersistedString("Alarm");
@@ -109,13 +103,9 @@ public class AlarmLabelPreference extends Preference implements DialogInterface.
     protected void onSetInitialValue(boolean restorePersistedValue,
                                      Object defValue) {
         if(restorePersistedValue) {
-
             // Restore
-
-
         } else {
-            persistString((String)defValue);
-            notifyChanged();
+            setPreferenceValue(defValue);
         }
     }
 

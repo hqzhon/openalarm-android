@@ -26,7 +26,7 @@ import android.util.Log;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
-public class AlarmActionPreference extends Preference implements DialogInterface.OnClickListener {
+public class AlarmActionPreference extends TextViewPreference implements DialogInterface.OnClickListener {
     private static final String TAG = "AlarmActionPreference";
 
     private AlertDialog.Builder mBuilder;
@@ -36,39 +36,23 @@ public class AlarmActionPreference extends Preference implements DialogInterface
 
     public AlarmActionPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setWidgetLayoutResource(R.layout.alarm_text_view_preference_widget);
     }
 
     public void setEntries(String[] entries) {
         mEntries = entries;
+    }
 
-
-
-
-
-
-
+    // TODO:
+    @Override
+    protected void persistValue(Object value) {
 
 
     }
+
 
     // public void setEntryValues(String[] values) {
     //     mEntryValues = values;
     // }
-
-    // public void setLabel(String label) {
-    //     persistString(label);
-    //     notifyChanged();
-    // }
-
-    public void addActionButton(RadioButton button, int id) {
-        RadioGroup btnGroup =
-            (RadioGroup)mDialog.findViewById(R.id.actions);
-
-        btnGroup.addView(button, id, new ViewGroup.LayoutParams(
-                             ViewGroup.LayoutParams.FILL_PARENT,
-                             ViewGroup.LayoutParams.WRAP_CONTENT));
-    }
 
     @Override
     public void onClick(DialogInterface d, int which) {
@@ -91,11 +75,6 @@ public class AlarmActionPreference extends Preference implements DialogInterface
 
         Log.d(TAG, "onBindView(view)");
 
-        // final TextView textView =
-        //     (TextView)view.findViewById(R.id.text);
-
-        // String text = getPersistedString("Alarm");
-        // textView.setText(text);
     }
 
     /**
@@ -123,10 +102,25 @@ public class AlarmActionPreference extends Preference implements DialogInterface
                 Context.LAYOUT_INFLATER_SERVICE);
         View contentView =
             inflater.inflate(R.layout.action_pick_dialog_widget, null);
+        populateEntries(contentView);
         mBuilder.setView(contentView);
 
         mDialog = mBuilder.create();
         mDialog.show();
+    }
+
+    private void populateEntries(View view) {
+        RadioGroup group = (RadioGroup)view;
+        group.removeAllViews();
+
+        for(int i = 0; i < mEntries.length; i++) {
+            RadioButton button = new RadioButton(getContext());
+            button.setText(mEntries[i]);
+            group.addView(button, i,
+                          new ViewGroup.LayoutParams(
+                              ViewGroup.LayoutParams.FILL_PARENT,
+                              ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
     }
 
     /**
