@@ -72,8 +72,7 @@ public class AlarmTimePreference extends Preference {
                 public void onTimeSet(TimePicker view,
                                       int hourOfDay,
                                       int minutes) {
-                    persistInt(hourOfDay * 100 + minutes);
-                    notifyChanged();
+                    setTime(hourOfDay * 100 + minutes);
                 }
             },
             hourOfDay,

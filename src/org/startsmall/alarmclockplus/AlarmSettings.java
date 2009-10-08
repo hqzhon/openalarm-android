@@ -9,18 +9,21 @@
  */
 package org.startsmall.alarmclockplus;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceActivity;
 import android.preference.ListPreference;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.RadioGroup;
 
 import java.util.*;
 
@@ -66,7 +69,7 @@ public class AlarmSettings extends PreferenceActivity {
         PreferenceManager prefManager = getPreferenceManager();
         Preference labelPref = prefManager.findPreference(
             getResources().getString(R.string.alarm_settings_label_key));
-        labelPref.setSummary(label);
+        ((AlarmLabelPreference)labelPref).setLabel(label);
 
         Preference timePref = prefManager.findPreference(
             getResources().getString(R.string.alarm_settings_time_key));
@@ -84,6 +87,7 @@ public class AlarmSettings extends PreferenceActivity {
             ActivityInfo info = actions.get(i).activityInfo;
             array[i] = info.loadLabel(pm).toString();
         }
+
         if(array.length > 0) {
             PreferenceManager prefManager = getPreferenceManager();
             ListPreference actionPref =

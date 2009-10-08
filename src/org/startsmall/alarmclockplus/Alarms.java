@@ -40,7 +40,7 @@ public class Alarms {
      * Alarm alert action string.
      * <p>Value: org.startsmall.alarmclockplus.ALARM_ALERT</p>
      */
-    public static final String ALARM_ACTION = CONTENT_URI_AUTH + ".ALARM_ALERT";
+    public static final String ALARM_ACTION = CONTENT_URI_AUTH + ".ALARM_ACTION";
 
     /**
      * Content URI of this application.

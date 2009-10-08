@@ -30,7 +30,7 @@
       <receiver android:name="AlarmReceiver"
                 android:label="Alarm">
         <intent-filter>
-          <action android:name="org.startsmall.alarmclockplus.ALARM_ALERT" />
+          <action android:name="org.startsmall.alarmclockplus.ALARM_ACTION" />
           <category android:name="android.intent.category.ALTERNATIVE" />
         </intent-filter>
       </receiver>
@@ -38,7 +38,7 @@
       <receiver android:name="WifiOnReceiver"
                 android:label="Turn Wi-Fi On">
         <intent-filter>
-          <action android:name="org.startsmall.alarmclockplus.ALARM_ALERT" />
+          <action android:name="org.startsmall.alarmclockplus.ALARM_ACTION" />
           <category android:name="android.intent.category.ALTERNATIVE" />
         </intent-filter>
       </receiver>
@@ -46,7 +46,7 @@
       <receiver android:name="WifiOffReceiver"
                 android:label="Turn Wi-Fi Off">
         <intent-filter>
-          <action android:name="org.startsmall.alarmclockplus.ALARM_ALERT" />
+          <action android:name="org.startsmall.alarmclockplus.ALARM_ACTION" />
           <category android:name="android.intent.category.ALTERNATIVE" />
         </intent-filter>
       </receiver>

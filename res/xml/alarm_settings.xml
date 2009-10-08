@@ -3,15 +3,19 @@
    xmlns:android="http://schemas.android.com/apk/res/android">
 
   <PreferenceCategory android:title="Basic Settings">
-    <EditTextPreference
+    <!-- <EditTextPreference -->
+    <!--    android:key="@string/alarm_settings_label_key" -->
+    <!--    android:title="@string/alarm_settings_label_title" -->
+    <!--    android:defaultValue="Alarm"/> -->
+
+    <org.startsmall.alarmclockplus.AlarmLabelPreference
        android:key="@string/alarm_settings_label_key"
-       android:title="@string/alarm_settings_label_title"
-       android:defaultValue="Alarm"/>
+       android:title="Label"
+       android:defaultValue="Alarm" />
 
     <ListPreference
        android:key="@string/alarm_settings_action_key"
-       android:title="@string/alarm_settings_action_title"
-       />
+       android:title="@string/alarm_settings_action_title"/>
 
     <org.startsmall.alarmclockplus.AlarmTimePreference
        android:key="@string/alarm_settings_time_key"

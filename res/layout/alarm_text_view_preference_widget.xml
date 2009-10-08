@@ -1,10 +1,9 @@
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-          style="?android:attr/textAppearanceLarge"
+          style="?android:attr/textAppearanceMedium"
           android:id="@+id/text"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
           android:layout_marginRight="6sp"
-          android:typeface="monospace"
           android:focusable="false"
           android:clickable="false"/>
