@@ -25,6 +25,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 public class AlarmActionPreference extends TextViewPreference implements DialogInterface.OnClickListener {
     private static final String TAG = "AlarmActionPreference";
@@ -42,11 +43,10 @@ public class AlarmActionPreference extends TextViewPreference implements DialogI
         mEntries = entries;
     }
 
-    // TODO:
     @Override
     protected void persistValue(Object value) {
-
-
+        persistInt((Integer)value);
+        notifyChanged();
     }
 
 
@@ -63,8 +63,9 @@ public class AlarmActionPreference extends TextViewPreference implements DialogI
                 (RadioGroup)dialog.findViewById(R.id.actions);
             int id = actionBtnGroup.getCheckedRadioButtonId();
 
-            persistInt(id);
-            notifyChanged();
+            Log.d(TAG, "Checked " + id);
+
+            setPreferenceValue(id);
             break;
         }
     }
@@ -73,8 +74,19 @@ public class AlarmActionPreference extends TextViewPreference implements DialogI
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        Log.d(TAG, "onBindView(view)");
+        if(mDialog == null) {   // before showDialog()
+            return;
+        }
 
+        int checkedButtonId = getPersistedInt(-1);
+        if(checkedButtonId != -1) {
+            RadioGroup group = (RadioGroup)mDialog.findViewById(R.id.actions);
+            RadioButton button = (RadioButton)group.getChildAt(checkedButtonId);
+
+            final TextView textView =
+                (TextView)view.findViewById(R.id.text);
+            textView.setText(button.getText().toString());
+        }
     }
 
     /**
@@ -110,7 +122,7 @@ public class AlarmActionPreference extends TextViewPreference implements DialogI
     }
 
     private void populateEntries(View view) {
-        RadioGroup group = (RadioGroup)view;
+        RadioGroup group = (RadioGroup)view.findViewById(R.id.actions);
         group.removeAllViews();
 
         for(int i = 0; i < mEntries.length; i++) {
