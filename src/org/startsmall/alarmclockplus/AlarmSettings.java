@@ -11,12 +11,18 @@ package org.startsmall.alarmclockplus;
 
 import android.os.Bundle;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceActivity;
+import android.preference.ListPreference;
 import android.util.Log;
 import android.widget.TextView;
+
+import java.util.*;
 
 public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
@@ -36,12 +42,12 @@ public class AlarmSettings extends PreferenceActivity {
 
         } else {
             Cursor cursor = Alarms.getAlarm(getContentResolver(), alarmId);
-            if(cursor.moveToFirst() == false) {
-                // empty cursor;
-                return;
+            if(cursor.moveToFirst() == true) {
+                populateFields(cursor);
             }
-            populateFields(cursor);
         }
+
+        populateActionReceivers();
     }
 
     private void populateFields(Cursor cursor) {
@@ -65,5 +71,27 @@ public class AlarmSettings extends PreferenceActivity {
         Preference timePref = prefManager.findPreference(
             getResources().getString(R.string.alarm_settings_time_key));
         ((AlarmTimePreference)timePref).setTime(hour * 100 + minutes);
+    }
+
+    private void populateActionReceivers() {
+        PackageManager pm = getPackageManager();
+        Intent queryIntent = new Intent(Alarms.ALARM_ACTION);
+        queryIntent.addCategory(Intent.CATEGORY_ALTERNATIVE);
+
+        List<ResolveInfo> actions = pm.queryBroadcastReceivers(queryIntent, 0);
+        String[] array = new String[actions.size()];
+        for(int i = 0; i < actions.size(); i++) {
+            ActivityInfo info = actions.get(i).activityInfo;
+            array[i] = info.loadLabel(pm).toString();
+        }
+        if(array.length > 0) {
+            PreferenceManager prefManager = getPreferenceManager();
+            ListPreference actionPref =
+                (ListPreference)prefManager.findPreference(
+                    getResources().getString(
+                        R.string.alarm_settings_action_key));
+            actionPref.setEntries(array);
+            actionPref.setEntryValues(array);
+        }
     }
 }

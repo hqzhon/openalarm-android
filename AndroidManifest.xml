@@ -27,5 +27,30 @@
                 android:label="@string/app_name">
       </activity>
 
+      <receiver android:name="AlarmReceiver"
+                android:label="Alarm">
+        <intent-filter>
+          <action android:name="org.startsmall.alarmclockplus.ALARM_ALERT" />
+          <category android:name="android.intent.category.ALTERNATIVE" />
+        </intent-filter>
+      </receiver>
+
+      <receiver android:name="WifiOnReceiver"
+                android:label="Turn Wi-Fi On">
+        <intent-filter>
+          <action android:name="org.startsmall.alarmclockplus.ALARM_ALERT" />
+          <category android:name="android.intent.category.ALTERNATIVE" />
+        </intent-filter>
+      </receiver>
+
+      <receiver android:name="WifiOffReceiver"
+                android:label="Turn Wi-Fi Off">
+        <intent-filter>
+          <action android:name="org.startsmall.alarmclockplus.ALARM_ALERT" />
+          <category android:name="android.intent.category.ALTERNATIVE" />
+        </intent-filter>
+      </receiver>
+
+
   </application>
 </manifest>
