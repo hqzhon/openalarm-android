@@ -2,24 +2,30 @@
 <resources>
     <string name="app_name">AlarmClockPlus</string>
 
+    <string name="ok">Okay</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
     <!-- Options menu item -->
     <string name="menu_item_help">Help</string>
     <string name="menu_item_add">Add</string>
     <string name="menu_item_preferences">Preferences</string>
 
     <!-- Context menu item -->
-    <string name="menu_item_edit_alarm">Edit Alarm</string>
-    <string name="menu_item_delete_alarm">Delete Alarm</string>
+    <string name="menu_item_edit_alarm">Edit</string>
+    <string name="menu_item_delete_alarm">Delete</string>
 
     <!-- Delete alarm message -->
-    <string name="delete_alarm_message">Are you sure to delete this alarm?</string>
+    <string name="delete_alarm_message">Delete this alarm?</string>
 
     <!-- Alarm settings -->
+
     <string name="alarm_settings_label_title">Label</string>
     <string name="alarm_settings_label_key">label</string>
 
+    <string name="alarm_settings_time_title">Time</string>
     <string name="alarm_settings_time_key">time</string>
-
 
     <string name="alarm_settings_action_title">Action</string>
     <string name="alarm_settings_action_summary">Choose Action</string>
@@ -29,5 +35,10 @@
     <string name="alarm_settings_vibrate_on_summary">Vibrate On</string>
     <string name="alarm_settings_vibrate_off_summary">Vibrate Off</string>
     <string name="alarm_settings_vibrate_key">vibrate</string>
+
+    <!-- Alarm settings/dialogs/Title -->
+    <string name="alarm_settings_action_dialog_title">Complete action using...</string>
+    <string name="alarm_settings_input_label_dialog_title">Enter label</string>
+
 
 </resources>

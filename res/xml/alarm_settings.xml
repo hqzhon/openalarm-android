@@ -3,32 +3,23 @@
    xmlns:android="http://schemas.android.com/apk/res/android">
 
   <PreferenceCategory android:title="Basic Settings">
-    <!-- <EditTextPreference -->
-    <!--    android:key="@string/alarm_settings_label_key" -->
-    <!--    android:title="@string/alarm_settings_label_title" -->
-    <!--    android:defaultValue="Alarm"/> -->
-
     <org.startsmall.alarmclockplus.AlarmLabelPreference
        android:key="@string/alarm_settings_label_key"
-       android:title="Label"
+       android:title="@string/alarm_settings_label_title"
        android:defaultValue="Alarm" />
 
     <org.startsmall.alarmclockplus.AlarmActionPreference
        android:key="@string/alarm_settings_action_key"
-       android:title="Action" />
-
-    <!-- <ListPreference -->
-    <!--    android:key="@string/alarm_settings_action_key" -->
-    <!--    android:title="@string/alarm_settings_action_title"/> -->
+       android:title="@string/alarm_settings_action_title" />
 
     <org.startsmall.alarmclockplus.AlarmTimePreference
        android:key="@string/alarm_settings_time_key"
-       android:title="Time"
+       android:title="@string/alarm_settings_time_title"
        android:defaultValue="0830" />
 
     <CheckBoxPreference
        android:key="@string/alarm_settings_vibrate_key"
-       android:title="Vibrate"
+       android:title="@string/alarm_settings_vibrate_title"
        android:defaultValue="false"
        android:summaryOn="@string/alarm_settings_vibrate_on_summary"
        android:summaryOff="@string/alarm_settings_vibrate_off_summary" />

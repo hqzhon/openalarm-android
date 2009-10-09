@@ -105,9 +105,9 @@ public class AlarmActionPreference extends TextViewPreference implements DialogI
         // String label = getPersistedString("Alarm");
 
         mBuilder = new AlertDialog.Builder(context)
-                   .setTitle("Complete action using")
-                   .setPositiveButton("Ok", this)
-                   .setNegativeButton("Cancel", this);
+                   .setTitle(R.string.alarm_settings_action_dialog_title)
+                   .setPositiveButton(R.string.ok, this)
+                   .setNegativeButton(R.string.cancel, this);
 
         LayoutInflater inflater =
             (LayoutInflater)context.getSystemService(

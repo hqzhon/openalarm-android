@@ -74,9 +74,9 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
         String label = getPersistedString("Alarm");
 
         mBuilder = new AlertDialog.Builder(context)
-                   .setTitle("Enter label for Alarm " + label)
-                   .setPositiveButton("Ok", this)
-                   .setNegativeButton("Cancel", this);
+                   .setTitle(R.string.alarm_settings_input_label_dialog_title)
+                   .setPositiveButton(R.string.ok, this)
+                   .setNegativeButton(R.string.cancel, this);
 
         LayoutInflater inflater =
             (LayoutInflater)context.getSystemService(
