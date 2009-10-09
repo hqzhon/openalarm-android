@@ -1,3 +1,13 @@
+/**
+ * @file   AlarmClockPlus.java
+ * @author josh <yenliangl at gmail dot com>
+ * @date   Fri Oct  9 16:57:28 2009
+ *
+ * @brief
+ *
+ *
+ */
+
 package org.startsmall.alarmclockplus;
 
 import android.app.AlertDialog;

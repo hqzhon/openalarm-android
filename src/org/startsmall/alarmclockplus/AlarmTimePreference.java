@@ -12,9 +12,11 @@ package org.startsmall.alarmclockplus;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.Preference;
 import android.view.View;
+import android.view.View.BaseSavedState;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.TextView;
@@ -27,42 +29,36 @@ import java.text.SimpleDateFormat;
 public class AlarmTimePreference extends TextViewPreference {
     private static final String TAG = "AlarmTimePreference";
 
+    private int mTime;
+
     public AlarmTimePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     protected void persistValue(Object value) {
-        persistInt((Integer)value);
+        mTime = (Integer)value;
+        persistInt(mTime);
     }
 
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        Log.d(TAG, "onBindView(view)");
+        final TextView textView = (TextView)view.findViewById(R.id.text);
 
-        final TextView timeText =
-            (TextView)view.findViewById(R.id.text);
-
-        int time = getPersistedInt(0);
-        int hourOfDay = time / 100;
-        int minutes = time % 100;
+        int hourOfDay = mTime / 100;
+        int minutes = mTime % 100;
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
-        timeText.setText(Alarms.formatDate("HH:mm", calendar));
+        textView.setText(Alarms.formatDate("HH:mm", calendar));
     }
 
-    /**
-     * Bring up a TimePicker dialog.
-     *
-     */
     @Override
     protected void onClick() {
-        int time = getPersistedInt(0);
-        final int hourOfDay = time / 100;
-        final int minutes = time % 100;
+        final int hourOfDay = mTime / 100;
+        final int minutes = mTime % 100;
 
         new TimePickerDialog(
             getContext(),
@@ -78,35 +74,73 @@ public class AlarmTimePreference extends TextViewPreference {
             true).show();
     }
 
-    /**
-     * Return default value of this Preference
-     *
-     * @param a
-     * @param index
-     *
-     * @return
-     */
+    @Override
     protected Object onGetDefaultValue(TypedArray a, int index) {
         return a.getInt(index, 815); // default time is 08:15
     }
 
+    @Override
     protected void onSetInitialValue(boolean restorePersistedValue,
                                      Object defValue) {
-        if(restorePersistedValue) {
+        Log.d(TAG, "onSetInitialValue(" + restorePersistedValue + "," +
+              defValue + ")");
+        setPreferenceValue(restorePersistedValue ?
+                           getPersistedInt(mTime) : (Integer)defValue);
+    }
 
-            // Restore
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        final Parcelable superState = super.onSaveInstanceState();
+        if(isPersistent()) {    // persistent preference
+            return superState;
+        }
 
+        SavedState myState = new SavedState(superState);
+        myState.time = mTime;
+        return myState;
+    }
 
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if(state != null && state.getClass().equals(SavedState.class)) {
+            SavedState myState = (SavedState)state;
+            super.onRestoreInstanceState(myState.getSuperState());
+            setPreferenceValue(myState.time);
         } else {
-            setPreferenceValue(defValue);
+            super.onRestoreInstanceState(state);
         }
     }
 
-    // protected Parcelable onSaveInstanceState() {
+    private static class SavedState extends BaseSavedState {
+        int time;
 
-    // }
+        public SavedState(Parcelable in) {
+            super(in);
+        }
 
-    // protected void onRestoreInstanceState(Parcelable state) {
+        public SavedState(Parcel in) {
+            super(in);
+            time = in.readInt();
+        }
 
-    // }
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+            dest.writeInt(time);
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR =
+            new Parcelable.Creator<SavedState>() {
+
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
+
+
 }

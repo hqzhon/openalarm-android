@@ -84,11 +84,11 @@ public class AlarmSettings extends PreferenceActivity {
 
         List<ResolveInfo> actions = pm.queryBroadcastReceivers(queryIntent, 0);
 
-        String[] entries = new String[actions.size()];
+        CharSequence[] entries = new CharSequence[actions.size()];
         // Class<? extends BroadcastReceiver>[] entryValues = new Class<? extends BroadcastReceiver>[actions.size()];
         for(int i = 0; i < actions.size(); i++) {
             ActivityInfo info = actions.get(i).activityInfo;
-            entries[i] = info.loadLabel(pm).toString();
+            entries[i] = info.loadLabel(pm);
         }
 
         if(entries.length > 0) {

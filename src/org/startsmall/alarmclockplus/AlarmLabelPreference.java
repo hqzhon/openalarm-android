@@ -16,9 +16,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.os.Parcelable;
+import android.os.Parcel;
 import android.preference.Preference;
 import android.view.View;
 import android.view.LayoutInflater;
+import android.view.View.BaseSavedState;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.TextView;
@@ -28,6 +30,7 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
     private static final String TAG = "AlarmLabelPreference";
 
     private AlertDialog.Builder mBuilder;
+    private String mLabel;
 
     public AlarmLabelPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -35,7 +38,8 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
 
     @Override
     protected void persistValue(Object value) {
-        persistString((String)value);
+        mLabel = (String)value;
+        persistString(mLabel);
     }
 
     @Override
@@ -52,31 +56,23 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
-
-        Log.d(TAG, "onBindView(view)");
-
-        final TextView textView =
-            (TextView)view.findViewById(R.id.text);
-
-        String text = getPersistedString("Alarm");
-        textView.setText(text);
+        final TextView textView = (TextView)view.findViewById(R.id.text);
+        textView.setText(mLabel);
     }
 
     @Override
     protected void onClick() {
-        String label = getPersistedString("Alarm");
         showDialog();
     }
 
     private void showDialog() {
         Context context = getContext();
 
-        String label = getPersistedString("Alarm");
-
-        mBuilder = new AlertDialog.Builder(context)
-                   .setTitle(R.string.alarm_settings_input_label_dialog_title)
-                   .setPositiveButton(R.string.ok, this)
-                   .setNegativeButton(R.string.cancel, this);
+        mBuilder =
+            new AlertDialog.Builder(context)
+            .setTitle(R.string.alarm_settings_input_label_dialog_title)
+            .setPositiveButton(R.string.ok, this)
+            .setNegativeButton(R.string.cancel, this);
 
         LayoutInflater inflater =
             (LayoutInflater)context.getSystemService(
@@ -97,23 +93,70 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
      * @return
      */
     protected Object onGetDefaultValue(TypedArray a, int index) {
-        return a.getString(index); // default time is 08:15
+        return a.getString(index);
     }
 
+    @Override
     protected void onSetInitialValue(boolean restorePersistedValue,
                                      Object defValue) {
-        if(restorePersistedValue) {
-            // Restore
-        } else {
-            setPreferenceValue(defValue);
-        }
+        setPreferenceValue(
+            restorePersistedValue ? getPersistedString(mLabel) :
+            (String)defValue);
     }
 
-    // protected Parcelable onSaveInstanceState() {
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        final Parcelable superState = super.onSaveInstanceState();
+        if (isPersistent()) {
+            // No need to save instance state since it's persistent
+            return superState;
+        }
 
-    // }
+        final SavedState myState = new SavedState(superState);
+        myState.label = mLabel;
+        return myState;
+    }
 
-    // protected void onRestoreInstanceState(Parcelable state) {
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (state == null || !state.getClass().equals(SavedState.class)) {
+            // Not the state we saved. Leave it to super.
+            super.onRestoreInstanceState(state);
+            return;
+        }
 
-    // }
+        SavedState myState = (SavedState)state;
+        super.onRestoreInstanceState(myState.getSuperState());
+        setPreferenceValue(myState.label);
+    }
+
+    private static class SavedState extends BaseSavedState {
+        String label;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        public SavedState(Parcel source) {
+            super(source);
+            label = source.readString();
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+            dest.writeString(label);
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR =
+            new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
 }
