@@ -15,6 +15,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.Parcel;
 import android.preference.Preference;
@@ -31,6 +32,7 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
 
     private AlertDialog.Builder mBuilder;
     private String mLabel;
+    private Dialog mDialog;
 
     public AlarmLabelPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -62,10 +64,10 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
 
     @Override
     protected void onClick() {
-        showDialog();
+        showDialog(null);
     }
 
-    private void showDialog() {
+    private void showDialog(Bundle bundle) {
         Context context = getContext();
 
         mBuilder =
@@ -79,9 +81,13 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
                 Context.LAYOUT_INFLATER_SERVICE);
         View contentView =
             inflater.inflate(R.layout.text_input_dialog_widget, null);
-        mBuilder.setView(contentView);
-
-        mBuilder.create().show();
+        mDialog = mBuilder.setView(contentView).create();
+        if(bundle != null) {
+            mDialog.onRestoreInstanceState(bundle);
+        } else {
+            ((EditText)contentView).setText(mLabel);
+        }
+        mDialog.show();
     }
 
     /**
@@ -107,13 +113,14 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
     @Override
     protected Parcelable onSaveInstanceState() {
         final Parcelable superState = super.onSaveInstanceState();
-        if (isPersistent()) {
-            // No need to save instance state since it's persistent
+        if(mDialog == null || !mDialog.isShowing()) {
             return superState;
         }
 
         final SavedState myState = new SavedState(superState);
         myState.label = mLabel;
+        myState.isDialogShowing = mDialog.isShowing() ? 1 : 0;
+        myState.dialogBundle = mDialog.onSaveInstanceState();
         return myState;
     }
 
@@ -128,10 +135,16 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
         SavedState myState = (SavedState)state;
         super.onRestoreInstanceState(myState.getSuperState());
         setPreferenceValue(myState.label);
+
+        if(myState.isDialogShowing == 1) {
+            showDialog(myState.dialogBundle);
+        }
     }
 
     private static class SavedState extends BaseSavedState {
         String label;
+        int isDialogShowing;
+        Bundle dialogBundle;
 
         public SavedState(Parcelable superState) {
             super(superState);
@@ -140,12 +153,16 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
         public SavedState(Parcel source) {
             super(source);
             label = source.readString();
+            isDialogShowing = source.readInt();
+            dialogBundle = source.readBundle();
         }
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             super.writeToParcel(dest, flags);
             dest.writeString(label);
+            dest.writeInt(isDialogShowing);
+            dest.writeBundle(dialogBundle);
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR =
