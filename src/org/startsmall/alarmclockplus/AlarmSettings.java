@@ -1,6 +1,6 @@
 /**
  * @file   AlarmSettings.java
- * @author  <josh@alchip.com>
+ * @author  <yenliangl@gmail.com>
  * @date   Wed Oct  7 16:05:00 2009
  *
  * @brief  Settings for an alarm.
@@ -43,7 +43,7 @@ public class AlarmSettings extends PreferenceActivity
     private static final String TAG = "AlarmSettings";
     private static final int LABEL_INPUT_DIALOG = 1;
     private static final int TIME_PICK_DIALOG = 2;
-    private static final int ACTION_PICK_DIALOG = 2;
+    private static final int ACTION_PICK_DIALOG = 3;
 
     AlarmTimePreference mTimePreference;
     AlarmLabelPreference mLabelPreference;
@@ -104,52 +104,80 @@ public class AlarmSettings extends PreferenceActivity
         Dialog dialog = new Dialog(this);
         switch(dialogId) {
         case TIME_PICK_DIALOG:
-            int time = (Integer)mTimePreference.getPersistedValue();
-            final int hourOfDay = time / 100;
-            final int minutes = time % 100;
-
-            dialog = new TimePickerDialog(
-                this,
-                new TimePickerDialog.OnTimeSetListener() {
-                    public void onTimeSet(TimePicker view,
-                                          int hourOfDay,
-                                          int minutes) {
-                        mTimePreference.setPreferenceValue(
-                            hourOfDay * 100 + minutes);
-                    }
-                },
-                hourOfDay,
-                minutes,
-                true);
+            dialog = createTimePickDialog();
             break;
 
         case LABEL_INPUT_DIALOG:
-            String label = (String)mLabelPreference.getPersistedValue();
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder
-                .setTitle(R.string.alarm_settings_input_label_dialog_title)
-                .setPositiveButton(R.string.ok, this)
-                .setNegativeButton(R.string.cancel, this);
-
-            LayoutInflater inflater =
-                (LayoutInflater)getSystemService(
-                    Context.LAYOUT_INFLATER_SERVICE);
-            View contentView =
-                inflater.inflate(R.layout.text_input_dialog_widget, null);
-            ((EditText)contentView).setText(label);
-            dialog = builder.setView(contentView).create();
+            dialog = createLabelInputDialog();
             break;
 
-
-
-
-
+        case ACTION_PICK_DIALOG:
+            dialog = createActionPickDialog();
+            break;
 
         default:
             break;
         }
 
         return dialog;
+    }
+
+    private Dialog createTimePickDialog() {
+        int time = (Integer)mTimePreference.getPersistedValue();
+        final int hourOfDay = time / 100;
+        final int minutes = time % 100;
+
+        return new TimePickerDialog(
+            this,
+            new TimePickerDialog.OnTimeSetListener() {
+                public void onTimeSet(TimePicker view,
+                                      int hourOfDay,
+                                      int minutes) {
+                    mTimePreference.setPreferenceValue(
+                        hourOfDay * 100 + minutes);
+                }
+            },
+            hourOfDay,
+            minutes,
+            true);
+    }
+
+    private Dialog createLabelInputDialog() {
+        String label = (String)mLabelPreference.getPersistedValue();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+            .setTitle(R.string.alarm_settings_input_label_dialog_title)
+            .setPositiveButton(R.string.ok, this)
+            .setNegativeButton(R.string.cancel, this);
+
+        LayoutInflater inflater =
+            (LayoutInflater)getSystemService(
+                Context.LAYOUT_INFLATER_SERVICE);
+        View contentView =
+            inflater.inflate(R.layout.text_input_dialog_widget, null);
+        ((EditText)contentView).setText(label);
+        return builder.setView(contentView).create();
+    }
+
+    private Dialog createActionPickDialog() {
+        int actionEntryIndex = (Integer)mActionPreference.getPersistedValue();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+            .setTitle(R.string.alarm_settings_action_dialog_title)
+            .setSingleChoiceItems(
+                mActionPreference.getEntries(),
+                actionEntryIndex,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,
+                                        int which) {
+                        mActionPreference.setPreferenceValue(which);
+                        dialog.dismiss();
+                    }
+                });
+
+        return builder.create();
     }
 
     private void populateFields(Cursor cursor) {

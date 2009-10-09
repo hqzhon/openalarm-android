@@ -9,11 +9,7 @@
  */
 package org.startsmall.alarmclockplus;
 
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -21,19 +17,14 @@ import android.preference.Preference;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.LayoutInflater;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 public class AlarmActionPreference extends TextViewPreference {
     private static final String TAG = "AlarmActionPreference";
 
-    private AlertDialog.Builder mBuilder;
-    private Dialog mDialog;
-    private int mCheckedActionEntryIndex;
+    private int mCheckedActionEntryIndex = -1;
     private CharSequence[] mEntries;
 
     public AlarmActionPreference(Context context, AttributeSet attrs) {
@@ -42,6 +33,10 @@ public class AlarmActionPreference extends TextViewPreference {
 
     public void setEntries(CharSequence[] entries) {
         mEntries = entries;
+    }
+
+    public CharSequence[] getEntries() {
+        return mEntries;
     }
 
     @Override
@@ -59,36 +54,12 @@ public class AlarmActionPreference extends TextViewPreference {
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        if(mDialog != null && mEntries.length > 0) { // before showDialog()
+        if(mEntries.length > 0 &&
+           mCheckedActionEntryIndex != -1) { // before showDialog()
             final TextView textView =
                 (TextView)view.findViewById(R.id.text);
             textView.setText(mEntries[mCheckedActionEntryIndex].toString());
         }
-    }
-
-    @Override
-    protected void onClick() {
-        Context context = getContext();
-
-        mBuilder =
-            new AlertDialog.Builder(context)
-            .setTitle(R.string.alarm_settings_action_dialog_title)
-            // .setPositiveButton(R.string.ok, this)
-            // .setNegativeButton(R.string.cancel, this)
-            .setSingleChoiceItems(
-                mEntries,
-                mCheckedActionEntryIndex,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog,
-                                        int which) {
-                        setPreferenceValue(which);
-                        dialog.dismiss();
-                    }
-                });
-
-        mDialog = mBuilder.create();
-        mDialog.show();
     }
 
     protected Object onGetDefaultValue(TypedArray a, int index) {
@@ -155,7 +126,4 @@ public class AlarmActionPreference extends TextViewPreference {
             }
         };
     }
-
-
-
 }
