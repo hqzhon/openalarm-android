@@ -9,30 +9,22 @@
  */
 package org.startsmall.alarmclockplus;
 
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.Parcel;
 import android.preference.Preference;
 import android.view.View;
-import android.view.LayoutInflater;
 import android.view.View.BaseSavedState;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.EditText;
 
-public class AlarmLabelPreference extends TextViewPreference implements DialogInterface.OnClickListener {
+public class AlarmLabelPreference extends TextViewPreference {
     private static final String TAG = "AlarmLabelPreference";
 
-    private AlertDialog.Builder mBuilder;
     private String mLabel;
-    private Dialog mDialog;
 
     public AlarmLabelPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -45,14 +37,8 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
     }
 
     @Override
-    public void onClick(DialogInterface d, int which) {
-        Dialog dialog = (Dialog)d;
-        switch(which) {
-        case DialogInterface.BUTTON_POSITIVE:
-            EditText editText = (EditText)dialog.findViewById(R.id.input);
-            setPreferenceValue(editText.getText().toString());
-            break;
-        }
+    protected Object getPersistedValue() {
+        return mLabel;
     }
 
     @Override
@@ -60,34 +46,6 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
         super.onBindView(view);
         final TextView textView = (TextView)view.findViewById(R.id.text);
         textView.setText(mLabel);
-    }
-
-    @Override
-    protected void onClick() {
-        showDialog(null);
-    }
-
-    private void showDialog(Bundle bundle) {
-        Context context = getContext();
-
-        mBuilder =
-            new AlertDialog.Builder(context)
-            .setTitle(R.string.alarm_settings_input_label_dialog_title)
-            .setPositiveButton(R.string.ok, this)
-            .setNegativeButton(R.string.cancel, this);
-
-        LayoutInflater inflater =
-            (LayoutInflater)context.getSystemService(
-                Context.LAYOUT_INFLATER_SERVICE);
-        View contentView =
-            inflater.inflate(R.layout.text_input_dialog_widget, null);
-        mDialog = mBuilder.setView(contentView).create();
-        if(bundle != null) {
-            mDialog.onRestoreInstanceState(bundle);
-        } else {
-            ((EditText)contentView).setText(mLabel);
-        }
-        mDialog.show();
     }
 
     /**
@@ -113,14 +71,13 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
     @Override
     protected Parcelable onSaveInstanceState() {
         final Parcelable superState = super.onSaveInstanceState();
-        if(mDialog == null || !mDialog.isShowing()) {
+
+        if(isPersistent()) {
             return superState;
         }
 
         final SavedState myState = new SavedState(superState);
         myState.label = mLabel;
-        myState.isDialogShowing = mDialog.isShowing() ? 1 : 0;
-        myState.dialogBundle = mDialog.onSaveInstanceState();
         return myState;
     }
 
@@ -135,16 +92,10 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
         SavedState myState = (SavedState)state;
         super.onRestoreInstanceState(myState.getSuperState());
         setPreferenceValue(myState.label);
-
-        if(myState.isDialogShowing == 1) {
-            showDialog(myState.dialogBundle);
-        }
     }
 
     private static class SavedState extends BaseSavedState {
         String label;
-        int isDialogShowing;
-        Bundle dialogBundle;
 
         public SavedState(Parcelable superState) {
             super(superState);
@@ -153,16 +104,12 @@ public class AlarmLabelPreference extends TextViewPreference implements DialogIn
         public SavedState(Parcel source) {
             super(source);
             label = source.readString();
-            isDialogShowing = source.readInt();
-            dialogBundle = source.readBundle();
         }
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             super.writeToParcel(dest, flags);
             dest.writeString(label);
-            dest.writeInt(isDialogShowing);
-            dest.writeBundle(dialogBundle);
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR =

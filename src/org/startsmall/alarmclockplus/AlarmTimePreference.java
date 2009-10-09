@@ -9,7 +9,6 @@
  */
 package org.startsmall.alarmclockplus;
 
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Parcel;
@@ -20,7 +19,6 @@ import android.view.View.BaseSavedState;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import java.util.Calendar;
 import java.text.DateFormat;
@@ -40,6 +38,10 @@ public class AlarmTimePreference extends TextViewPreference {
         persistInt(mTime);
     }
 
+    protected Object getPersistedValue() {
+        return mTime;
+    }
+
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
@@ -56,25 +58,6 @@ public class AlarmTimePreference extends TextViewPreference {
     }
 
     @Override
-    protected void onClick() {
-        final int hourOfDay = mTime / 100;
-        final int minutes = mTime % 100;
-
-        new TimePickerDialog(
-            getContext(),
-            new TimePickerDialog.OnTimeSetListener() {
-                public void onTimeSet(TimePicker view,
-                                      int hourOfDay,
-                                      int minutes) {
-                    setPreferenceValue(hourOfDay * 100 + minutes);
-                }
-            },
-            hourOfDay,
-            minutes,
-            true).show();
-    }
-
-    @Override
     protected Object onGetDefaultValue(TypedArray a, int index) {
         return a.getInt(index, 815); // default time is 08:15
     }
@@ -82,8 +65,6 @@ public class AlarmTimePreference extends TextViewPreference {
     @Override
     protected void onSetInitialValue(boolean restorePersistedValue,
                                      Object defValue) {
-        Log.d(TAG, "onSetInitialValue(" + restorePersistedValue + "," +
-              defValue + ")");
         setPreferenceValue(restorePersistedValue ?
                            getPersistedInt(mTime) : (Integer)defValue);
     }
@@ -141,6 +122,4 @@ public class AlarmTimePreference extends TextViewPreference {
             }
         };
     }
-
-
 }

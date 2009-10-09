@@ -51,6 +51,11 @@ public class AlarmActionPreference extends TextViewPreference {
     }
 
     @Override
+    protected Object getPersistedValue() {
+        return mCheckedActionEntryIndex;
+    }
+
+    @Override
     protected void onBindView(View view) {
         super.onBindView(view);
 

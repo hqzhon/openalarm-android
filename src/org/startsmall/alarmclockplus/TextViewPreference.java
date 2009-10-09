@@ -29,5 +29,10 @@ public abstract class TextViewPreference extends Preference {
         notifyChanged();
     }
 
+    public Object getPreferenceValue() {
+        return getPersistedValue();
+    }
+
     protected abstract void persistValue(Object value);
+    protected abstract Object getPersistedValue();
 }
