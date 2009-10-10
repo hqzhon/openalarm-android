@@ -27,6 +27,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.ListPreference;
+import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
@@ -70,14 +71,20 @@ public class AlarmSettings extends PreferenceActivity
         int alarmId =
             intent.getIntExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
         if(alarmId == -1) {
-            // Settings for new alarm. Populate fields with
-            // default values.
+            // @todo: Settings for new alarm. Populate fields with default values.
+
 
         } else {
-            Cursor cursor = Alarms.getAlarm(getContentResolver(), alarmId);
-            if(cursor.moveToFirst() == true) {
-                populateFields(cursor);
-            }
+            Uri alarmUri = Alarms.getAlarmUri(alarmId);
+            Alarms.visitAlarm(getContentResolver(),
+                              alarmUri,
+                              new Alarms.OnVisitListener() {
+                                  public void onVisit(int id, String label, int hour, int minutes, boolean enabled,
+                                                      boolean vibrate) {
+                                      mLabelPreference.setPreferenceValue(label);
+                                      mTimePreference.setPreferenceValue(hour * 100 + minutes);
+                                  }
+                              });
         }
 
         populateActionReceivers();
@@ -178,22 +185,6 @@ public class AlarmSettings extends PreferenceActivity
                 });
 
         return builder.create();
-    }
-
-    private void populateFields(Cursor cursor) {
-        final String label =
-            cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
-        final int hour =
-            cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
-        final int minutes =
-            cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
-        final boolean vibrate =
-            cursor.getInt(Alarms.AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
-
-        setTitle("Settings for " + label);
-
-        mLabelPreference.setPreferenceValue(label);
-        mTimePreference.setPreferenceValue(hour * 100 + minutes);
     }
 
     private void populateActionReceivers() {

@@ -184,7 +184,7 @@ public class AlarmClockPlus extends ListActivity {
             Log.d(TAG, "onCreate(): no content resolver");
         }
 
-        Cursor cursor = Alarms.getAlarms(contentResolver);
+        Cursor cursor = Alarms.getAlarmCursor(contentResolver, -1);
         startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, cursor));
     }

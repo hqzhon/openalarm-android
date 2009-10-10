@@ -124,35 +124,65 @@ public class Alarms {
      ******************************************************************/
     public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
 
-
-    /**
-     *
-     *
-     * @param contentResolver
-     *
-     * @return database cursor
-     */
-    public static Cursor getAlarms(ContentResolver contentResolver) {
-        return
-            contentResolver.query(
-                Uri.parse(CONTENT_URI_ALL_ALARMS),
-                AlarmColumns.QUERY_COLUMNS,
-                null,
-                null,
-                AlarmColumns.DEFAULT_SORT_ORDER);
+    /******************************************************************
+     * Report alarms on the database
+     ******************************************************************/
+    public static Uri getAlarmUri(final int alarmId) {
+        return Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
     }
 
-    public static Cursor getAlarm(ContentResolver contentResolver,
-                                  int alarmId) {
-        Uri alarmUrl =
-            Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
+    public static Cursor getAlarmCursor(final ContentResolver contentResolver, final int alarmId) {
+        Uri alarmUri;
+        if(alarmId != -1) {
+            alarmUri = getAlarmUri(alarmId);
+        } else {
+            alarmUri = Uri.parse(CONTENT_URI_ALL_ALARMS);
+        }
 
-        Log.d(TAG, "getAlarm(" + alarmUrl.toString() + ")");
-        return contentResolver.query(alarmUrl,
+        Log.d(TAG, "Get alarm " + alarmUri);
+
+        return contentResolver.query(alarmUri,
                                      AlarmColumns.QUERY_COLUMNS,
                                      null,
                                      null,
                                      AlarmColumns.DEFAULT_SORT_ORDER);
+    }
+
+   /**
+     * Listern interface that is used to report settings for every alarm
+     * existed on the database.
+     *
+     */
+    public static interface OnVisitListener {
+        public void onVisit(int id, String label, int hour, int minutes, boolean enabled, boolean vibrate);
+    }
+
+    public static void visitAlarm(ContentResolver contentResolver, Uri alarmUri, OnVisitListener listener) {
+        Log.d(TAG, "vistAlarm(" + alarmUri.toString() + ")");
+        Cursor cursor = contentResolver.query(alarmUri,
+                                              AlarmColumns.QUERY_COLUMNS,
+                                              null,
+                                              null,
+                                              AlarmColumns.DEFAULT_SORT_ORDER);
+        if(cursor.moveToFirst()) {
+            do {
+                final int id = cursor.getInt(AlarmColumns.PROJECTION_ID_INDEX);
+                final String label =
+                    cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
+                final int hour =
+                    cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
+                final int minutes =
+                    cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
+                final boolean enabled =
+                    cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
+                final boolean vibrate =
+                    cursor.getInt(AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
+                if(listener != null) {
+                    listener.onVisit(id, label, hour, minutes, enabled, vibrate);
+                }
+            }while(cursor.moveToNext());
+        }
+        cursor.close();
     }
 
     public static int deleteAlarm(ContentResolver contentResolver,
