@@ -30,6 +30,7 @@ import android.preference.ListPreference;
 import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.RadioGroup;
@@ -53,6 +54,8 @@ public class AlarmSettings extends PreferenceActivity
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         addPreferencesFromResource(R.xml.alarm_settings);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         PreferenceManager preferenceManager = getPreferenceManager();
         mTimePreference =

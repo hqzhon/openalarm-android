@@ -19,6 +19,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CursorAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.CheckBox;
@@ -167,21 +169,42 @@ public class AlarmClockPlus extends ListActivity {
             view.setOnClickListener(
                 new View.OnClickListener() {
                     public void onClick(View view) {
-                        Button editButton = (Button)view.findViewById(R.id.edit);
-                        Button deleteButton = (Button)view.findViewById(R.id.delete);
-                        if(editButton.isShown()) {
-                            editButton.setVisibility(View.GONE);
-                        } else {
-                            editButton.setVisibility(View.VISIBLE);
-                        }
+                        LinearLayout extraView = (LinearLayout)view.findViewById(R.id.extra);
 
-                        if(deleteButton.isShown()) {
-                            deleteButton.setVisibility(View.GONE);
+                        if(extraView.isShown()) {
+                            extraView.setVisibility(View.GONE);
                         } else {
-                            deleteButton.setVisibility(View.VISIBLE);
+                            extraView.setVisibility(View.VISIBLE);
                         }
                     }
                 });
+
+
+            Button editButton = (Button)view.findViewById(R.id.edit);
+            editButton.setOnClickListener(
+                new View.OnClickListener() {
+                    public void onClick(View view) {
+                        Intent intent = new Intent(AlarmClockPlus.this,
+                                                   AlarmSettings.class);
+                        intent.putExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, id);
+                        startActivity(intent);
+                    }
+                });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         }
 

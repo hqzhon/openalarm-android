@@ -52,28 +52,32 @@
      android:text="this is a setting"
      />
 
-  <Button
-     android:id="@+id/delete"
-     android:layout_width="wrap_content"
+  <LinearLayout
+     android:id="@+id/extra"
+     android:orientation="horizontal"
+     android:layout_width="fill_parent"
      android:layout_height="wrap_content"
+     android:padding="3dip"
+     android:layout_below="@id/setting"
      android:layout_alignParentBottom="true"
      android:layout_alignParentRight="true"
-     android:layout_below="@id/setting"
-     android:layout_marginLeft="3dip"
-     android:layout_marginTop="6dip"
+     android:layout_alignLeft="@id/setting"
+     android:gravity="right"
      android:visibility="gone"
-     android:text="@string/delete"
-     />
+     >
+    <Button
+       android:id="@+id/edit"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="@string/edit"/>
 
-  <Button
-     android:id="@+id/edit"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:layout_alignParentBottom="true"
-     android:layout_alignTop="@id/delete"
-     android:layout_toLeftOf="@id/delete"
-     android:visibility="gone"
-     android:text="@string/edit"/>
+    <Button
+       android:id="@+id/delete"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="@string/delete"
+       />
+  </LinearLayout>
 
 </RelativeLayout>
 
