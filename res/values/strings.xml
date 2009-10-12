@@ -6,6 +6,9 @@
     <string name="cancel">Cancel</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+
 
     <!-- Options menu item -->
     <string name="menu_item_help">Help</string>

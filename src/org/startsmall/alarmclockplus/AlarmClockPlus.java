@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -162,6 +163,26 @@ public class AlarmClockPlus extends ListActivity {
                                 new DeleteAlarmMenuItemListener(labelView.getText().toString()));
                     }
                 });
+
+            view.setOnClickListener(
+                new View.OnClickListener() {
+                    public void onClick(View view) {
+                        Button editButton = (Button)view.findViewById(R.id.edit);
+                        Button deleteButton = (Button)view.findViewById(R.id.delete);
+                        if(editButton.isShown()) {
+                            editButton.setVisibility(View.GONE);
+                        } else {
+                            editButton.setVisibility(View.VISIBLE);
+                        }
+
+                        if(deleteButton.isShown()) {
+                            deleteButton.setVisibility(View.GONE);
+                        } else {
+                            deleteButton.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+
         }
 
         @Override
