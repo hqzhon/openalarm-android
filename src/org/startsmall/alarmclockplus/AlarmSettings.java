@@ -56,8 +56,6 @@ public class AlarmSettings extends PreferenceActivity
         super.onCreate(bundle);
         addPreferencesFromResource(R.xml.alarm_settings);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         PreferenceManager preferenceManager = getPreferenceManager();
         mTimePreference =
             (AlarmTimePreference)preferenceManager.findPreference(
@@ -79,15 +77,19 @@ public class AlarmSettings extends PreferenceActivity
 
         } else {
             Uri alarmUri = Alarms.getAlarmUri(alarmId);
-            Alarms.visitAlarm(getContentResolver(),
-                              alarmUri,
-                              new Alarms.OnVisitListener() {
-                                  public void onVisit(int id, String label, int hour, int minutes, boolean enabled,
-                                                      boolean vibrate) {
-                                      mLabelPreference.setPreferenceValue(label);
-                                      mTimePreference.setPreferenceValue(hour * 100 + minutes);
-                                  }
-                              });
+            Alarms.visitAlarm(
+                getContentResolver(),
+                alarmUri,
+                new Alarms.OnVisitListener() {
+                    public void onVisit(int id, String label,
+                                        int hour, int minutes,
+                                        Alarms.RepeatWeekDays repeatDays,
+                                        boolean enabled, boolean vibrate,
+                                        String alertUrl) {
+                        mLabelPreference.setPreferenceValue(label);
+                        mTimePreference.setPreferenceValue(hour * 100 + minutes);
+                    }
+                });
         }
 
         populateActionReceivers();

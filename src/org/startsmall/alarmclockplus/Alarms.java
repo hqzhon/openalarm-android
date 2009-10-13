@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
 import android.util.Log;
+import android.text.format.DateUtils;
 
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
@@ -86,7 +87,7 @@ public class Alarms {
         public static final String MINUTES = "minutes";
 
         /// Days this alarm works in this week.
-        public static final String DAYS_OF_WEEK = "daysofweek";
+        public static final String REPEAT_DAYS = "repeat_days";
 
         /// Whether or not this alarm is active currently
         public static final String ENABLED = "enabled";
@@ -98,31 +99,86 @@ public class Alarms {
         public static final String ALERT_URI = "alert_uri";
 
         /**
-         * Projection indexes.
+         * Columns that will be pulled from a row. These should
+         * be in sync with PROJECTION indexes.
          *
          */
         private static final String[] QUERY_COLUMNS = {
-            _ID, LABEL, HOUR, MINUTES, // TODO: DAYS_OF_WEEK,
+            _ID, LABEL, HOUR, MINUTES, REPEAT_DAYS,
             ENABLED, VIBRATE, ALERT_URI};
 
         /**
-         *
          *
          */
         public static final int PROJECTION_ID_INDEX = 0;
         public static final int PROJECTION_LABEL_INDEX = 1;
         public static final int PROJECTION_HOUR_INDEX = 2;
         public static final int PROJECTION_MINUTES_INDEX = 3;
-        // public static final int PROJECTION_DAYS_OF_WEEK_INDEX = 4;
-        public static final int PROJECTION_ENABLED_INDEX = 4;
-        public static final int PROJECTION_VIBRATE_INDEX = 5;
-        public static final int PROJECTION_ALERT_URI_INDEX = 6;
+        public static final int PROJECTION_REPEAT_DAYS_INDEX = 4;
+        public static final int PROJECTION_ENABLED_INDEX = 5;
+        public static final int PROJECTION_VIBRATE_INDEX = 6;
+        public static final int PROJECTION_ALERT_URI_INDEX = 7;
     }
 
     /******************************************************************
      * Key strings used in Intent data.                               *
      ******************************************************************/
     public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
+
+    static class RepeatWeekDays {
+        /**
+         * 0x01 Calendar.SUNDAY
+         * 0x02 Calendar.MONDAY
+         * 0x04 Calendar.TUESDAY
+         * 0x08 Calendar.WEDNESDAY
+         * 0x10 Calendar.THURSDAY
+         * 0x20 Calendar.FRIDAY
+         * 0x40 Calendar.SATURDAY
+         *
+         */
+        private int mDays;
+
+        public RepeatWeekDays() {}
+        public RepeatWeekDays(int daysCode) {
+            mDays = daysCode;
+        }
+
+        boolean hasDay(int day) {
+            return (mDays & getCode(day)) > 0;
+        }
+
+        void addDay(int day) {
+            mDays = mDays | getCode(day);
+        }
+
+        private int getCode(int day) {
+            if(day < Calendar.SUNDAY || day > Calendar.SATURDAY) {
+                throw new IllegalArgumentException("Weekday must be at SUNDAY to SATURDAY");
+            }
+            return (1 << (day - 1));
+        }
+
+        public int getCode() {
+            return mDays;
+        }
+
+        public String toString() {
+            String result = "";
+            if(mDays > 0) {
+                for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
+                    if(hasDay(i)) {
+                        result =
+                            result +
+                            DateUtils.getDayOfWeekString(
+                                i,
+                                DateUtils.LENGTH_MEDIUM) +
+                            " ";
+                    }
+                }
+            }
+            return result;
+        }
+    };
 
     /******************************************************************
      * Report alarms on the database
@@ -154,31 +210,46 @@ public class Alarms {
      *
      */
     public static interface OnVisitListener {
-        public void onVisit(int id, String label, int hour, int minutes, boolean enabled, boolean vibrate);
+        public void onVisit(int id, String label,
+                            int hour, int minutes,
+                            RepeatWeekDays days,
+                            boolean enabled,
+                            boolean vibrate,
+                            String alertUrl);
     }
 
-    public static void visitAlarm(ContentResolver contentResolver, Uri alarmUri, OnVisitListener listener) {
+    public static void visitAlarm(ContentResolver contentResolver,
+                                  Uri alarmUri,
+                                  OnVisitListener listener) {
         Log.d(TAG, "vistAlarm(" + alarmUri.toString() + ")");
-        Cursor cursor = contentResolver.query(alarmUri,
-                                              AlarmColumns.QUERY_COLUMNS,
-                                              null,
-                                              null,
-                                              AlarmColumns.DEFAULT_SORT_ORDER);
+        Cursor cursor =
+            contentResolver.query(alarmUri,
+                                  AlarmColumns.QUERY_COLUMNS,
+                                  null,
+                                  null,
+                                  AlarmColumns.DEFAULT_SORT_ORDER);
         if(cursor.moveToFirst()) {
             do {
-                final int id = cursor.getInt(AlarmColumns.PROJECTION_ID_INDEX);
+                final int id =
+                    cursor.getInt(AlarmColumns.PROJECTION_ID_INDEX);
                 final String label =
                     cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
                 final int hour =
                     cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
                 final int minutes =
                     cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
+                final int daysCode =
+                    cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
                 final boolean enabled =
                     cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
                 final boolean vibrate =
                     cursor.getInt(AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
+                final String alertUrl =
+                    cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
                 if(listener != null) {
-                    listener.onVisit(id, label, hour, minutes, enabled, vibrate);
+                    listener.onVisit(id, label, hour, minutes,
+                                     new RepeatWeekDays(daysCode),
+                                     enabled, vibrate, alertUrl);
                 }
             }while(cursor.moveToNext());
         }
@@ -193,9 +264,22 @@ public class Alarms {
         return contentResolver.delete(alarmUri, null, null);
     }
 
-
     public static String formatDate(String pattern, Calendar calendar) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
         return dateFormatter.format(calendar.getTime());
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

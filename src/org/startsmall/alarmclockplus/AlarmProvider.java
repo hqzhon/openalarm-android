@@ -60,8 +60,7 @@ public class AlarmProvider extends ContentProvider {
             Alarms.AlarmColumns.LABEL + " TEXT, " +
             Alarms.AlarmColumns.HOUR  + " INTEGER, " +
             Alarms.AlarmColumns.MINUTES  + " INTEGER, " +
-            // TODO: Alarms.AlarmColumns.DAYS_OF_WEEK + " INTEGER, " +
-            // TODO: Time in millis
+            Alarms.AlarmColumns.REPEAT_DAYS + " INTEGER, " +
             Alarms.AlarmColumns.ENABLED + " INTEGER, " +
             Alarms.AlarmColumns.VIBRATE + " INTEGER, " +
             Alarms.AlarmColumns.ALERT_URI + " TEXT);";
@@ -77,7 +76,6 @@ public class AlarmProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             Log.d(TAG, "onCreate(" + DATABASE_CREATE_CMD + ")");
             db.execSQL(DATABASE_CREATE_CMD);
-
             insertDefaultAlarms(db);
         }
 
@@ -95,12 +93,13 @@ public class AlarmProvider extends ContentProvider {
                          Alarms.AlarmColumns.LABEL + ", " +
                          Alarms.AlarmColumns.HOUR + ", " +
                          Alarms.AlarmColumns.MINUTES + ", " +
+                         Alarms.AlarmColumns.REPEAT_DAYS + ", " +
                          Alarms.AlarmColumns.ENABLED + ", " +
                          Alarms.AlarmColumns.VIBRATE + ", " +
                          Alarms.AlarmColumns.ALERT_URI + ") VALUES ";
-            db.execSQL(cmd + "('default1', 7, 00, 0, 1, '');");
-            db.execSQL(cmd + "('default2', 8, 30, 0, 0, '');");
-            db.execSQL(cmd + "('default3', 9, 00, 0, 1, '');");
+            db.execSQL(cmd + "('default1', 7, 00, 1, 0, 1, '');");
+            db.execSQL(cmd + "('default2', 8, 30, 5, 0, 0, '');");
+            db.execSQL(cmd + "('default3', 9, 00, 9, 0, 1, '');");
         }
     }
 
@@ -168,8 +167,9 @@ public class AlarmProvider extends ContentProvider {
             values.put(Alarms.AlarmColumns.MINUTES, 0);
         }
 
-        // TODO: DAYS_OF_WEEK
-
+        if(!values.containsKey(Alarms.AlarmColumns.REPEAT_DAYS)) {
+            values.put(Alarms.AlarmColumns.REPEAT_DAYS, 0);
+        }
 
         // TODO: Time in millis
 

@@ -36,8 +36,9 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.CheckBox;
+import android.text.TextUtils;
 
-import java.util.Calendar;
+import java.util.*;
 
 public class AlarmClockPlus extends ListActivity {
     private static final String TAG = "AlarmClockPlus";
@@ -120,9 +121,7 @@ public class AlarmClockPlus extends ListActivity {
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
-
-            // TODO: DAYS_OF_WEEK and TIME_IN_MILLIS
-
+            final int daysCode = cursor.getInt(Alarms.AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
             final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
             final boolean vibrate = cursor.getInt(Alarms.AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
             final String audioAlert = cursor.getString(Alarms.AlarmColumns.PROJECTION_ALERT_URI_INDEX);
@@ -135,14 +134,37 @@ public class AlarmClockPlus extends ListActivity {
             Alarms.formatDate("HH:mm", calendar);
             timeView.setText(Alarms.formatDate("HH:mm", calendar));
 
-            final TextView labelView = (TextView)view.findViewById(R.id.label);
+            // Label of Alarm
+            final TextView labelView =
+                (TextView)view.findViewById(R.id.label);
             labelView.setText(label);
 
-            CheckBox enabledChkBox = (CheckBox)view.findViewById(R.id.enabled);
+            // Enable this alarm?
+            CheckBox enabledChkBox =
+                (CheckBox)view.findViewById(R.id.enabled);
             enabledChkBox.setChecked(enabled);
 
-            // TODO: Alarm settings
-            // TextView settingView = (TextView)view.findViewById(R.id.setting);
+            // Repeat days
+            ViewGroup.LayoutParams layoutParams =
+                new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            final LinearLayout repeatDaysLayout =
+                (LinearLayout)view.findViewById(R.id.repeat_days);
+            String daysString =
+                new Alarms.RepeatWeekDays(daysCode).toString();
+            TextUtils.SimpleStringSplitter split =
+                new TextUtils.SimpleStringSplitter(' ');
+            split.setString(daysString);
+            Iterator<String> days = split.iterator();
+            while(days.hasNext()) {
+                String day = days.next() + "->";
+                TextView textView = new TextView(context);
+                textView.setText(day);
+                textView.setTextAppearance(context,
+                                           R.style.RepeatDaysTextAppearance);
+                repeatDaysLayout.addView(textView, layoutParams);
+            }
 
             // Create context menu for this view.
             view.setOnCreateContextMenuListener(
@@ -206,6 +228,10 @@ public class AlarmClockPlus extends ListActivity {
 
 
 
+
+
+
+
         }
 
         @Override
@@ -231,6 +257,16 @@ public class AlarmClockPlus extends ListActivity {
         Cursor cursor = Alarms.getAlarmCursor(contentResolver, -1);
         startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, cursor));
+
+
+        Alarms.RepeatWeekDays weekDays = new Alarms.RepeatWeekDays();
+        weekDays.addDay(Calendar.SUNDAY);
+        weekDays.addDay(Calendar.MONDAY);
+        weekDays.addDay(Calendar.FRIDAY);
+        weekDays.addDay(Calendar.SATURDAY);
+
+        Log.d(TAG, "==========> " + weekDays);
+
     }
 
     @Override

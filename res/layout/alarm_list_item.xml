@@ -40,16 +40,19 @@
      android:ellipsize="marquee"
      />
 
-  <TextView
-     android:id="@+id/setting"
-     android:layout_width="wrap_content"
+  <LinearLayout
+     android:id="@+id/repeat_days"
+     android:padding="3dip"
+     android:orientation="horizontal"
+     android:layout_width="fill_parent"
      android:layout_height="wrap_content"
-     android:gravity="center_vertical"
+     android:layout_marginTop="6dip"
+     android:layout_marginBottom="6dip"
      android:layout_alignLeft="@id/label"
-     android:layout_below="@id/label"
      android:layout_alignParentRight="true"
+     android:layout_below="@id/label"
      android:layout_alignWithParentIfMissing="true"
-     android:text="this is a setting"
+     android:gravity="left"
      />
 
   <LinearLayout
@@ -58,10 +61,10 @@
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
      android:padding="3dip"
-     android:layout_below="@id/setting"
+     android:layout_below="@id/repeat_days"
      android:layout_alignParentBottom="true"
      android:layout_alignParentRight="true"
-     android:layout_alignLeft="@id/setting"
+     android:layout_alignLeft="@id/repeat_days"
      android:gravity="right"
      android:visibility="gone"
      >
