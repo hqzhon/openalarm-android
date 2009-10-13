@@ -115,8 +115,7 @@ public class AlarmClockPlus extends ListActivity {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            Log.d(TAG, "bindView " + view + " from " + cursor.getPosition());
-
+            // Log.d(TAG, "bindView " + view + " from " + cursor.getPosition());
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
@@ -161,6 +160,7 @@ public class AlarmClockPlus extends ListActivity {
                 String day = days.next() + "->";
                 TextView textView = new TextView(context);
                 textView.setText(day);
+                textView.setBackgroundResource(R.drawable.blue);
                 textView.setTextAppearance(context,
                                            R.style.RepeatDaysTextAppearance);
                 repeatDaysLayout.addView(textView, layoutParams);

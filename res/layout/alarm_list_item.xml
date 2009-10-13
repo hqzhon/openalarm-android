@@ -52,7 +52,7 @@
      android:layout_alignParentRight="true"
      android:layout_below="@id/label"
      android:layout_alignWithParentIfMissing="true"
-     android:gravity="left"
+     android:gravity="right"
      />
 
   <LinearLayout
