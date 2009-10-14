@@ -10,7 +10,9 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.util.Log;
 
+
 import java.util.Arrays;
+import java.util.Calendar;
 import java.text.DateFormatSymbols;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -40,16 +42,17 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
 
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
+        mRepeatWeekdays.reset();
         SimpleDateFormat dateFormat =
             (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG);
         DateFormatSymbols dateFormatSymbols = dateFormat.getDateFormatSymbols();
-        CharSequence[] weekdays = dateFormatSymbols.getWeekdays();
-
-        Log.d(TAG, "======> '" + Arrays.deepToString(weekdays) + "'");
-
+        CharSequence[] weekdays = new CharSequence[7];
+        System.arraycopy(dateFormatSymbols.getWeekdays(),
+                         Calendar.SUNDAY,
+                         weekdays,
+                         0,
+                         7);
         builder.setMultiChoiceItems(weekdays, null /* no days are checked */, this);
-
-        mRepeatWeekdays.reset();
     }
 
     public void onClick(DialogInterface dialog, int which, boolean isChecked) {

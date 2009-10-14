@@ -11,7 +11,6 @@ package org.startsmall.alarmclockplus.preference;
 
 import org.startsmall.alarmclockplus.*;
 import android.app.AlertDialog;
-// import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -21,8 +20,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
-// import android.database.Cursor;
-// import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -32,11 +29,7 @@ import android.net.Uri;
 //import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
-//import android.view.Window;
 import android.widget.EditText;
-//import android.widget.TextView;
-//import android.widget.RadioGroup;
-//import android.widget.RadioButton;
 import android.widget.TimePicker;
 
 import java.util.*;
