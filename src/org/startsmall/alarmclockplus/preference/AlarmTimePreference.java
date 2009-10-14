@@ -7,25 +7,26 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.alarmclockplus.preference;
 
+import org.startsmall.alarmclockplus.*;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.preference.Preference;
+//import android.preference.Preference;
 import android.view.View;
-import android.view.View.BaseSavedState;
+//import android.view.View.BaseSavedState;
 import android.util.AttributeSet;
-import android.util.Log;
+//import android.util.Log;
 import android.widget.TextView;
 
 import java.util.Calendar;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+//import java.text.DateFormat;
+//import java.text.SimpleDateFormat;
 
 public class AlarmTimePreference extends TextViewPreference {
-    private static final String TAG = "AlarmTimePreference";
+    // private static final String TAG = "AlarmTimePreference";
 
     private int mTime;
 

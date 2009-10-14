@@ -7,10 +7,11 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.alarmclockplus.preference;
 
+import org.startsmall.alarmclockplus.*;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
+// import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -20,29 +21,29 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.preference.DialogPreference;
+// import android.database.Cursor;
+// import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.preference.ListPreference;
+//import android.preference.ListPreference;
 import android.net.Uri;
-import android.util.Log;
+//import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
-import android.view.Window;
+//import android.view.Window;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.RadioGroup;
-import android.widget.RadioButton;
+//import android.widget.TextView;
+//import android.widget.RadioGroup;
+//import android.widget.RadioButton;
 import android.widget.TimePicker;
 
 import java.util.*;
 
 public class AlarmSettings extends PreferenceActivity
                            implements DialogInterface.OnClickListener {
-    private static final String TAG = "AlarmSettings";
+    // private static final String TAG = "AlarmSettings";
     private static final int LABEL_INPUT_DIALOG = 1;
     private static final int TIME_PICK_DIALOG = 2;
     private static final int ACTION_PICK_DIALOG = 3;
@@ -83,7 +84,7 @@ public class AlarmSettings extends PreferenceActivity
                 new Alarms.OnVisitListener() {
                     public void onVisit(int id, String label,
                                         int hour, int minutes,
-                                        Alarms.RepeatWeekDays repeatDays,
+                                        Alarms.RepeatWeekdays repeatDays,
                                         boolean enabled, boolean vibrate,
                                         String alertUrl) {
                         mLabelPreference.setPreferenceValue(label);
@@ -181,7 +182,6 @@ public class AlarmSettings extends PreferenceActivity
                 mActionPreference.getEntries(),
                 actionEntryIndex,
                 new DialogInterface.OnClickListener() {
-                    @Override
                     public void onClick(DialogInterface dialog,
                                         int which) {
                         mActionPreference.setPreferenceValue(which);
@@ -218,7 +218,6 @@ public class AlarmSettings extends PreferenceActivity
 
 
 
-    @Override
     public void onClick(DialogInterface d, int which) {
         Dialog dialog = (Dialog)d;
         switch(which) {

@@ -24,7 +24,7 @@
 
     <style name="RepeatDaysTextAppearance" parent="android:TextAppearance.Small.Inverse">
       <item name="android:background">@drawable/blue</item>
-      <item name="android:textColor">#ffffff</item>
+      <item name="android:textColor">?android:textColorSecondaryInverseNoDisable</item>
     </style>
 
 </resources>

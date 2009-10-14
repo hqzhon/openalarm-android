@@ -3,20 +3,25 @@
    xmlns:android="http://schemas.android.com/apk/res/android">
 
   <PreferenceCategory android:title="Basic Settings">
-    <org.startsmall.alarmclockplus.AlarmLabelPreference
+    <org.startsmall.alarmclockplus.preference.AlarmLabelPreference
        android:key="@string/alarm_settings_label_key"
        android:title="@string/alarm_settings_label_title"
        android:defaultValue="Alarm" />
 
-    <org.startsmall.alarmclockplus.AlarmActionPreference
+    <org.startsmall.alarmclockplus.preference.AlarmActionPreference
        android:key="@string/alarm_settings_action_key"
        android:title="@string/alarm_settings_action_title"
        android:defaultValue="-1"/>
 
-    <org.startsmall.alarmclockplus.AlarmTimePreference
+    <org.startsmall.alarmclockplus.preference.AlarmTimePreference
        android:key="@string/alarm_settings_time_key"
        android:title="@string/alarm_settings_time_title"
        android:defaultValue="0830" />
+
+    <org.startsmall.alarmclockplus.preference.AlarmRepeatOnDialogPreference
+       android:key="@string/alarm_settings_repeat_days_key"
+       android:title="@string/alarm_settings_repeat_days_title"
+       android:defaultValue="5"/>
 
     <CheckBoxPreference
        android:key="@string/alarm_settings_vibrate_key"
@@ -25,7 +30,8 @@
        android:summaryOn="@string/alarm_settings_vibrate_on_summary"
        android:summaryOff="@string/alarm_settings_vibrate_off_summary" />
 
-  </PreferenceCategory>
+  <Preference></Preference>
+</PreferenceCategory>
 
   <PreferenceCategory android:title="Extra Settings">
 

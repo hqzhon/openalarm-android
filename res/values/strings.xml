@@ -34,6 +34,10 @@
     <string name="alarm_settings_action_summary">Choose Action</string>
     <string name="alarm_settings_action_key">action</string>
 
+    <string name="alarm_settings_repeat_days_title">Repeat On</string>
+    <string name="alarm_settings_repeat_days_summary">On Everyday</string>
+    <string name="alarm_settings_repeat_days_key">repeat_days</string>
+
     <string name="alarm_settings_vibrate_title">Vibrate</string>
     <string name="alarm_settings_vibrate_on_summary">Vibrate On</string>
     <string name="alarm_settings_vibrate_off_summary">Vibrate Off</string>

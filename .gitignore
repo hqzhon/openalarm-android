@@ -2,3 +2,8 @@ gen
 bin
 *.class
 local.properties
+
+# eclipse
+.classpath
+.settings
+.project

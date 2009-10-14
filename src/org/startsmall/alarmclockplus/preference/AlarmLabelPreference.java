@@ -7,22 +7,23 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.alarmclockplus.preference;
 
+import org.startsmall.alarmclockplus.*;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.os.Bundle;
+//import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.Parcel;
-import android.preference.Preference;
+//import android.preference.Preference;
 import android.view.View;
-import android.view.View.BaseSavedState;
+//import android.view.View.BaseSavedState;
 import android.util.AttributeSet;
-import android.util.Log;
+//import android.util.Log;
 import android.widget.TextView;
 
 public class AlarmLabelPreference extends TextViewPreference {
-    private static final String TAG = "AlarmLabelPreference";
+    // private static final String TAG = "AlarmLabelPreference";
 
     private String mLabel;
 

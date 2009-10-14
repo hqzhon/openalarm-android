@@ -10,8 +10,8 @@
 
 package org.startsmall.alarmclockplus;
 
+import org.startsmall.alarmclockplus.preference.*;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.ContentResolver;
@@ -19,7 +19,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.animation.AnimationUtils;
+// import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -29,11 +29,9 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.CheckBox;
 import android.text.TextUtils;
@@ -151,15 +149,15 @@ public class AlarmClockPlus extends ListActivity {
             final LinearLayout repeatDaysLayout =
                 (LinearLayout)view.findViewById(R.id.repeat_days);
             String daysString =
-                new Alarms.RepeatWeekDays(daysCode).toString();
+                new Alarms.RepeatWeekdays(daysCode).toString();
             TextUtils.SimpleStringSplitter split =
                 new TextUtils.SimpleStringSplitter(' ');
             split.setString(daysString);
             Iterator<String> days = split.iterator();
             while(days.hasNext()) {
-                String day = days.next() + "->";
                 TextView textView = new TextView(context);
-                textView.setText(day);
+                textView.setText(days.next());
+                //
                 textView.setBackgroundResource(R.drawable.blue);
                 textView.setTextAppearance(context,
                                            R.style.RepeatDaysTextAppearance);
@@ -259,7 +257,7 @@ public class AlarmClockPlus extends ListActivity {
         setListAdapter(new AlarmAdapter(this, cursor));
 
 
-        Alarms.RepeatWeekDays weekDays = new Alarms.RepeatWeekDays();
+        Alarms.RepeatWeekdays weekDays = new Alarms.RepeatWeekdays();
         weekDays.addDay(Calendar.SUNDAY);
         weekDays.addDay(Calendar.MONDAY);
         weekDays.addDay(Calendar.FRIDAY);
@@ -315,8 +313,8 @@ public class AlarmClockPlus extends ListActivity {
 
     private int deleteAlarm(int alarmId) {
         Log.d(TAG, "TODO: Deleting an alarm");
-        return 0;
         // ContentResolver contentResolver = getContentResolver();
         // return Alarms.deleteAlarm(contentResolver, alarmId);
+        return 0;
     }
 }

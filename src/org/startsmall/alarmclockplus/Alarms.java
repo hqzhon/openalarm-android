@@ -26,7 +26,6 @@ import java.text.SimpleDateFormat;
 public class Alarms {
     private static final String TAG = "Alarms";
 
-
     /******************************************************************
      * Convenient data that are used throughout the application       *
      ******************************************************************/
@@ -125,7 +124,7 @@ public class Alarms {
      ******************************************************************/
     public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
 
-    static class RepeatWeekDays {
+    public static class RepeatWeekdays {
         /**
          * 0x01 Calendar.SUNDAY
          * 0x02 Calendar.MONDAY
@@ -135,20 +134,29 @@ public class Alarms {
          * 0x20 Calendar.FRIDAY
          * 0x40 Calendar.SATURDAY
          *
+         * 0x7F On everyday
          */
         private int mDays;
 
-        public RepeatWeekDays() {}
-        public RepeatWeekDays(int daysCode) {
+        public RepeatWeekdays() {}
+        public RepeatWeekdays(int daysCode) {
             mDays = daysCode;
+        }
+
+        public void reset() {
+            mDays = 0;
         }
 
         boolean hasDay(int day) {
             return (mDays & getCode(day)) > 0;
         }
 
-        void addDay(int day) {
+        public void addDay(int day) {
             mDays = mDays | getCode(day);
+        }
+
+        public void removeDay(int day) {
+            mDays = mDays & ~getCode(day);
         }
 
         private int getCode(int day) {
@@ -165,20 +173,26 @@ public class Alarms {
         public String toString() {
             String result = "";
             if(mDays > 0) {
-                for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
-                    if(hasDay(i)) {
-                        result =
-                            result +
-                            DateUtils.getDayOfWeekString(
-                                i,
-                                DateUtils.LENGTH_MEDIUM) +
-                            " ";
+                if(mDays == 0x7F) { // b1111111
+                    result = "On Everyday";
+                } else {
+                    for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
+                        if(hasDay(i)) {
+                            result =
+                                result +
+                                DateUtils.getDayOfWeekString(
+                                    i,
+                                    DateUtils.LENGTH_MEDIUM) +
+                                " ";
+                        }
                     }
                 }
+            } else {
+                result = "No days";
             }
             return result;
         }
-    };
+    }
 
     /******************************************************************
      * Report alarms on the database
@@ -212,7 +226,7 @@ public class Alarms {
     public static interface OnVisitListener {
         public void onVisit(int id, String label,
                             int hour, int minutes,
-                            RepeatWeekDays days,
+                            RepeatWeekdays days,
                             boolean enabled,
                             boolean vibrate,
                             String alertUrl);
@@ -248,7 +262,7 @@ public class Alarms {
                     cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
                 if(listener != null) {
                     listener.onVisit(id, label, hour, minutes,
-                                     new RepeatWeekDays(daysCode),
+                                     new RepeatWeekdays(daysCode),
                                      enabled, vibrate, alertUrl);
                 }
             }while(cursor.moveToNext());
