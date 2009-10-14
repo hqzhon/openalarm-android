@@ -25,7 +25,7 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
     }
 
     private static final String TAG = "AlarmRepeatOnDialogPreference";
-    private Alarms.RepeatWeekdays mRepeatWeekdays = new Alarms.RepeatWeekdays();
+    private Alarms.RepeatWeekdays mRepeatWeekdays;
     private OnRepeatWeekdaysSetListener mListener;
 
     public AlarmRepeatOnDialogPreference(Context context, AttributeSet attrs, int defStyle) {
@@ -40,19 +40,34 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
         mListener = listener;
     }
 
+    public void setPreferenceValue(Alarms.RepeatWeekdays weekdays) {
+        mRepeatWeekdays = weekdays;
+        setSummary(mRepeatWeekdays.toString());
+    }
+
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        mRepeatWeekdays.reset();
+        if(mRepeatWeekdays == null) {
+            mRepeatWeekdays = new Alarms.RepeatWeekdays();
+        }
+        boolean[] checked = new boolean[7];
+        for(int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
+            if(mRepeatWeekdays.hasDay(i)) {
+                checked[i-1] = true;
+            }
+        }
+
         SimpleDateFormat dateFormat =
             (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG);
-        DateFormatSymbols dateFormatSymbols = dateFormat.getDateFormatSymbols();
+        DateFormatSymbols dateFormatSymbols =
+            dateFormat.getDateFormatSymbols();
         CharSequence[] weekdays = new CharSequence[7];
         System.arraycopy(dateFormatSymbols.getWeekdays(),
                          Calendar.SUNDAY,
                          weekdays,
                          0,
                          7);
-        builder.setMultiChoiceItems(weekdays, null /* no days are checked */, this);
+        builder.setMultiChoiceItems(weekdays, checked, this);
     }
 
     public void onClick(DialogInterface dialog, int which, boolean isChecked) {

@@ -24,9 +24,8 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-//import android.preference.ListPreference;
 import android.net.Uri;
-//import android.util.Log;
+import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.widget.EditText;
@@ -36,7 +35,7 @@ import java.util.*;
 
 public class AlarmSettings extends PreferenceActivity
                            implements DialogInterface.OnClickListener {
-    // private static final String TAG = "AlarmSettings";
+    private static final String TAG = "AlarmSettings";
     private static final int LABEL_INPUT_DIALOG = 1;
     private static final int TIME_PICK_DIALOG = 2;
     private static final int ACTION_PICK_DIALOG = 3;
@@ -44,6 +43,7 @@ public class AlarmSettings extends PreferenceActivity
     AlarmTimePreference mTimePreference;
     AlarmLabelPreference mLabelPreference;
     AlarmActionPreference mActionPreference;
+    AlarmRepeatOnDialogPreference mRepeatOnPreference;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -60,6 +60,16 @@ public class AlarmSettings extends PreferenceActivity
         mActionPreference =
             (AlarmActionPreference)preferenceManager.findPreference(
                 getResources().getString(R.string.alarm_settings_action_key));
+        mRepeatOnPreference =
+            (AlarmRepeatOnDialogPreference)preferenceManager.findPreference(
+                getString(R.string.alarm_settings_repeat_days_key));
+        mRepeatOnPreference.setOnRepeatWeekdaysSetListener(
+            new AlarmRepeatOnDialogPreference.OnRepeatWeekdaysSetListener() {
+                public void onRepeatWeekdaysSet(Alarms.RepeatWeekdays weekdays) {
+                    mRepeatOnPreference.setSummary(weekdays.toString());
+                }
+            });
+
 
         // If this is setting for new alarm
         Intent intent = getIntent();
@@ -67,7 +77,6 @@ public class AlarmSettings extends PreferenceActivity
             intent.getIntExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
         if(alarmId == -1) {
             // @todo: Settings for new alarm. Populate fields with default values.
-
 
         } else {
             Uri alarmUri = Alarms.getAlarmUri(alarmId);
@@ -82,6 +91,7 @@ public class AlarmSettings extends PreferenceActivity
                                         String alertUrl) {
                         mLabelPreference.setPreferenceValue(label);
                         mTimePreference.setPreferenceValue(hour * 100 + minutes);
+                        mRepeatOnPreference.setPreferenceValue(repeatDays);
                     }
                 });
         }

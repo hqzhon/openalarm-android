@@ -147,7 +147,7 @@ public class Alarms {
             mDays = 0;
         }
 
-        boolean hasDay(int day) {
+        public boolean hasDay(int day) {
             return (mDays & getCode(day)) > 0;
         }
 

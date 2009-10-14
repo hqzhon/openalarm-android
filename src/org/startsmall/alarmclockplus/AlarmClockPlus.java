@@ -142,10 +142,12 @@ public class AlarmClockPlus extends ListActivity {
             enabledChkBox.setChecked(enabled);
 
             // Repeat days
-            ViewGroup.LayoutParams layoutParams =
-                new ViewGroup.LayoutParams(
+            LinearLayout.LayoutParams layoutParams =
+                new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.setMargins(6, 0, 0, 0);
+
             final LinearLayout repeatDaysLayout =
                 (LinearLayout)view.findViewById(R.id.repeat_days);
             String daysString =
