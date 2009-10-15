@@ -14,6 +14,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.preference.CheckBoxPreference;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
@@ -44,6 +46,7 @@ public class AlarmSettings extends PreferenceActivity
     AlarmLabelPreference mLabelPreference;
     AlarmActionPreference mActionPreference;
     AlarmRepeatOnDialogPreference mRepeatOnPreference;
+    CheckBoxPreference mVibratePreference;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -53,13 +56,13 @@ public class AlarmSettings extends PreferenceActivity
         PreferenceManager preferenceManager = getPreferenceManager();
         mTimePreference =
             (AlarmTimePreference)preferenceManager.findPreference(
-                getResources().getString(R.string.alarm_settings_time_key));
+                getString(R.string.alarm_settings_time_key));
         mLabelPreference =
             (AlarmLabelPreference)preferenceManager.findPreference(
-                getResources().getString(R.string.alarm_settings_label_key));
+                getString(R.string.alarm_settings_label_key));
         mActionPreference =
             (AlarmActionPreference)preferenceManager.findPreference(
-                getResources().getString(R.string.alarm_settings_action_key));
+                getString(R.string.alarm_settings_action_key));
         mRepeatOnPreference =
             (AlarmRepeatOnDialogPreference)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_repeat_days_key));
@@ -70,31 +73,36 @@ public class AlarmSettings extends PreferenceActivity
                 }
             });
 
+        mVibratePreference =
+            (CheckBoxPreference)preferenceManager.findPreference(
+                getString(R.string.alarm_settings_vibrate_key));
 
-        // If this is setting for new alarm
         Intent intent = getIntent();
         int alarmId =
             intent.getIntExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
-        if(alarmId == -1) {
-            // @todo: Settings for new alarm. Populate fields with default values.
+        if(alarmId == -1) {     // Insert a new alarm into DB
+            Uri newAlarmUri = Alarms.newAlarm(getContentResolver());
+            alarmId = (int)ContentUris.parseId(newAlarmUri);
+            intent.putExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, alarmId);
 
-        } else {
-            Uri alarmUri = Alarms.getAlarmUri(alarmId);
-            Alarms.visitAlarm(
-                getContentResolver(),
-                alarmUri,
-                new Alarms.OnVisitListener() {
-                    public void onVisit(int id, String label,
-                                        int hour, int minutes,
-                                        Alarms.RepeatWeekdays repeatDays,
-                                        boolean enabled, boolean vibrate,
-                                        String alertUrl) {
-                        mLabelPreference.setPreferenceValue(label);
-                        mTimePreference.setPreferenceValue(hour * 100 + minutes);
-                        mRepeatOnPreference.setPreferenceValue(repeatDays);
-                    }
-                });
+            Log.d(TAG, "Added a new alarm " + newAlarmUri);
         }
+
+        Uri alarmUri = Alarms.getAlarmUri(alarmId);
+        Alarms.visitAlarm(
+            getContentResolver(),
+            alarmUri,
+            new Alarms.OnVisitListener() {
+                public void onVisit(int id, String label,
+                                    int hour, int minutes,
+                                    int repeatDays,
+                                    boolean enabled, boolean vibrate,
+                                    String alertUrl) {
+                    mLabelPreference.setPreferenceValue(label);
+                    mTimePreference.setPreferenceValue(hour * 100 + minutes);
+                    mRepeatOnPreference.setPreferenceValue(repeatDays);
+                }
+            });
 
         populateActionReceivers();
     }
@@ -136,6 +144,36 @@ public class AlarmSettings extends PreferenceActivity
         }
 
         return dialog;
+    }
+
+    protected void onPause() {
+        super.onPause();
+
+        Intent intent = getIntent();
+        int alarmId =
+            intent.getIntExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
+        if(alarmId == -1) {
+            throw new IllegalArgumentException("FIXME: Bad alarm id");
+        } else {
+            Uri alarmUri = Alarms.getAlarmUri(alarmId);
+
+            final String label = (String)mLabelPreference.getPreferenceValue();
+            final int time = (Integer)mTimePreference.getPreferenceValue();
+            final int hourOfDay = time / 100;
+            final int minutes = time % 100;
+            final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
+            final boolean vibrate = mVibratePreference.isChecked();
+
+            Alarms.updateAlarm(
+                getContentResolver(),
+                alarmId,
+                label,
+                hourOfDay, minutes,
+                repeatOnCode,
+                false /* FIXME:    */,
+                vibrate,
+                "");
+        }
     }
 
     private Dialog createTimePickDialog() {

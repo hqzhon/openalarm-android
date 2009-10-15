@@ -160,7 +160,7 @@ public class AlarmProvider extends ContentProvider {
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.HOUR)) {
-            values.put(Alarms.AlarmColumns.HOUR,0);
+            values.put(Alarms.AlarmColumns.HOUR, 0);
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.MINUTES)) {
@@ -171,18 +171,16 @@ public class AlarmProvider extends ContentProvider {
             values.put(Alarms.AlarmColumns.REPEAT_DAYS, 0);
         }
 
-        // TODO: Time in millis
-
         if(!values.containsKey(Alarms.AlarmColumns.ENABLED)) {
-            values.put(Alarms.AlarmColumns.ENABLED,0);
+            values.put(Alarms.AlarmColumns.ENABLED, 0);
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.VIBRATE)) {
-            values.put(Alarms.AlarmColumns.VIBRATE,0);
+            values.put(Alarms.AlarmColumns.VIBRATE, 0);
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.LABEL)) {
-            values.put(Alarms.AlarmColumns.LABEL, "FIXME:default_label");
+            values.put(Alarms.AlarmColumns.LABEL, "My Alarm");
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.ALERT_URI)) {
@@ -195,8 +193,8 @@ public class AlarmProvider extends ContentProvider {
                                       values);
         Log.d(TAG, "Trying to insert a row into " + uri);
 
-        Uri insertedUri =
-            Uri.parse(Alarms.CONTENT_URI_ALL_ALARMS + "/" + rowId);
+        Uri insertedUri = Alarms.getAlarmUri(rowId);
+        // Uri.parse(Alarms.CONTENT_URI_ALL_ALARMS + "/" + rowId);
         getContext().getContentResolver().notifyChange(insertedUri, null);
         Log.d(TAG, "Added alarm - " + insertedUri);
         return insertedUri;
@@ -219,7 +217,6 @@ public class AlarmProvider extends ContentProvider {
                               null);
 
         getContext().getContentResolver().notifyChange(uri, null);
-
 
         return count;
     }

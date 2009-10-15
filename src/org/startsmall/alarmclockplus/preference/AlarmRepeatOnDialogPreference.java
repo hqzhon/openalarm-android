@@ -25,14 +25,16 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
     }
 
     private static final String TAG = "AlarmRepeatOnDialogPreference";
-    private Alarms.RepeatWeekdays mRepeatWeekdays;
+    private Alarms.RepeatWeekdays mRepeatWeekdays = new Alarms.RepeatWeekdays();
     private OnRepeatWeekdaysSetListener mListener;
 
-    public AlarmRepeatOnDialogPreference(Context context, AttributeSet attrs, int defStyle) {
+    public AlarmRepeatOnDialogPreference(Context context,
+                                         AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
-    public AlarmRepeatOnDialogPreference(Context context, AttributeSet attrs) {
+    public AlarmRepeatOnDialogPreference(Context context,
+                                         AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -40,16 +42,17 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
         mListener = listener;
     }
 
-    public void setPreferenceValue(Alarms.RepeatWeekdays weekdays) {
-        mRepeatWeekdays = weekdays;
+    public void setPreferenceValue(int daysCode) {
+        mRepeatWeekdays.setCode(daysCode);
         setSummary(mRepeatWeekdays.toString());
+    }
+
+    public int getPreferenceValue() {
+        return mRepeatWeekdays.getCode();
     }
 
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        if(mRepeatWeekdays == null) {
-            mRepeatWeekdays = new Alarms.RepeatWeekdays();
-        }
         boolean[] checked = new boolean[7];
         for(int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
             if(mRepeatWeekdays.hasDay(i)) {
@@ -70,7 +73,8 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
         builder.setMultiChoiceItems(weekdays, checked, this);
     }
 
-    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+    public void onClick(DialogInterface dialog,
+                        int which, boolean isChecked) {
         int day = which + 1;
         if(isChecked) {
             mRepeatWeekdays.addDay(day);

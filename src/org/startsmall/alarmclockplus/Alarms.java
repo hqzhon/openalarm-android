@@ -10,6 +10,7 @@
 package org.startsmall.alarmclockplus;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
@@ -170,6 +171,10 @@ public class Alarms {
             return mDays;
         }
 
+        public void setCode(int daysCode) {
+            mDays = daysCode;
+        }
+
         public String toString() {
             String result = "";
             if(mDays > 0) {
@@ -197,11 +202,12 @@ public class Alarms {
     /******************************************************************
      * Report alarms on the database
      ******************************************************************/
-    public static Uri getAlarmUri(final int alarmId) {
+    public static Uri getAlarmUri(final long alarmId) {
         return Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
     }
 
-    public static Cursor getAlarmCursor(final ContentResolver contentResolver, final int alarmId) {
+    public static Cursor getAlarmCursor(final ContentResolver contentResolver,
+                                        final long alarmId) {
         Uri alarmUri;
         if(alarmId != -1) {
             alarmUri = getAlarmUri(alarmId);
@@ -226,7 +232,7 @@ public class Alarms {
     public static interface OnVisitListener {
         public void onVisit(int id, String label,
                             int hour, int minutes,
-                            RepeatWeekdays days,
+                            int repeatOnDaysCode,
                             boolean enabled,
                             boolean vibrate,
                             String alertUrl);
@@ -252,7 +258,7 @@ public class Alarms {
                     cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
                 final int minutes =
                     cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
-                final int daysCode =
+                final int repeatOnDaysCode =
                     cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
                 final boolean enabled =
                     cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
@@ -262,7 +268,7 @@ public class Alarms {
                     cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
                 if(listener != null) {
                     listener.onVisit(id, label, hour, minutes,
-                                     new RepeatWeekdays(daysCode),
+                                     repeatOnDaysCode,
                                      enabled, vibrate, alertUrl);
                 }
             }while(cursor.moveToNext());
@@ -271,11 +277,42 @@ public class Alarms {
     }
 
     public static int deleteAlarm(ContentResolver contentResolver,
-                                  final int alarmId) {
-        Uri alarmUri =
-            Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
-
+                                  final long alarmId) {
+        Uri alarmUri = Alarms.getAlarmUri(alarmId);
         return contentResolver.delete(alarmUri, null, null);
+    }
+
+    public static int updateAlarm(ContentResolver resolver,
+                                  long id,
+                                  String label,
+                                  int hour,
+                                  int minutes,
+                                  int repeatOnDaysCode,
+                                  boolean enabled,
+                                  boolean vibrate,
+                                  String alertUrl) {
+        if(id < 0) {
+            return -1;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(AlarmColumns._ID, id);
+        values.put(AlarmColumns.LABEL, label);
+        values.put(AlarmColumns.HOUR, hour);
+        values.put(AlarmColumns.MINUTES, minutes);
+        values.put(AlarmColumns.REPEAT_DAYS, repeatOnDaysCode);
+        values.put(AlarmColumns.ENABLED, enabled);
+        values.put(AlarmColumns.VIBRATE, vibrate);
+        values.put(AlarmColumns.ALERT_URI, alertUrl);
+
+        Uri uri = Alarms.getAlarmUri(id);
+        return resolver.update(uri, values, null, null);
+    }
+
+    public static Uri newAlarm(ContentResolver resolver) {
+        ContentValues values = new ContentValues();
+        return resolver.insert(Uri.parse(CONTENT_URI_ALL_ALARMS),
+                               values);
     }
 
     public static String formatDate(String pattern, Calendar calendar) {
