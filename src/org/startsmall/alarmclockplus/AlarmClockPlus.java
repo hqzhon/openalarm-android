@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.AdapterView;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,71 +40,46 @@ import java.util.*;
 
 public class AlarmClockPlus extends ListActivity {
     private static final String TAG = "AlarmClockPlus";
+    private static final int MENU_ITEM_DELETE_ID = 0;
 
     private class AlarmAdapter extends CursorAdapter {
-        private static final int MENU_ITEM_EDIT_ID = 0;
-        private static final int MENU_ITEM_DELETE_ID = 1;
-        private final int[] MENU_ITEM_RES_IDS = {R.string.menu_item_edit_alarm,
-                                                 R.string.menu_item_delete_alarm};
-
-        private class MenuItemOnClickListener implements DialogInterface.OnClickListener {
-            private final int mAlarmId;
-            private final String mAlarmLabel;
-            private DialogInterface.OnClickListener mListener =
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch(which) {
-                        case DialogInterface.BUTTON_POSITIVE: // delete alarm
-                            AlarmClockPlus.this.deleteAlarm(mAlarmId);
-                            break;
-                        default: // BUTTON_NEGATIVE is ignored.
-                            break;
-                        }
-                    }
-                };
-
-            MenuItemOnClickListener(final int alarmId, final String alarmLabel) {
-                mAlarmId = alarmId;
-                mAlarmLabel = alarmLabel;
-            }
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Context context = AlarmClockPlus.this;
-
-                switch(which) {
-                case MENU_ITEM_EDIT_ID:
-                    AlarmClockPlus.this.editAlarmSettings(mAlarmId);
-                    break;
-
-                case MENU_ITEM_DELETE_ID:
-                    new AlertDialog.Builder(context)
-                        .setMessage(R.string.delete_alarm_message)
-                        .setTitle(mAlarmLabel)
-                        .setPositiveButton("Yes", mListener)
-                        .setNegativeButton("No", mListener)
-                        .create()
-                        .show();
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-
         private LayoutInflater mInflater;
+        private View.OnClickListener mOnClickListener =
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int alarmId = (Integer)v.getTag();
+                    editAlarmSettings(alarmId);
+                }
+            };
+
+        // private View.OnCreateContextMenuListener mContextMenuListener =
+        //     new View.OnCreateContextMenuListener() {
+        //         public void onCreateContextMenu(ContextMenu menu,
+        //                                         View view,
+        //                                         ContextMenu.ContextMenuInfo menuInfo) {
+        //             int alarmId = (Integer)view.getTag();
+
+
+
+
+
+
+        //             menu.setHeaderTitle(c.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX));
+        //             menu.add(0, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
+        //         }
+        //     };
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
-
             mInflater = AlarmClockPlus.this.getLayoutInflater();
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            // Log.d(TAG, "bindView " + view + " from " + cursor.getPosition());
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
+            view.setTag(id);
+
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
@@ -133,56 +109,39 @@ public class AlarmClockPlus extends ListActivity {
             // Repeat days
             final TextView repeatDays =
                 (TextView)view.findViewById(R.id.repeat_days);
-            String daysString = new Alarms.RepeatWeekdays(daysCode).toString();
-            // TextUtils.SimpleStringSplitter split =
-            //     new TextUtils.SimpleStringSplitter(' ');
-            // split.setString(daysString);
-            // Iterator<String> days = split.iterator();
-            // while(days.hasNext()) {
-            //     TextView textView = new TextView(context);
-            //     textView.setText(days.next());
-            //     // FIXME: Hard-coded style. Unable to set through
-            //     // RepeatDaysTextAppearance style.
-            //     // textView.setBackgroundResource(R.drawable.label_blue);
-            //     textView.setTextAppearance(context, R.style.RepeatDaysTextAppearance);
-            //     repeatDaysLayout.addView(textView, layoutParams);
-            // }
+            String daysString =
+                new Alarms.RepeatWeekdays(daysCode).toString();
             repeatDays.setText(daysString);
+            if(daysCode == 0) {
+                repeatDays.setVisibility(View.GONE);
+            } else {
+                repeatDays.setVisibility(View.VISIBLE);
+            }
 
-            view.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        AlertDialog.Builder builder =
-                            new AlertDialog.Builder(view.getContext());
-                        builder
-                            .setTitle(label)
-                            .setItems(
-                                new String[] {
-                                    view.getContext().getString(MENU_ITEM_RES_IDS[0]),
-                                    view.getContext().getString(MENU_ITEM_RES_IDS[1])},
-                                new MenuItemOnClickListener(id, label))
-                            .create()
-                            .show();
+            /**
+             * Should follow Android's design. Click to go to
+             * item's default activity and long-click to go to
+             * item's extended activities. Here, the first-class
+             * activity is to edit item's settings.
+             */
+            view.setOnClickListener(mOnClickListener);
+
+            view.setOnCreateContextMenuListener(
+                new View.OnCreateContextMenuListener() {
+                    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
+                        Log.d(TAG, "=============> View.onCreateContextMenu");
                     }
+
+
                 });
         }
 
         @Override
-        public View newView(Context context,
-                            Cursor cursor,
-                            ViewGroup parent) {
-            View view = mInflater.inflate(R.layout.alarm_list_item,
-                                          parent, false);
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View view =
+                mInflater.inflate(R.layout.alarm_list_item, parent, false);
             return view;
         }
-
-        protected void onContentChanged() {
-
-            Log.d(TAG, "Content changed");
-
-        }
-
     }
 
     @Override
@@ -190,30 +149,24 @@ public class AlarmClockPlus extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        ContentResolver contentResolver = getContentResolver();
-        if(contentResolver == null) {
-            Log.d(TAG, "onCreate(): no content resolver");
-        }
-
-        Cursor cursor = Alarms.getAlarmCursor(contentResolver, -1);
-        startManagingCursor(cursor);
+        Cursor cursor = Alarms.getAlarmCursor(getContentResolver(), -1);
+        // FIXME: Don't know why enabling this line will prevent
+        // deleted row from removing from ListView. Need to
+        // figure out.
+        // startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, cursor));
 
-
-        Alarms.RepeatWeekdays weekDays = new Alarms.RepeatWeekdays();
-        weekDays.addDay(Calendar.SUNDAY);
-        weekDays.addDay(Calendar.MONDAY);
-        weekDays.addDay(Calendar.FRIDAY);
-        weekDays.addDay(Calendar.SATURDAY);
-
-        Log.d(TAG, "==========> " + weekDays);
-
+        registerForContextMenu(getListView());
     }
+
+
+
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-
         menuInflater.inflate(R.menu.menu, menu);
         return true;
     }
@@ -231,6 +184,64 @@ public class AlarmClockPlus extends ListActivity {
 
         case R.id.menu_item_help:
             showHelpDialog();
+            break;
+        }
+
+        return true;
+    }
+
+    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
+
+
+        Log.d(TAG, "=================> Create context menu");
+
+
+        AdapterView.AdapterContextMenuInfo info;
+        try {
+            info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+        } catch (ClassCastException e) {
+            Log.e(TAG, "bad menuInfo", e);
+            return;
+        }
+
+        Cursor c = (Cursor)getListAdapter().getItem(info.position);
+        if(c == null) {
+            return;
+        }
+
+        menu.setHeaderTitle(c.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX));
+        menu.add(0, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
+    }
+
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info;
+        try {
+            info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        } catch(ClassCastException e) {
+            Log.d(TAG, "bad menuInfo");
+            return false;
+        }
+
+        final int alarmId = new Long(info.id).intValue();
+        switch(item.getItemId()) {
+        case MENU_ITEM_DELETE_ID:
+            new AlertDialog.Builder(this)
+                .setMessage(R.string.delete_alarm_message)
+                .setTitle(R.string.delete_alarm_message)
+                .setPositiveButton(
+                    R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            AlarmClockPlus.this.deleteAlarm(alarmId);
+                        }
+                    })
+                .setNegativeButton(R.string.cancel, null)
+                .create()
+                .show();
+            // AlarmClockPlus.this.deleteAlarm(new Long(info.id).intValue());
+            break;
+
+        default:
             break;
         }
 

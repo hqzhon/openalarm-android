@@ -81,7 +81,7 @@ public class AlarmSettings extends PreferenceActivity
         int alarmId = intent.getIntExtra(
             Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
         if(alarmId == -1) {     // Insert a new alarm into DB
-            throw IllegalArgumentException("invalid alarm id");
+            throw new IllegalArgumentException("invalid alarm id");
         }
 
         Uri alarmUri = Alarms.getAlarmUri(alarmId);

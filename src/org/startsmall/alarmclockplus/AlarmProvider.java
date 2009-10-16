@@ -160,7 +160,7 @@ public class AlarmProvider extends ContentProvider {
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.HOUR)) {
-            values.put(Alarms.AlarmColumns.HOUR, 0);
+            values.put(Alarms.AlarmColumns.HOUR, 9);
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.MINUTES)) {
@@ -229,8 +229,8 @@ public class AlarmProvider extends ContentProvider {
         case MATCH_CODE_SINGLE_ALARM: // delete one specific row.
             String where =
                 Alarms.AlarmColumns._ID + "=" + ContentUris.parseId(uri) +
-                (!TextUtils.isEmpty(selection)) ?
-                " AND (" + selection + ")" : "";
+                ((!TextUtils.isEmpty(selection)) ?
+                 " AND (" + selection + ")" : "");
             count = db.delete(DatabaseOpenHelper.DATABASE_TABLE_NAME,
                               where, selectionArgs);
             break;
