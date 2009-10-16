@@ -20,7 +20,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-// import android.provider.BaseColumns;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -194,9 +194,8 @@ public class AlarmProvider extends ContentProvider {
         Log.d(TAG, "Trying to insert a row into " + uri);
 
         Uri insertedUri = Alarms.getAlarmUri(rowId);
-        // Uri.parse(Alarms.CONTENT_URI_ALL_ALARMS + "/" + rowId);
-        getContext().getContentResolver().notifyChange(insertedUri, null);
         Log.d(TAG, "Added alarm - " + insertedUri);
+        getContext().getContentResolver().notifyChange(insertedUri, null);
         return insertedUri;
     }
 
@@ -210,14 +209,14 @@ public class AlarmProvider extends ContentProvider {
         }
 
         SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
-        long rowId = ContentUris.parseId(uri);
-        int count = db.update(DatabaseOpenHelper.DATABASE_TABLE_NAME,
-                              values,
-                              Alarms.AlarmColumns._ID + "=" + rowId,
-                              null);
+        int count =
+            db.update(
+                DatabaseOpenHelper.DATABASE_TABLE_NAME,
+                values,
+                Alarms.AlarmColumns._ID + "=" + ContentUris.parseId(uri),
+                null);
 
         getContext().getContentResolver().notifyChange(uri, null);
-
         return count;
     }
 
@@ -228,12 +227,12 @@ public class AlarmProvider extends ContentProvider {
         int count;
         switch(matchId) {
         case MATCH_CODE_SINGLE_ALARM: // delete one specific row.
-            long rowId = ContentUris.parseId(uri);
-            String where = Alarms.AlarmColumns._ID + "=" + rowId;
-            if(selection.length() != 0) {
-                where = where + " AND (" + selection + ")";
-            }
-            count = db.delete(DatabaseOpenHelper.DATABASE_TABLE_NAME, where, selectionArgs);
+            String where =
+                Alarms.AlarmColumns._ID + "=" + ContentUris.parseId(uri) +
+                (!TextUtils.isEmpty(selection)) ?
+                " AND (" + selection + ")" : "";
+            count = db.delete(DatabaseOpenHelper.DATABASE_TABLE_NAME,
+                              where, selectionArgs);
             break;
         case MATCH_CODE_ALL_ALARMS: // delete rows
             count = db.delete(DatabaseOpenHelper.DATABASE_TABLE_NAME,
@@ -245,7 +244,6 @@ public class AlarmProvider extends ContentProvider {
         }
 
         Log.d(TAG, "Deleted alarm - " + uri);
-
         getContext().getContentResolver().notifyChange(uri, null);
         return count;
     }

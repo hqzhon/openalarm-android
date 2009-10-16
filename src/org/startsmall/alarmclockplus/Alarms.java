@@ -206,8 +206,8 @@ public class Alarms {
         return Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
     }
 
-    public static Cursor getAlarmCursor(final ContentResolver contentResolver,
-                                        final long alarmId) {
+    public static Cursor getAlarmCursor(ContentResolver contentResolver,
+                                        int alarmId) {
         Uri alarmUri;
         if(alarmId != -1) {
             alarmUri = getAlarmUri(alarmId);
@@ -230,7 +230,8 @@ public class Alarms {
      *
      */
     public static interface OnVisitListener {
-        public void onVisit(int id, String label,
+        public void onVisit(int id,
+                            String label,
                             int hour, int minutes,
                             int repeatOnDaysCode,
                             boolean enabled,
@@ -277,13 +278,16 @@ public class Alarms {
     }
 
     public static int deleteAlarm(ContentResolver contentResolver,
-                                  final long alarmId) {
+                                  int alarmId) {
         Uri alarmUri = Alarms.getAlarmUri(alarmId);
+
+        Log.d(TAG, "Alarms.deleteAlarm(" + alarmUri + ")");
+
         return contentResolver.delete(alarmUri, null, null);
     }
 
     public static int updateAlarm(ContentResolver resolver,
-                                  long id,
+                                  int id,
                                   String label,
                                   int hour,
                                   int minutes,

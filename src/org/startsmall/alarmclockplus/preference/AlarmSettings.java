@@ -78,14 +78,10 @@ public class AlarmSettings extends PreferenceActivity
                 getString(R.string.alarm_settings_vibrate_key));
 
         Intent intent = getIntent();
-        int alarmId =
-            intent.getIntExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
+        int alarmId = intent.getIntExtra(
+            Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
         if(alarmId == -1) {     // Insert a new alarm into DB
-            Uri newAlarmUri = Alarms.newAlarm(getContentResolver());
-            alarmId = (int)ContentUris.parseId(newAlarmUri);
-            intent.putExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, alarmId);
-
-            Log.d(TAG, "Added a new alarm " + newAlarmUri);
+            throw IllegalArgumentException("invalid alarm id");
         }
 
         Uri alarmUri = Alarms.getAlarmUri(alarmId);
@@ -153,7 +149,7 @@ public class AlarmSettings extends PreferenceActivity
         int alarmId =
             intent.getIntExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
         if(alarmId == -1) {
-            throw new IllegalArgumentException("FIXME: Bad alarm id");
+            throw new IllegalArgumentException("invalid alarm id");
         } else {
             Uri alarmUri = Alarms.getAlarmUri(alarmId);
 
@@ -170,7 +166,7 @@ public class AlarmSettings extends PreferenceActivity
                 label,
                 hourOfDay, minutes,
                 repeatOnCode,
-                false /* FIXME:    */,
+                false /* FIXME: should vibrate or not???? */,
                 vibrate,
                 "");
         }
@@ -205,8 +201,7 @@ public class AlarmSettings extends PreferenceActivity
             .setNegativeButton(R.string.cancel, this);
 
         LayoutInflater inflater =
-            (LayoutInflater)getSystemService(
-                Context.LAYOUT_INFLATER_SERVICE);
+            (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView =
             inflater.inflate(R.layout.text_input_dialog_widget, null);
         ((EditText)contentView).setText(label);
@@ -252,12 +247,6 @@ public class AlarmSettings extends PreferenceActivity
             // actionPref.setEntryValues(entryValues);
         }
     }
-
-
-
-
-
-
 
     public void onClick(DialogInterface d, int which) {
         Dialog dialog = (Dialog)d;

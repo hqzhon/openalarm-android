@@ -23,8 +23,14 @@
     <style name="Theme" parent="android:Theme"></style>
 
     <style name="RepeatDaysTextAppearance" parent="android:TextAppearance.Small.Inverse">
-      <item name="android:background">@drawable/blue</item>
-      <item name="android:textColor">?android:textColorSecondaryInverseNoDisable</item>
+      <item name="android:background">@drawable/label_blue</item>
+      <item name="android:textColor">?android:attr/textColorSecondaryInverseNoDisable</item>
+      <item name="android:typeface">monospace</item>
+    </style>
+
+    <style name="ActionTextAppearance" parent="android:TextAppearance.Small.Inverse">
+      <item name="android:background">?android:attr/textColorSecondaryInverse</item>
+      <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
 </resources>
