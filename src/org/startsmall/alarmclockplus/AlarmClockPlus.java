@@ -83,7 +83,11 @@ public class AlarmClockPlus extends ListActivity {
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged(CompoundButton buttonView,
                                                  boolean isChecked) {
-                        // Alarms.setEnabled(getContentResolver(), id, isChecked);
+                        if(isChecked) {
+                            Alarms.scheduleNextAlarm(AlarmClockPlus.this, id);
+                        } else {
+                            Alarms.disableAlarm(AlarmClockPlus.this, id);
+                        }
                     }
                 });
 
@@ -109,12 +113,6 @@ public class AlarmClockPlus extends ListActivity {
                     @Override
                     public void onClick(View v) {
                         editAlarmSettings(id);
-
-                        // Alarms.getNextAlarmInMillis(hourOfDay,
-                        //                             minutes,
-                        //                             daysCode);
-
-
                     }
                 });
 

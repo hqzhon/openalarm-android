@@ -85,7 +85,7 @@ public class AlarmSettings extends PreferenceActivity
         }
 
         Uri alarmUri = Alarms.getAlarmUri(alarmId);
-        Alarms.visitAlarm(
+        Alarms.forEachAlarm(
             getContentResolver(),
             alarmUri,
             new Alarms.OnVisitListener() {

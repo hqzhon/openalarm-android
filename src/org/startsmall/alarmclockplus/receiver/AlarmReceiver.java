@@ -1,17 +1,9 @@
 package org.startsmall.alarmclockplus.receiver;
 
 import android.content.Context;
-// import android.content.ContentResolver;
-// import android.content.ContentUris;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
-//import android.database.Cursor;
-// import android.net.Uri;
-// import android.net.wifi.WifiManager;
-// import android.provider.BaseColumns;
 import android.util.Log;
-
-// import java.util.*;
 
 public class AlarmReceiver extends BroadcastReceiver {
     public static final String TITLE = "Alarm";

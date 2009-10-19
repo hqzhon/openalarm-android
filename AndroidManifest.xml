@@ -37,6 +37,16 @@
         </intent-filter>
       </receiver>
 
+      <receiver android:name=".receiver.ActionDispatcher"
+                android:label="Alarm Dispatcher">
+        <intent-filter>
+          <action android:name="org.startsmall.alarmclockplus.DISPATCH_ACTION" />
+          <category android:name="android.intent.category.ALTERNATIVE" />
+        </intent-filter>
+      </receiver>
+
+
+
       <receiver android:name=".receiver.AlarmReceiver"
                 android:label="Alarm">
         <intent-filter>

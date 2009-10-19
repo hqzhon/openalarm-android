@@ -14,6 +14,7 @@ import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
@@ -45,6 +46,12 @@ public class Alarms {
      * <p>Value: org.startsmall.alarmclockplus.ALARM_ALERT</p>
      */
     public static final String ALARM_ACTION = CONTENT_URI_AUTH + ".ALARM_ACTION";
+
+    /**
+     * Action used to launch ActionDispatcher receiver.
+     * <p>Value: org.startsmall.alarmclockplus.DISPATCH_ACTION</p>
+     */
+    private static final String DISPATCH_ACTION = CONTENT_URI_AUTH + ".DISPATCH_ACTION";
 
     /**
      * Content URI of this application.
@@ -130,6 +137,7 @@ public class Alarms {
      * Key strings used in Intent data.                               *
      ******************************************************************/
     public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
+    public static final String INTENT_EXTRA_ALARM_ACTION_KEY = "alarm_action";
 
     public static class RepeatWeekdays {
         /**
@@ -260,9 +268,9 @@ public class Alarms {
                             final String alertUrl);
     }
 
-    public static void visitAlarm(ContentResolver contentResolver,
-                                  Uri alarmUri,
-                                  OnVisitListener listener) {
+    public static void forEachAlarm(ContentResolver contentResolver,
+                                    Uri alarmUri,
+                                    OnVisitListener listener) {
         Log.d(TAG, "vistAlarm(" + alarmUri.toString() + ")");
         Cursor cursor =
             contentResolver.query(alarmUri,
@@ -358,20 +366,22 @@ public class Alarms {
                 if(!enabled) {
                     return;
                 }
-                // scheduleNextAlarm(context, id);
-                setAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
+                activateAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
             }
         }
 
-        visitAlarm(context.getContentResolver(),
-                   getAlarmUri(-1),
-                   new Listener(context));
+        forEachAlarm(context.getContentResolver(),
+                     getAlarmUri(-1),
+                     new Listener(context));
     }
 
     public static void scheduleNextAlarm(Context context,
                                          final int alarmId) {
         Cursor cursor = getAlarmCursor(context.getContentResolver(),
                                        alarmId);
+        if(!cursor.moveToFirst()) {
+            return;
+        }
 
         final boolean enabled =
             cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
@@ -388,29 +398,46 @@ public class Alarms {
         final String alertUrl =
             cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
 
-        setAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
+        activateAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
     }
 
-    // TODO:
-    private static void setAlarm(Context context,
-                                 final int hour,
-                                 final int minutes,
-                                 final int repeatOnDaysCode,
-                                 final String alertUrl) {
-        // PendingIntent alarmIntent =
-        //     PendingIntent.getBroadcast(context, 0,
-        //                                new Intent(                      ),
-        //                                PendingIntent.FLAG_ONE_SHOT);
-        // AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        // if(enable) {
-        //     long alarmTimeInMillis =
-        //         getNextAlarmInMillis(hour, minutes, repeatOnDaysCode) - sBootWallTimeInMillis;
-        //     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-        //                      alarmTimeInMillis,
-        //                      alarmIntent);
-        // } else {
-        //     alarmManager.cancel(alarmIntent);
-        // }
+    private static void activateAlarm(Context context,
+                                      final int hour,
+                                      final int minutes,
+                                      final int repeatOnDaysCode,
+                                      final String alertUrl) {
+        Intent intent = new Intent(Alarms.DISPATCH_ACTION);
+        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, alertUrl);
+
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        long alarmTimeInMillis = getNextAlarmInMillis(hour, minutes, repeatOnDaysCode);
+
+        Log.d(TAG, "===> " + alarmTimeInMillis / 1000 + " seconds later to go off");
+
+        // alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        //                  alarmTimeInMillis,
+        //                  PendingIntent.getBroadcast(
+        //                      context, 0, intent,
+        //                      PendingIntent.FLAG_CANCEL_CURRENT));
+    }
+
+    public static void disableAlarm(final Context context, final int alarmId) {
+        class Listener implements OnVisitListener {
+            public void onVisit(final int id,
+                                final String label,
+                                final int hour,
+                                final int minutes,
+                                final int repeatOnDaysCode,
+                                final boolean enabled,
+                                final boolean vibrate,
+                                final String alertUrl) {
+                updateAlarm(context.getContentResolver(),
+                            id, label, hour, minutes,
+                            repeatOnDaysCode, false,
+                            vibrate, alertUrl);
+            }
+        }
+        forEachAlarm(context.getContentResolver(), getAlarmUri(alarmId), new Listener());
     }
 
     private static long getNextAlarmInMillis(final int hourOfDay,
@@ -444,16 +471,12 @@ public class Alarms {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
-        Log.d(TAG, "===> next alarm " + calendar.toString());
+        long elapsedRTC = calendar.getTimeInMillis() - sBootWallTimeInMillis;
 
-        return calendar.getTimeInMillis();
+        Log.d(TAG, "===> next alarm " + calendar.getTimeInMillis() + " - " + sBootWallTimeInMillis);
+
+        return elapsedRTC;
     }
-
-
-
-
-
-
 
     public static String formatDate(String pattern, Calendar calendar) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
