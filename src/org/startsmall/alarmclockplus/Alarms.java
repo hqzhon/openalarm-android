@@ -68,6 +68,9 @@ public class Alarms {
     public static final String CONTENT_URI_SINGLE_ALARM =
         CONTENT_URI_ALL_ALARMS + "/#";
 
+
+    public static long sBootWallTimeInMillis = 0;
+
     /*****************************************************************
      * For constants used in content provider and SQLiteDatabase.    *
      *****************************************************************/
@@ -214,7 +217,11 @@ public class Alarms {
      * Report alarms on the database
      ******************************************************************/
     public static Uri getAlarmUri(final long alarmId) {
-        return Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
+        if(alarmId == -1) {
+            return Uri.parse(CONTENT_URI_ALL_ALARMS);
+        } else {
+            return Uri.parse(CONTENT_URI_ALL_ALARMS + "/" + alarmId);
+        }
     }
 
     public static Cursor getAlarmCursor(ContentResolver contentResolver,
@@ -331,50 +338,52 @@ public class Alarms {
                                values);
     }
 
-    // public static void setEnabled(ContentResolver contentResolver,
-    //                               int alarmId, boolean enabled) {
-    //     Cursor cursor = getAlarmCursor(contentResolver, alarmId);
-    //     final String label =
-    //         cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
-    //     final int hour =
-    //         cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
-    //     final int minutes =
-    //         cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
-    //     final int repeatOnDaysCode =
-    //         cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
-    //     final boolean vibrate =
-    //         cursor.getInt(AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
-    //     final String alertUrl =
-    //         cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
-    //     updateAlarm(contentResolver, alarmId, label, hour, minutes,
-    //                 repeatOnDaysCode, enabled, vibrate, alertUrl);
+    public static void scheduleNextAlarm(Context context, final int alarmId) {
+        Cursor cursor = getAlarmCursor(context.getContentResolver(), alarmId);
 
-    //     // Use AlarmManager to schedule alarm
-    //     Log.d(TAG, "Set alarm " + alarmId + " " + enabled);
-    // }
+        final boolean enabled =
+            cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX);
+        if(!enabled) {
+            return;
+        }
 
-    public static void enableAlarm(ContentResolver contentResolver, int alarmId) {
-        Cursor cursor = getAlarmCursor(contentResolver, alarmId);
-        final String label =
-            cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
         final int hour =
             cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
         final int minutes =
             cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
         final int repeatOnDaysCode =
             cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
-        final boolean vibrate =
-            cursor.getInt(AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
         final String alertUrl =
             cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
 
-
-
+        setAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
     }
 
-    public static long getNextAlarmInMillis(final int hourOfDay,
-                                            final int minutes,
-                                            final int repeatOnCode) {
+    // TODO:
+    private static void setAlarm(Context context,
+                                 final int hour,
+                                 final int minutes,
+                                 final int repeatOnDaysCode,
+                                 final String alertUrl) {
+        PendingIntent alarmIntent =
+            PendingIntent.getBroadcast(context, 0,
+                                       new Intent(                      ),
+                                       PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        if(enable) {
+            long alarmTimeInMillis =
+                getNextAlarmInMillis(hour, minutes, repeatOnDaysCode) - sBootWallTimeInMillis;
+            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                             alarmTimeInMillis,
+                             alarmIntent);
+        } else {
+            alarmManager.cancel(alarmIntent);
+        }
+    }
+
+    private static long getNextAlarmInMillis(final int hourOfDay,
+                                             final int minutes,
+                                             final int repeatOnCode) {
         // Start with current date and time.
         Calendar calendar = Calendar.getInstance();
 
@@ -407,6 +416,12 @@ public class Alarms {
 
         return calendar.getTimeInMillis();
     }
+
+
+
+
+
+
 
     public static String formatDate(String pattern, Calendar calendar) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
