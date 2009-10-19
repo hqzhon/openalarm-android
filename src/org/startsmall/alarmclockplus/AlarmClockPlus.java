@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,23 +45,6 @@ public class AlarmClockPlus extends ListActivity {
 
     private class AlarmAdapter extends CursorAdapter {
         private LayoutInflater mInflater;
-
-        // private View.OnCreateContextMenuListener mContextMenuListener =
-        //     new View.OnCreateContextMenuListener() {
-        //         public void onCreateContextMenu(ContextMenu menu,
-        //                                         View view,
-        //                                         ContextMenu.ContextMenuInfo menuInfo) {
-        //             int alarmId = (Integer)view.getTag();
-
-
-
-
-
-
-        //             menu.setHeaderTitle(c.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX));
-        //             menu.add(0, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
-        //         }
-        //     };
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
@@ -92,15 +76,21 @@ public class AlarmClockPlus extends ListActivity {
             labelView.setText(label);
 
             // Enable this alarm?
-            final CheckBox enabledChkBox =
+            final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
-            enabledChkBox.setChecked(enabled);
+            enabledCheckBox.setChecked(enabled);
+            enabledCheckBox.setOnCheckedChangeListener(
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged(CompoundButton buttonView,
+                                                 boolean isChecked) {
+                        // Alarms.setEnabled(getContentResolver(), id, isChecked);
+                    }
+                });
 
             // Repeat days
             final TextView repeatDays =
                 (TextView)view.findViewById(R.id.repeat_days);
-            String daysString =
-                new Alarms.RepeatWeekdays(daysCode).toString();
+            String daysString = Alarms.RepeatWeekdays.getInstance(daysCode).toString();
             repeatDays.setText(daysString);
             if(daysCode == 0) {
                 repeatDays.setVisibility(View.GONE);
@@ -119,6 +109,12 @@ public class AlarmClockPlus extends ListActivity {
                     @Override
                     public void onClick(View v) {
                         editAlarmSettings(id);
+
+                        Alarms.getNextAlarmInMillis(hourOfDay,
+                                                    minutes,
+                                                    daysCode);
+
+
                     }
                 });
 
@@ -159,7 +155,7 @@ public class AlarmClockPlus extends ListActivity {
         // FIXME: Don't know why enabling this line will prevent
         // deleted row from removing from ListView. Need to
         // figure out.
-        // startManagingCursor(cursor);
+        //-> startManagingCursor(cursor); <-
         setListAdapter(new AlarmAdapter(this, cursor));
 
         registerForContextMenu(getListView());

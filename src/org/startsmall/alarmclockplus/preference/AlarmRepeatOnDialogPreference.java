@@ -25,7 +25,7 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
     }
 
     private static final String TAG = "AlarmRepeatOnDialogPreference";
-    private Alarms.RepeatWeekdays mRepeatWeekdays = new Alarms.RepeatWeekdays();
+    private Alarms.RepeatWeekdays mRepeatWeekdays = Alarms.RepeatWeekdays.getInstance();
     private OnRepeatWeekdaysSetListener mListener;
 
     public AlarmRepeatOnDialogPreference(Context context,
@@ -73,14 +73,8 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
         builder.setMultiChoiceItems(weekdays, checked, this);
     }
 
-    public void onClick(DialogInterface dialog,
-                        int which, boolean isChecked) {
-        int day = which + 1;
-        if(isChecked) {
-            mRepeatWeekdays.addDay(day);
-        } else {
-            mRepeatWeekdays.removeDay(day);
-        }
+    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+        mRepeatWeekdays.set(which + 1, isChecked);
     }
 
     public void onClick(DialogInterface dialog, int which) {

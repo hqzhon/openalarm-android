@@ -9,6 +9,7 @@
  */
 package org.startsmall.alarmclockplus;
 
+import android.app.AlarmManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -139,11 +140,21 @@ public class Alarms {
          */
         private int mDays;
 
-        public RepeatWeekdays() {}
-        public RepeatWeekdays(int daysCode) {
+        public static RepeatWeekdays getInstance() {
+            return new RepeatWeekdays();
+        }
+        public static RepeatWeekdays getInstance(int daysCode) {
+            return new RepeatWeekdays(daysCode);
+        }
+
+        private RepeatWeekdays() {}
+        private RepeatWeekdays(int daysCode) {
             mDays = daysCode;
         }
 
+        public boolean isEmpty() {
+            return mDays == 0;
+        }
         public void reset() {
             mDays = 0;
         }
@@ -152,12 +163,12 @@ public class Alarms {
             return (mDays & getCode(day)) > 0;
         }
 
-        public void addDay(int day) {
-            mDays = mDays | getCode(day);
-        }
-
-        public void removeDay(int day) {
-            mDays = mDays & ~getCode(day);
+        public void set(int day, boolean enabled) {
+            if(enabled) {
+                mDays = mDays | getCode(day);
+            } else {
+                mDays = mDays & ~getCode(day);
+            }
         }
 
         private int getCode(int day) {
@@ -230,13 +241,14 @@ public class Alarms {
      *
      */
     public static interface OnVisitListener {
-        public void onVisit(int id,
-                            String label,
-                            int hour, int minutes,
-                            int repeatOnDaysCode,
-                            boolean enabled,
-                            boolean vibrate,
-                            String alertUrl);
+        public void onVisit(final int id,
+                            final String label,
+                            final int hour,
+                            final int minutes,
+                            final int repeatOnDaysCode,
+                            final boolean enabled,
+                            final boolean vibrate,
+                            final String alertUrl);
     }
 
     public static void visitAlarm(ContentResolver contentResolver,
@@ -317,6 +329,83 @@ public class Alarms {
         ContentValues values = new ContentValues();
         return resolver.insert(Uri.parse(CONTENT_URI_ALL_ALARMS),
                                values);
+    }
+
+    // public static void setEnabled(ContentResolver contentResolver,
+    //                               int alarmId, boolean enabled) {
+    //     Cursor cursor = getAlarmCursor(contentResolver, alarmId);
+    //     final String label =
+    //         cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
+    //     final int hour =
+    //         cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
+    //     final int minutes =
+    //         cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
+    //     final int repeatOnDaysCode =
+    //         cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
+    //     final boolean vibrate =
+    //         cursor.getInt(AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
+    //     final String alertUrl =
+    //         cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
+    //     updateAlarm(contentResolver, alarmId, label, hour, minutes,
+    //                 repeatOnDaysCode, enabled, vibrate, alertUrl);
+
+    //     // Use AlarmManager to schedule alarm
+    //     Log.d(TAG, "Set alarm " + alarmId + " " + enabled);
+    // }
+
+    public static void enableAlarm(ContentResolver contentResolver, int alarmId) {
+        Cursor cursor = getAlarmCursor(contentResolver, alarmId);
+        final String label =
+            cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
+        final int hour =
+            cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
+        final int minutes =
+            cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
+        final int repeatOnDaysCode =
+            cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
+        final boolean vibrate =
+            cursor.getInt(AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
+        final String alertUrl =
+            cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
+
+
+
+    }
+
+    public static long getNextAlarmInMillis(final int hourOfDay,
+                                            final int minutes,
+                                            final int repeatOnCode) {
+        // Start with current date and time.
+        Calendar calendar = Calendar.getInstance();
+
+        int nowHourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+        int nowMinutes = calendar.get(Calendar.MINUTE);
+
+        if((hourOfDay < nowHourOfDay) ||
+           ((hourOfDay == nowHourOfDay) && (minutes < nowMinutes))) {
+            // If this alarm is behind current time. Move calendar to tomorrow.
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
+        // Align calendar's time with this alarm.
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minutes);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        // Try to shift calendar by days in order to find the
+        // nearest alarm.
+        RepeatWeekdays repeatOn = RepeatWeekdays.getInstance(repeatOnCode);
+        while(true) {
+            if(repeatOn.hasDay(calendar.get(Calendar.DAY_OF_WEEK))) {
+                break;
+            }
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
+        Log.d(TAG, "===> next alarm " + calendar.toString());
+
+        return calendar.getTimeInMillis();
     }
 
     public static String formatDate(String pattern, Calendar calendar) {
