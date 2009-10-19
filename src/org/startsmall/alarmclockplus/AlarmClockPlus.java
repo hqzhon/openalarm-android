@@ -110,9 +110,9 @@ public class AlarmClockPlus extends ListActivity {
                     public void onClick(View v) {
                         editAlarmSettings(id);
 
-                        Alarms.getNextAlarmInMillis(hourOfDay,
-                                                    minutes,
-                                                    daysCode);
+                        // Alarms.getNextAlarmInMillis(hourOfDay,
+                        //                             minutes,
+                        //                             daysCode);
 
 
                     }

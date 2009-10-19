@@ -10,8 +10,10 @@
 package org.startsmall.alarmclockplus;
 
 import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
@@ -338,11 +340,41 @@ public class Alarms {
                                values);
     }
 
-    public static void scheduleNextAlarm(Context context, final int alarmId) {
-        Cursor cursor = getAlarmCursor(context.getContentResolver(), alarmId);
+    public static void scheduleAlarms(final Context context) {
+        class Listener implements OnVisitListener {
+            private Context mContext;
+            Listener(Context context) {
+                mContext = context;
+            }
+
+            public void onVisit(final int id,
+                                final String label,
+                                final int hour,
+                                final int minutes,
+                                final int repeatOnDaysCode,
+                                final boolean enabled,
+                                final boolean vibrate,
+                                final String alertUrl) {
+                if(!enabled) {
+                    return;
+                }
+                // scheduleNextAlarm(context, id);
+                setAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
+            }
+        }
+
+        visitAlarm(context.getContentResolver(),
+                   getAlarmUri(-1),
+                   new Listener(context));
+    }
+
+    public static void scheduleNextAlarm(Context context,
+                                         final int alarmId) {
+        Cursor cursor = getAlarmCursor(context.getContentResolver(),
+                                       alarmId);
 
         final boolean enabled =
-            cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX);
+            cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
         if(!enabled) {
             return;
         }
@@ -365,20 +397,20 @@ public class Alarms {
                                  final int minutes,
                                  final int repeatOnDaysCode,
                                  final String alertUrl) {
-        PendingIntent alarmIntent =
-            PendingIntent.getBroadcast(context, 0,
-                                       new Intent(                      ),
-                                       PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        if(enable) {
-            long alarmTimeInMillis =
-                getNextAlarmInMillis(hour, minutes, repeatOnDaysCode) - sBootWallTimeInMillis;
-            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                             alarmTimeInMillis,
-                             alarmIntent);
-        } else {
-            alarmManager.cancel(alarmIntent);
-        }
+        // PendingIntent alarmIntent =
+        //     PendingIntent.getBroadcast(context, 0,
+        //                                new Intent(                      ),
+        //                                PendingIntent.FLAG_ONE_SHOT);
+        // AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        // if(enable) {
+        //     long alarmTimeInMillis =
+        //         getNextAlarmInMillis(hour, minutes, repeatOnDaysCode) - sBootWallTimeInMillis;
+        //     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        //                      alarmTimeInMillis,
+        //                      alarmIntent);
+        // } else {
+        //     alarmManager.cancel(alarmIntent);
+        // }
     }
 
     private static long getNextAlarmInMillis(final int hourOfDay,
