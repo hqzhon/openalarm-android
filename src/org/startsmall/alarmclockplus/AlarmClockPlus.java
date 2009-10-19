@@ -44,14 +44,6 @@ public class AlarmClockPlus extends ListActivity {
 
     private class AlarmAdapter extends CursorAdapter {
         private LayoutInflater mInflater;
-        private View.OnClickListener mOnClickListener =
-            new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int alarmId = (Integer)v.getTag();
-                    editAlarmSettings(alarmId);
-                }
-            };
 
         // private View.OnCreateContextMenuListener mContextMenuListener =
         //     new View.OnCreateContextMenuListener() {
@@ -78,8 +70,6 @@ public class AlarmClockPlus extends ListActivity {
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
-            view.setTag(id);
-
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
@@ -124,15 +114,31 @@ public class AlarmClockPlus extends ListActivity {
              * item's extended activities. Here, the first-class
              * activity is to edit item's settings.
              */
-            view.setOnClickListener(mOnClickListener);
+            view.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        editAlarmSettings(id);
+                    }
+                });
 
+            /**
+             * The context menu listener of the view must be set
+             * in order for its parent's onCreateMenu() to be
+             * called to create context menu. This should be a
+             * bug but I'm not very sure.
+             *
+             * The ContextMenu.ContextMenuInfo object is returned
+             * by getContextMenuInfo() overriden by
+             * clients. Here, it is null.
+             *
+             */
             view.setOnCreateContextMenuListener(
                 new View.OnCreateContextMenuListener() {
                     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
-                        Log.d(TAG, "=============> View.onCreateContextMenu");
+                        menu.setHeaderTitle(label);
+                        menu.add(id, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
                     }
-
-
                 });
         }
 
@@ -158,11 +164,6 @@ public class AlarmClockPlus extends ListActivity {
 
         registerForContextMenu(getListView());
     }
-
-
-
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -190,43 +191,12 @@ public class AlarmClockPlus extends ListActivity {
         return true;
     }
 
-    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
-
-
-        Log.d(TAG, "=================> Create context menu");
-
-
-        AdapterView.AdapterContextMenuInfo info;
-        try {
-            info = (AdapterView.AdapterContextMenuInfo)menuInfo;
-        } catch (ClassCastException e) {
-            Log.e(TAG, "bad menuInfo", e);
-            return;
-        }
-
-        Cursor c = (Cursor)getListAdapter().getItem(info.position);
-        if(c == null) {
-            return;
-        }
-
-        menu.setHeaderTitle(c.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX));
-        menu.add(0, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
-    }
-
     public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info;
-        try {
-            info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-        } catch(ClassCastException e) {
-            Log.d(TAG, "bad menuInfo");
-            return false;
-        }
-
-        final int alarmId = new Long(info.id).intValue();
+        final int alarmId = item.getGroupId();
         switch(item.getItemId()) {
         case MENU_ITEM_DELETE_ID:
             new AlertDialog.Builder(this)
-                .setMessage(R.string.delete_alarm_message)
+                .setMessage(R.string.confirm_alarm_deletion_title)
                 .setTitle(R.string.delete_alarm_message)
                 .setPositiveButton(
                     R.string.ok,
@@ -238,7 +208,6 @@ public class AlarmClockPlus extends ListActivity {
                 .setNegativeButton(R.string.cancel, null)
                 .create()
                 .show();
-            // AlarmClockPlus.this.deleteAlarm(new Long(info.id).intValue());
             break;
 
         default:

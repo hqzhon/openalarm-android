@@ -11,11 +11,8 @@ package org.startsmall.alarmclockplus.preference;
 
 import org.startsmall.alarmclockplus.*;
 import android.content.Context;
-//import android.content.res.TypedArray;
-//import android.os.Parcelable;
 import android.preference.Preference;
 import android.util.AttributeSet;
-//import android.util.Log;
 
 public abstract class TextViewPreference extends Preference {
     public TextViewPreference(Context context, AttributeSet attrs) {

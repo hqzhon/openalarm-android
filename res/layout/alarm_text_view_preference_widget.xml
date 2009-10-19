@@ -6,4 +6,6 @@
           android:layout_gravity="center_vertical"
           android:layout_marginRight="6sp"
           android:focusable="false"
+          android:singleLine="true"
+          android:ellipsize="marquee"
           android:clickable="false"/>
