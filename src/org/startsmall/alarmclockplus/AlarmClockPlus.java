@@ -81,10 +81,17 @@ public class AlarmClockPlus extends ListActivity {
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged(CompoundButton buttonView,
                                                  boolean isChecked) {
-                        Alarms.setAlarmEnabled(AlarmClockPlus.this, id, isChecked);
-                        // if(isChecked) {
-                        //     Alarms.scheduleAlarm(AlarmClockPlus.this, id);
-                        // }
+                        // TODO: Testing.......
+
+
+
+                        Alarms.setAlarmEnabled(AlarmClockPlus.this,
+                                               id, isChecked);
+                        if(isChecked) {
+                            Alarms.scheduleAlarm(AlarmClockPlus.this, id);
+                        } else {
+                            Alarms.deactivateAlarm(AlarmClockPlus.this, id);
+                        }
                     }
                 });
 

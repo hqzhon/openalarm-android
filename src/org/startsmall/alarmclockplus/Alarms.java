@@ -140,6 +140,7 @@ public class Alarms {
     public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
     public static final String INTENT_EXTRA_ALARM_LABEL_KEY = "alarm_label";
     public static final String INTENT_EXTRA_ALARM_ACTION_KEY = "alarm_action";
+    public static final String INTENT_EXTRA_ALARM_EXTRA_KEY = "alarm_extra";
 
     public static class RepeatWeekdays {
         /**
@@ -272,26 +273,6 @@ public class Alarms {
                             final String extra);
     }
 
-    private static class ActivateAlarm implements OnVisitListener {
-        public void onVisit(Context context,
-                            final int id,
-                            final String label,
-                            final int hour,
-                            final int minutes,
-                            final int atTimeInMillis,
-                            final int repeatOnDaysCode,
-                            final boolean enabled,
-                            final String action,
-                            final String extra) {
-            if(!enabled) {
-                return;
-            }
-            activateAlarm(context, id, label,
-                          hour, minutes,
-                          atTimeInMillis, repeatOnDaysCode, action, extra);
-        }
-    }
-
     public static void forEachAlarm(Context context,
                                     Uri alarmUri,
                                     OnVisitListener listener) {
@@ -328,7 +309,7 @@ public class Alarms {
                                      atTimeInMillis, repeatOnDaysCode,
                                      enabled, action, extra);
                 }
-            }while(cursor.moveToNext());
+            } while(cursor.moveToNext());
         }
         cursor.close();
     }
@@ -343,94 +324,15 @@ public class Alarms {
         return context.getContentResolver().delete(alarmUri, null, null);
     }
 
-    public static int updateAlarm(Context context,
-                                  int id,
-                                  String label,
-                                  int hour,
-                                  int minutes,
-                                  int atTimeInMillis,
-                                  int repeatOnDaysCode,
-                                  boolean enabled,
-                                  String action,
-                                  String extra) {
-        if(id < 0) {
+    public synchronized static int updateAlarm(final Context context,
+                                               final int alarmId,
+                                               final ContentValues newValues) {
+        if(alarmId < 0 || newValues == null) {
             return -1;
         }
-
-        ContentValues values = new ContentValues();
-        values.put(AlarmColumns._ID, id);
-        values.put(AlarmColumns.LABEL, label);
-        values.put(AlarmColumns.HOUR, hour);
-        values.put(AlarmColumns.MINUTES, minutes);
-        values.put(AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-        values.put(AlarmColumns.REPEAT_DAYS, repeatOnDaysCode);
-        values.put(AlarmColumns.ENABLED, enabled);
-        values.put(AlarmColumns.ACTION, action);
-        values.put(AlarmColumns.EXTRA, extra);
-
-        Uri uri = Alarms.getAlarmUri(id);
-        return context.getContentResolver().update(uri, values, null, null);
-    }
-
-    public static void scheduleAlarm(Context context, int alarmId) {
-        forEachAlarm(context, getAlarmUri(alarmId), new ActivateAlarm());
-    }
-
-
-
-
-
-
-
-
-
-    public static void activateAlarm(Context context,
-                                     final int id,
-                                     final String label,
-                                     final int hour,
-                                     final int minutes,
-                                     final int atTimeInMillis,
-                                     final int repeatOnDaysCode,
-                                     final String action,
-                                     final String extra) {
-        Intent intent = new Intent(Alarms.DISPATCH_ACTION);
-        intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
-        intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
-        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
-
-        AlarmManager alarmManager =
-            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        long alarmTimeInMillis =
-            getGoOffTimeInMillis(hour, minutes, repeatOnDaysCode);
-
-        // //////////////////////////////////////////////////////////
-        // Save this time into alarm settings for later use. For
-        // example, deactivate this alarm.
-        // //////////////////////////////////////////////////////////
-
-
-
-
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(alarmTimeInMillis);
-        Log.d(TAG, "===> alarm set at " + calendar);
-
-        alarmManager.set(AlarmManager.RTC_WAKEUP,
-                         alarmTimeInMillis,
-                         PendingIntent.getBroadcast(
-                             context, 0, intent,
-                             PendingIntent.FLAG_CANCEL_CURRENT));
-    }
-
-
-
-
-
-
-
-    private static void deactivateAlarm(Context context, final int id) {
-
+        Uri uri = Alarms.getAlarmUri(alarmId);
+        return context.getContentResolver().update(
+            uri, newValues, null, null);
     }
 
     public static void setAlarmEnabled(final Context context,
@@ -439,32 +341,84 @@ public class Alarms {
         if(alarmId < 0) {
             return;
         }
-
         Log.d(TAG, "setAlarmEnabled(" + alarmId + ") " + enabled);
-
-        // forEachAlarm(context, getAlarmUri(alarmId),
-        //              new OnVisitListener() {
-        //                  public void onVisit(
-        //                      final Context context,
-        //                      final int id,
-        //                      final String label,
-        //                      final int hour,
-        //                      final int minutes,
-        //                      final int repeatOnDaysCode,
-        //                      final boolean ena,
-        //                      final boolean vibrate,
-        //                      final String alertUrl) {
-        //                      updateAlarm(context,
-        //                                  id, label, hour, minutes,
-        //                                  repeatOnDaysCode, enabled,
-        //                                  vibrate, alertUrl);
-        //                  }
-        //              });
+        ContentValues newValues = new ContentValues();
+        newValues.put(AlarmColumns.ENABLED, enabled);
+        updateAlarm(context, alarmId, newValues);
     }
 
+    public static void scheduleAlarm(Context context, int alarmId) {
+        forEachAlarm(
+            context, getAlarmUri(alarmId),
+            new OnVisitListener() {
+                public void onVisit(Context context,
+                                    final int id,
+                                    final String label,
+                                    final int hour,
+                                    final int minutes,
+                                    final int atTimeInMillis,
+                                    final int repeatOnDaysCode,
+                                    final boolean enabled,
+                                    final String action,
+                                    final String extra) {
+                    if(!enabled) {
+                        return;
+                    }
+                    activateAlarm(context, id, label,
+                                  hour, minutes,
+                                  repeatOnDaysCode,
+                                  action, extra);
+                }
+            });
+    }
+
+    public static void deactivateAlarm(Context context, final int alarmId) {
+        if(alarmId < 0) {
+            return;
+        }
+
+        // Get alarm settings in order to create an intent for
+        // alarm cacellation.
+        class GetAlarm implements OnVisitListener {
+            public String mLabel;
+            public String mAction;
+            public String mExtra;
+
+            public void onVisit(Context context,
+                                final int id,
+                                final String label,
+                                final int hour,
+                                final int minutes,
+                                final int atTimeInMillis,
+                                final int repeatOnDaysCode,
+                                final boolean enabled,
+                                final String action,
+                                final String extra) {
+                mLabel = label;
+                mAction = action;
+                mExtra = extra;
+            }
+        }
+        GetAlarm getAlarm = new GetAlarm();
+        forEachAlarm(context, getAlarmUri(alarmId), getAlarm);
+
+        Intent intent = new Intent(DISPATCH_ACTION);
+        intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, alarmId);
+        intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, getAlarm.mLabel);
+        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, getAlarm.mAction);
+        intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, getAlarm.mExtra);
+
+        AlarmManager alarmManager =
+            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(
+            PendingIntent.getBroadcast(
+                context, 0, intent,
+                PendingIntent.FLAG_CANCEL_CURRENT));
+
+        // TODO: Cancel notification
 
 
-
+    }
 
     public static String formatDate(String pattern, Calendar calendar) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
@@ -473,26 +427,49 @@ public class Alarms {
 
 
 
+    private static void activateAlarm(Context context,
+                                      final int id,
+                                      final String label,
+                                      final int hour,
+                                      final int minutes,
+                                      final int repeatOnDaysCode,
+                                      final String action,
+                                      final String extra) {
+        Intent intent = new Intent(DISPATCH_ACTION);
+        intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
+        intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
+        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
+        intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, extra);
+
+        AlarmManager alarmManager =
+            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
+        long atTimeInMillis =
+            getGoOffTimeInMillis(hour, minutes, repeatOnDaysCode);
+
+        // Save this time into alarm settings for later use. For
+        // example, deactivate this alarm.
+        ContentValues newValues = new ContentValues();
+        newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
+        updateAlarm(context, id, newValues);
+
+        // TODO: Notify system that an alarm has been set.
+        // Calendar calendar = Calendar.getInstance();
+        // calendar.setTimeInMillis(atTimeInMillis);
+        // Log.d(TAG, "===> alarm set at " + calendar);
+
+        // NotificationManager notificationManager =
+        //     (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        alarmManager.set(AlarmManager.RTC_WAKEUP,
+                         atTimeInMillis,
+                         PendingIntent.getBroadcast(
+                             context, 0, intent,
+                             PendingIntent.FLAG_CANCEL_CURRENT));
+    }
 
     private static long getGoOffTimeInMillis(final int hourOfDay,
                                              final int minutes,

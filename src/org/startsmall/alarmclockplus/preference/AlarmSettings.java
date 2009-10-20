@@ -15,6 +15,7 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -159,16 +160,18 @@ public class AlarmSettings extends PreferenceActivity
             final int minutes = time % 100;
             final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
 
-            Alarms.updateAlarm(this,
-                               alarmId,
-                               label,
-                               hourOfDay, minutes,
-                               0 /* alarm goes off at this time */,
-                               repeatOnCode,
-                               true /* TODO: set alarm enabled? */,
-                               "" /* alarm action*/,
-                               "" /* extra data for this alarm */
-                );
+            ContentValues newValues =
+                new ContentValues();
+            newValues.put(Alarms.AlarmColumns.LABEL, label);
+            newValues.put(Alarms.AlarmColumns.HOUR, hourOfDay);
+            newValues.put(Alarms.AlarmColumns.MINUTES, minutes);
+            newValues.put(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
+
+            // TODO: Should save
+            //       - action,
+            //       - any extra preferences
+
+            Alarms.updateAlarm(this, alarmId, newValues);
         }
     }
 
