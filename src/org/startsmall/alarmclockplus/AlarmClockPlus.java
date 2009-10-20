@@ -45,20 +45,69 @@ public class AlarmClockPlus extends ListActivity {
 
     private class AlarmAdapter extends CursorAdapter {
         private LayoutInflater mInflater;
+        private Alarms.RepeatWeekdays mRepeatOn;
+        private View.OnClickListener mOnClickListener;
+        private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
+        private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
             mInflater = AlarmClockPlus.this.getLayoutInflater();
+            mRepeatOn = Alarms.RepeatWeekdays.getInstance();
+            mOnClickListener =
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Bundle data = (Bundle)view.getTag();
+
+                        int alarmId = data.getInt(Alarms.AlarmColumns._ID);
+                        editAlarmSettings(alarmId);
+                    }
+                };
+            mOnCreateContextMenuListener =
+                new View.OnCreateContextMenuListener() {
+                    public void onCreateContextMenu(ContextMenu menu,
+                                                    View v,
+                                                    ContextMenu.ContextMenuInfo menuInfo) {
+                        Bundle data = (Bundle)v.getTag();
+
+                        String label = data.getString(Alarms.AlarmColumns.LABEL);
+                        int alarmId = data.getInt(Alarms.AlarmColumns._ID);
+
+                        menu.setHeaderTitle(label);
+                        menu.add(alarmId, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
+                    }
+                };
+            mOnCheckedChangeListener =
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged(CompoundButton buttonView,
+                                                 boolean isChecked) {
+                        View parent = (View)buttonView.getParent();
+                        Bundle data = (Bundle)parent.getTag();
+                        int alarmId = data.getInt(Alarms.AlarmColumns._ID);
+
+                        Log.d(TAG, "================> " + alarmId + " Run onCheckedChanged(" + isChecked + ", " + alarmId + ");");
+                        Alarms.setAlarm(AlarmClockPlus.this, alarmId, isChecked);
+                    }
+                };
+
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            Log.d(TAG, "=====> bindView() : " + view);
+
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
             final int daysCode = cursor.getInt(Alarms.AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
             final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
+
+            Bundle viewBundle = new Bundle();
+            viewBundle.putInt(Alarms.AlarmColumns._ID, id);
+            viewBundle.putString(Alarms.AlarmColumns.LABEL, label);
+            view.setTag(viewBundle);
 
             // Time
             TextView timeView = (TextView)view.findViewById(R.id.time);
@@ -77,34 +126,26 @@ public class AlarmClockPlus extends ListActivity {
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
             enabledCheckBox.setChecked(enabled);
-            enabledCheckBox.setOnCheckedChangeListener(
-                new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged(CompoundButton buttonView,
-                                                 boolean isChecked) {
-                        // TODO: Testing.......
-
-
-
-                        Alarms.setAlarmEnabled(AlarmClockPlus.this,
-                                               id, isChecked);
-                        if(isChecked) {
-                            Alarms.scheduleAlarm(AlarmClockPlus.this, id);
-                        } else {
-                            Alarms.deactivateAlarm(AlarmClockPlus.this, id);
-                        }
-                    }
-                });
 
             // Repeat days
             final TextView repeatDays =
                 (TextView)view.findViewById(R.id.repeat_days);
-            String daysString = Alarms.RepeatWeekdays.getInstance(daysCode).toString();
-            repeatDays.setText(daysString);
+            mRepeatOn.setCode(daysCode);
+            repeatDays.setText(mRepeatOn.toString());
             if(daysCode == 0) {
                 repeatDays.setVisibility(View.GONE);
             } else {
                 repeatDays.setVisibility(View.VISIBLE);
             }
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View view = mInflater.inflate(R.layout.alarm_list_item,
+                                          parent,
+                                          false);
+
+            Log.d(TAG, "=====> newView() " + view);
 
             /**
              * Should follow Android's design. Click to go to
@@ -112,13 +153,7 @@ public class AlarmClockPlus extends ListActivity {
              * item's extended activities. Here, the first-class
              * activity is to edit item's settings.
              */
-            view.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        editAlarmSettings(id);
-                    }
-                });
+            view.setOnClickListener(mOnClickListener);
 
             /**
              * The context menu listener of the view must be set
@@ -131,19 +166,12 @@ public class AlarmClockPlus extends ListActivity {
              * clients. Here, it is null.
              *
              */
-            view.setOnCreateContextMenuListener(
-                new View.OnCreateContextMenuListener() {
-                    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
-                        menu.setHeaderTitle(label);
-                        menu.add(id, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
-                    }
-                });
-        }
+            view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
 
-        @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View view =
-                mInflater.inflate(R.layout.alarm_list_item, parent, false);
+            // Enable this alarm?
+            final CheckBox enabledCheckBox =
+                (CheckBox)view.findViewById(R.id.enabled);
+            enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
             return view;
         }
     }
@@ -153,14 +181,15 @@ public class AlarmClockPlus extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        Cursor cursor = Alarms.getAlarmCursor(getContentResolver(), -1);
+        Cursor alarmsCursor = Alarms.getAlarmCursor(this, -1);
         // FIXME: Don't know why enabling this line will prevent
         // deleted row from removing from ListView. Need to
         // figure out.
-        //-> startManagingCursor(cursor); <-
-        setListAdapter(new AlarmAdapter(this, cursor));
 
-        registerForContextMenu(getListView());
+        //-> startManagingCursor(cursor); <-
+        setListAdapter(new AlarmAdapter(this, alarmsCursor));
+
+        // registerForContextMenu(getListView());
     }
 
     @Override
@@ -194,8 +223,8 @@ public class AlarmClockPlus extends ListActivity {
         switch(item.getItemId()) {
         case MENU_ITEM_DELETE_ID:
             new AlertDialog.Builder(this)
-                .setMessage(R.string.confirm_alarm_deletion_title)
-                .setTitle(R.string.delete_alarm_message)
+                .setMessage(R.string.delete_alarm_message)
+                .setTitle(R.string.confirm_alarm_deletion_title)
                 .setPositiveButton(
                     R.string.ok,
                     new DialogInterface.OnClickListener() {
@@ -230,6 +259,7 @@ public class AlarmClockPlus extends ListActivity {
     }
 
     private void editAlarmSettings(int alarmId) {
+        Log.d(TAG, "Edit " + Alarms.getAlarmUri(alarmId));
         Intent intent = new Intent(this, AlarmSettings.class);
         intent.putExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, alarmId);
         startActivity(intent);

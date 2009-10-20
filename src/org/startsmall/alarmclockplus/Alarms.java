@@ -237,22 +237,16 @@ public class Alarms {
         }
     }
 
-    public static Cursor getAlarmCursor(ContentResolver contentResolver,
-                                        int alarmId) {
-        Uri alarmUri;
-        if(alarmId != -1) {
-            alarmUri = getAlarmUri(alarmId);
-        } else {
-            alarmUri = Uri.parse(CONTENT_URI_ALL_ALARMS);
-        }
-
+    public static Cursor getAlarmCursor(Context context, int alarmId) {
+        Uri alarmUri = getAlarmUri(alarmId);
         Log.d(TAG, "Get alarm " + alarmUri);
 
-        return contentResolver.query(alarmUri,
-                                     AlarmColumns.QUERY_COLUMNS,
-                                     null,
-                                     null,
-                                     AlarmColumns.DEFAULT_SORT_ORDER);
+        return context.getContentResolver().query(
+            alarmUri,
+            AlarmColumns.QUERY_COLUMNS,
+            null,
+            null,
+            AlarmColumns.DEFAULT_SORT_ORDER);
     }
 
    /**
@@ -273,9 +267,9 @@ public class Alarms {
                             final String extra);
     }
 
-    public static void forEachAlarm(Context context,
-                                    Uri alarmUri,
-                                    OnVisitListener listener) {
+    public synchronized static void forEachAlarm(Context context,
+                                                 Uri alarmUri,
+                                                 OnVisitListener listener) {
         Cursor cursor =
             context.getContentResolver().query(
                 alarmUri,
@@ -335,21 +329,85 @@ public class Alarms {
             uri, newValues, null, null);
     }
 
-    public static void setAlarmEnabled(final Context context,
-                                       final int alarmId,
-                                       final boolean enabled) {
+    public static void setAlarm(final Context context,
+                                final int alarmId,
+                                final boolean enabled) {
         if(alarmId < 0) {
             return;
         }
-        Log.d(TAG, "setAlarmEnabled(" + alarmId + ") " + enabled);
+
+        Log.d(TAG, "setAlarm(" + alarmId + ") - " + enabled);
+
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled);
         updateAlarm(context, alarmId, newValues);
+
+        // Uri alarmUri = getAlarmUri(alarmId);
+        // if(enabled) {
+        //     activateAlarm(context, alarmUri);
+        // } else {
+        //     deactivateAlarm(context, alarmUri);
+        // }
     }
 
-    public static void scheduleAlarm(Context context, int alarmId) {
+    private static void activateAlarm(final Context context,
+                                      final Uri alarmUri) {
         forEachAlarm(
-            context, getAlarmUri(alarmId),
+            context, alarmUri,
+            new OnVisitListener() {
+                public void onVisit(final Context context,
+                                    final int id,
+                                    final String label,
+                                    final int hour,
+                                    final int minutes,
+                                    final int oldAtTimeInMillis,
+                                    final int repeatOnDaysCode,
+                                    final boolean enabled,
+                                    final String action,
+                                    final String extra) {
+                    if(enabled) {
+                        return;
+                    }
+
+                    Intent intent = new Intent(DISPATCH_ACTION);
+                    intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
+                    intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
+                    intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
+                    intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, extra);
+
+                    AlarmManager alarmManager =
+                        (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
+                    long atTimeInMillis =
+                        getGoOffTimeInMillis(hour, minutes, repeatOnDaysCode);
+
+                    // Save this time into alarm settings for later use. For
+                    // example, deactivate this alarm.
+                    ContentValues newValues = new ContentValues();
+                    newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
+                    updateAlarm(context, id, newValues);
+
+                    // TODO: Notify system that an alarm has been set.
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(atTimeInMillis);
+                    Log.d(TAG, "===> alarm set at " + calendar);
+
+                    // NotificationManager notificationManager =
+                    //     (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                    alarmManager.set(AlarmManager.RTC_WAKEUP,
+                                     atTimeInMillis,
+                                     PendingIntent.getBroadcast(
+                                         context, 0, intent,
+                                         PendingIntent.FLAG_CANCEL_CURRENT));
+                }
+            });
+    }
+
+    private static void deactivateAlarm(final Context context,
+                                        final Uri alarmUri) {
+        forEachAlarm(
+            context, alarmUri,
             new OnVisitListener() {
                 public void onVisit(Context context,
                                     final int id,
@@ -364,60 +422,22 @@ public class Alarms {
                     if(!enabled) {
                         return;
                     }
-                    activateAlarm(context, id, label,
-                                  hour, minutes,
-                                  repeatOnDaysCode,
-                                  action, extra);
+                    Intent intent = new Intent(DISPATCH_ACTION);
+                    intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
+                    intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
+                    intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
+                    intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, extra);
+
+                    AlarmManager alarmManager =
+                        (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+                    alarmManager.cancel(
+                        PendingIntent.getBroadcast(
+                            context, 0, intent,
+                            PendingIntent.FLAG_CANCEL_CURRENT));
                 }
             });
-    }
-
-    public static void deactivateAlarm(Context context, final int alarmId) {
-        if(alarmId < 0) {
-            return;
-        }
-
-        // Get alarm settings in order to create an intent for
-        // alarm cacellation.
-        class GetAlarm implements OnVisitListener {
-            public String mLabel;
-            public String mAction;
-            public String mExtra;
-
-            public void onVisit(Context context,
-                                final int id,
-                                final String label,
-                                final int hour,
-                                final int minutes,
-                                final int atTimeInMillis,
-                                final int repeatOnDaysCode,
-                                final boolean enabled,
-                                final String action,
-                                final String extra) {
-                mLabel = label;
-                mAction = action;
-                mExtra = extra;
-            }
-        }
-        GetAlarm getAlarm = new GetAlarm();
-        forEachAlarm(context, getAlarmUri(alarmId), getAlarm);
-
-        Intent intent = new Intent(DISPATCH_ACTION);
-        intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, alarmId);
-        intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, getAlarm.mLabel);
-        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, getAlarm.mAction);
-        intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, getAlarm.mExtra);
-
-        AlarmManager alarmManager =
-            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(
-            PendingIntent.getBroadcast(
-                context, 0, intent,
-                PendingIntent.FLAG_CANCEL_CURRENT));
 
         // TODO: Cancel notification
-
-
     }
 
     public static String formatDate(String pattern, Calendar calendar) {
@@ -426,50 +446,6 @@ public class Alarms {
     }
 
 
-
-    private static void activateAlarm(Context context,
-                                      final int id,
-                                      final String label,
-                                      final int hour,
-                                      final int minutes,
-                                      final int repeatOnDaysCode,
-                                      final String action,
-                                      final String extra) {
-        Intent intent = new Intent(DISPATCH_ACTION);
-        intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
-        intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
-        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
-        intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, extra);
-
-        AlarmManager alarmManager =
-            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-
-        long atTimeInMillis =
-            getGoOffTimeInMillis(hour, minutes, repeatOnDaysCode);
-
-        // Save this time into alarm settings for later use. For
-        // example, deactivate this alarm.
-        ContentValues newValues = new ContentValues();
-        newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-        updateAlarm(context, id, newValues);
-
-        // TODO: Notify system that an alarm has been set.
-        // Calendar calendar = Calendar.getInstance();
-        // calendar.setTimeInMillis(atTimeInMillis);
-        // Log.d(TAG, "===> alarm set at " + calendar);
-
-        // NotificationManager notificationManager =
-        //     (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-
-
-
-        alarmManager.set(AlarmManager.RTC_WAKEUP,
-                         atTimeInMillis,
-                         PendingIntent.getBroadcast(
-                             context, 0, intent,
-                             PendingIntent.FLAG_CANCEL_CURRENT));
-    }
 
     private static long getGoOffTimeInMillis(final int hourOfDay,
                                              final int minutes,
