@@ -77,9 +77,6 @@ public class Alarms {
     public static final String CONTENT_URI_SINGLE_ALARM =
         CONTENT_URI_ALL_ALARMS + "/#";
 
-
-    public static long sBootWallTimeInMillis = 0;
-
     /*****************************************************************
      * For constants used in content provider and SQLiteDatabase.    *
      *****************************************************************/
@@ -99,26 +96,29 @@ public class Alarms {
         /// Minutes (0 - 59)
         public static final String MINUTES = "minutes";
 
+        /// Go off time in milliseconds
+        public static final String AT_TIME_IN_MILLIS = "time";
+
         /// Days this alarm works in this week.
         public static final String REPEAT_DAYS = "repeat_days";
 
         /// Whether or not this alarm is active currently
         public static final String ENABLED = "enabled";
 
-        /// Whether or not this alarm vibrate
-        public static final String VIBRATE = "vibrate";
+        /// Audio to play when alarm triggers.
+        public static final String ACTION = "action";
 
         /// Audio to play when alarm triggers.
-        public static final String ALERT_URI = "alert_uri";
+        public static final String EXTRA = "extra";
 
         /**
          * Columns that will be pulled from a row. These should
          * be in sync with PROJECTION indexes.
          *
          */
-        private static final String[] QUERY_COLUMNS = {
-            _ID, LABEL, HOUR, MINUTES, REPEAT_DAYS,
-            ENABLED, VIBRATE, ALERT_URI};
+        public static final String[] QUERY_COLUMNS = {
+            _ID, LABEL, HOUR, MINUTES, AT_TIME_IN_MILLIS, REPEAT_DAYS,
+            ENABLED, ACTION, EXTRA};
 
         /**
          *
@@ -127,16 +127,18 @@ public class Alarms {
         public static final int PROJECTION_LABEL_INDEX = 1;
         public static final int PROJECTION_HOUR_INDEX = 2;
         public static final int PROJECTION_MINUTES_INDEX = 3;
-        public static final int PROJECTION_REPEAT_DAYS_INDEX = 4;
-        public static final int PROJECTION_ENABLED_INDEX = 5;
-        public static final int PROJECTION_VIBRATE_INDEX = 6;
-        public static final int PROJECTION_ALERT_URI_INDEX = 7;
+        public static final int PROJECTION_AT_TIME_IN_MILLIS_INDEX = 4;
+        public static final int PROJECTION_REPEAT_DAYS_INDEX = 5;
+        public static final int PROJECTION_ENABLED_INDEX = 6;
+        public static final int PROJECTION_ACTION_INDEX = 7;
+        public static final int PROJECTION_EXTRA_INDEX = 8;
     }
 
     /******************************************************************
      * Key strings used in Intent data.                               *
      ******************************************************************/
     public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
+    public static final String INTENT_EXTRA_ALARM_LABEL_KEY = "alarm_label";
     public static final String INTENT_EXTRA_ALARM_ACTION_KEY = "alarm_action";
 
     public static class RepeatWeekdays {
@@ -258,26 +260,48 @@ public class Alarms {
      *
      */
     public static interface OnVisitListener {
-        public void onVisit(final int id,
+        public void onVisit(Context context,
+                            final int id,
                             final String label,
                             final int hour,
                             final int minutes,
+                            final int atTimeInMillis,
                             final int repeatOnDaysCode,
                             final boolean enabled,
-                            final boolean vibrate,
-                            final String alertUrl);
+                            final String action,
+                            final String extra);
     }
 
-    public static void forEachAlarm(ContentResolver contentResolver,
+    private static class ActivateAlarm implements OnVisitListener {
+        public void onVisit(Context context,
+                            final int id,
+                            final String label,
+                            final int hour,
+                            final int minutes,
+                            final int atTimeInMillis,
+                            final int repeatOnDaysCode,
+                            final boolean enabled,
+                            final String action,
+                            final String extra) {
+            if(!enabled) {
+                return;
+            }
+            activateAlarm(context, id, label,
+                          hour, minutes,
+                          atTimeInMillis, repeatOnDaysCode, action, extra);
+        }
+    }
+
+    public static void forEachAlarm(Context context,
                                     Uri alarmUri,
                                     OnVisitListener listener) {
-        Log.d(TAG, "vistAlarm(" + alarmUri.toString() + ")");
         Cursor cursor =
-            contentResolver.query(alarmUri,
-                                  AlarmColumns.QUERY_COLUMNS,
-                                  null,
-                                  null,
-                                  AlarmColumns.DEFAULT_SORT_ORDER);
+            context.getContentResolver().query(
+                alarmUri,
+                AlarmColumns.QUERY_COLUMNS,
+                null,
+                null,
+                AlarmColumns.DEFAULT_SORT_ORDER);
         if(cursor.moveToFirst()) {
             do {
                 final int id =
@@ -288,42 +312,47 @@ public class Alarms {
                     cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
                 final int minutes =
                     cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
+                final int atTimeInMillis =
+                    cursor.getInt(AlarmColumns.PROJECTION_AT_TIME_IN_MILLIS_INDEX);
                 final int repeatOnDaysCode =
                     cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
                 final boolean enabled =
                     cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
-                final boolean vibrate =
-                    cursor.getInt(AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
-                final String alertUrl =
-                    cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
+                final String action =
+                    cursor.getString(AlarmColumns.PROJECTION_ACTION_INDEX);
+                final String extra =
+                    cursor.getString(AlarmColumns.PROJECTION_EXTRA_INDEX);
+
                 if(listener != null) {
-                    listener.onVisit(id, label, hour, minutes,
-                                     repeatOnDaysCode,
-                                     enabled, vibrate, alertUrl);
+                    listener.onVisit(context, id, label, hour, minutes,
+                                     atTimeInMillis, repeatOnDaysCode,
+                                     enabled, action, extra);
                 }
             }while(cursor.moveToNext());
         }
         cursor.close();
     }
 
-    public static int deleteAlarm(ContentResolver contentResolver,
-                                  int alarmId) {
-        Uri alarmUri = Alarms.getAlarmUri(alarmId);
-
-        Log.d(TAG, "Alarms.deleteAlarm(" + alarmUri + ")");
-
-        return contentResolver.delete(alarmUri, null, null);
+    public static Uri newAlarm(Context context) {
+        return context.getContentResolver().insert(
+            Uri.parse(CONTENT_URI_ALL_ALARMS), null);
     }
 
-    public static int updateAlarm(ContentResolver resolver,
+    public static int deleteAlarm(Context context, int alarmId) {
+        Uri alarmUri = Alarms.getAlarmUri(alarmId);
+        return context.getContentResolver().delete(alarmUri, null, null);
+    }
+
+    public static int updateAlarm(Context context,
                                   int id,
                                   String label,
                                   int hour,
                                   int minutes,
+                                  int atTimeInMillis,
                                   int repeatOnDaysCode,
                                   boolean enabled,
-                                  boolean vibrate,
-                                  String alertUrl) {
+                                  String action,
+                                  String extra) {
         if(id < 0) {
             return -1;
         }
@@ -333,114 +362,139 @@ public class Alarms {
         values.put(AlarmColumns.LABEL, label);
         values.put(AlarmColumns.HOUR, hour);
         values.put(AlarmColumns.MINUTES, minutes);
+        values.put(AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
         values.put(AlarmColumns.REPEAT_DAYS, repeatOnDaysCode);
         values.put(AlarmColumns.ENABLED, enabled);
-        values.put(AlarmColumns.VIBRATE, vibrate);
-        values.put(AlarmColumns.ALERT_URI, alertUrl);
+        values.put(AlarmColumns.ACTION, action);
+        values.put(AlarmColumns.EXTRA, extra);
 
         Uri uri = Alarms.getAlarmUri(id);
-        return resolver.update(uri, values, null, null);
+        return context.getContentResolver().update(uri, values, null, null);
     }
 
-    public static Uri newAlarm(ContentResolver resolver) {
-        ContentValues values = new ContentValues();
-        return resolver.insert(Uri.parse(CONTENT_URI_ALL_ALARMS),
-                               values);
+    public static void scheduleAlarm(Context context, int alarmId) {
+        forEachAlarm(context, getAlarmUri(alarmId), new ActivateAlarm());
     }
 
-    public static void scheduleAlarms(final Context context) {
-        class Listener implements OnVisitListener {
-            private Context mContext;
-            Listener(Context context) {
-                mContext = context;
-            }
 
-            public void onVisit(final int id,
-                                final String label,
-                                final int hour,
-                                final int minutes,
-                                final int repeatOnDaysCode,
-                                final boolean enabled,
-                                final boolean vibrate,
-                                final String alertUrl) {
-                if(!enabled) {
-                    return;
-                }
-                activateAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
-            }
-        }
 
-        forEachAlarm(context.getContentResolver(),
-                     getAlarmUri(-1),
-                     new Listener(context));
-    }
 
-    public static void scheduleNextAlarm(Context context,
-                                         final int alarmId) {
-        Cursor cursor = getAlarmCursor(context.getContentResolver(),
-                                       alarmId);
-        if(!cursor.moveToFirst()) {
-            return;
-        }
 
-        final boolean enabled =
-            cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
-        if(!enabled) {
-            return;
-        }
 
-        final int hour =
-            cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
-        final int minutes =
-            cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
-        final int repeatOnDaysCode =
-            cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
-        final String alertUrl =
-            cursor.getString(AlarmColumns.PROJECTION_ALERT_URI_INDEX);
 
-        activateAlarm(context, hour, minutes, repeatOnDaysCode, alertUrl);
-    }
 
-    private static void activateAlarm(Context context,
-                                      final int hour,
-                                      final int minutes,
-                                      final int repeatOnDaysCode,
-                                      final String alertUrl) {
+
+    public static void activateAlarm(Context context,
+                                     final int id,
+                                     final String label,
+                                     final int hour,
+                                     final int minutes,
+                                     final int atTimeInMillis,
+                                     final int repeatOnDaysCode,
+                                     final String action,
+                                     final String extra) {
         Intent intent = new Intent(Alarms.DISPATCH_ACTION);
-        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, alertUrl);
+        intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
+        intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
+        intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
 
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        long alarmTimeInMillis = getNextAlarmInMillis(hour, minutes, repeatOnDaysCode);
+        AlarmManager alarmManager =
+            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        long alarmTimeInMillis =
+            getGoOffTimeInMillis(hour, minutes, repeatOnDaysCode);
 
-        Log.d(TAG, "===> " + alarmTimeInMillis / 1000 + " seconds later to go off");
+        // //////////////////////////////////////////////////////////
+        // Save this time into alarm settings for later use. For
+        // example, deactivate this alarm.
+        // //////////////////////////////////////////////////////////
 
-        // alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-        //                  alarmTimeInMillis,
-        //                  PendingIntent.getBroadcast(
-        //                      context, 0, intent,
-        //                      PendingIntent.FLAG_CANCEL_CURRENT));
+
+
+
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(alarmTimeInMillis);
+        Log.d(TAG, "===> alarm set at " + calendar);
+
+        alarmManager.set(AlarmManager.RTC_WAKEUP,
+                         alarmTimeInMillis,
+                         PendingIntent.getBroadcast(
+                             context, 0, intent,
+                             PendingIntent.FLAG_CANCEL_CURRENT));
     }
 
-    public static void disableAlarm(final Context context, final int alarmId) {
-        class Listener implements OnVisitListener {
-            public void onVisit(final int id,
-                                final String label,
-                                final int hour,
-                                final int minutes,
-                                final int repeatOnDaysCode,
-                                final boolean enabled,
-                                final boolean vibrate,
-                                final String alertUrl) {
-                updateAlarm(context.getContentResolver(),
-                            id, label, hour, minutes,
-                            repeatOnDaysCode, false,
-                            vibrate, alertUrl);
-            }
+
+
+
+
+
+
+    private static void deactivateAlarm(Context context, final int id) {
+
+    }
+
+    public static void setAlarmEnabled(final Context context,
+                                       final int alarmId,
+                                       final boolean enabled) {
+        if(alarmId < 0) {
+            return;
         }
-        forEachAlarm(context.getContentResolver(), getAlarmUri(alarmId), new Listener());
+
+        Log.d(TAG, "setAlarmEnabled(" + alarmId + ") " + enabled);
+
+        // forEachAlarm(context, getAlarmUri(alarmId),
+        //              new OnVisitListener() {
+        //                  public void onVisit(
+        //                      final Context context,
+        //                      final int id,
+        //                      final String label,
+        //                      final int hour,
+        //                      final int minutes,
+        //                      final int repeatOnDaysCode,
+        //                      final boolean ena,
+        //                      final boolean vibrate,
+        //                      final String alertUrl) {
+        //                      updateAlarm(context,
+        //                                  id, label, hour, minutes,
+        //                                  repeatOnDaysCode, enabled,
+        //                                  vibrate, alertUrl);
+        //                  }
+        //              });
     }
 
-    private static long getNextAlarmInMillis(final int hourOfDay,
+
+
+
+
+    public static String formatDate(String pattern, Calendar calendar) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
+        return dateFormatter.format(calendar.getTime());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private static long getGoOffTimeInMillis(final int hourOfDay,
                                              final int minutes,
                                              final int repeatOnCode) {
         // Start with current date and time.
@@ -471,21 +525,10 @@ public class Alarms {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
-        long elapsedRTC = calendar.getTimeInMillis() - sBootWallTimeInMillis;
+        Log.d(TAG, "===> next alarm " + calendar.getTimeInMillis());
 
-        Log.d(TAG, "===> next alarm " + calendar.getTimeInMillis() + " - " + sBootWallTimeInMillis);
-
-        return elapsedRTC;
+        return calendar.getTimeInMillis();
     }
-
-    public static String formatDate(String pattern, Calendar calendar) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
-        return dateFormatter.format(calendar.getTime());
-    }
-
-
-
-
 
 
 

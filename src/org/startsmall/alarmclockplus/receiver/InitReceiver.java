@@ -1,3 +1,4 @@
+
 package org.startsmall.alarmclockplus.receiver;
 
 import org.startsmall.alarmclockplus.*;
@@ -15,11 +16,7 @@ public class InitReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive() at wall time " + System.currentTimeMillis());
 
-        Alarms.sBootWallTimeInMillis = System.currentTimeMillis();
-
         // Cancel expired alarms.
-
-
 
         // Cancel snoozed alarms.
 

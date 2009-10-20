@@ -59,8 +59,6 @@ public class AlarmClockPlus extends ListActivity {
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
             final int daysCode = cursor.getInt(Alarms.AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
             final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
-            final boolean vibrate = cursor.getInt(Alarms.AlarmColumns.PROJECTION_VIBRATE_INDEX) == 1;
-            final String audioAlert = cursor.getString(Alarms.AlarmColumns.PROJECTION_ALERT_URI_INDEX);
 
             // Time
             TextView timeView = (TextView)view.findViewById(R.id.time);
@@ -83,11 +81,10 @@ public class AlarmClockPlus extends ListActivity {
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged(CompoundButton buttonView,
                                                  boolean isChecked) {
-                        if(isChecked) {
-                            Alarms.scheduleNextAlarm(AlarmClockPlus.this, id);
-                        } else {
-                            Alarms.disableAlarm(AlarmClockPlus.this, id);
-                        }
+                        Alarms.setAlarmEnabled(AlarmClockPlus.this, id, isChecked);
+                        // if(isChecked) {
+                        //     Alarms.scheduleAlarm(AlarmClockPlus.this, id);
+                        // }
                     }
                 });
 
@@ -220,7 +217,7 @@ public class AlarmClockPlus extends ListActivity {
     }
 
     private void addAlarm() {
-        Uri uri = Alarms.newAlarm(getContentResolver());
+        Uri uri = Alarms.newAlarm(this);
         int alarmId = Integer.parseInt(uri.getLastPathSegment());
         editAlarmSettings(alarmId);
     }
@@ -232,6 +229,6 @@ public class AlarmClockPlus extends ListActivity {
     }
 
     private int deleteAlarm(int alarmId) {
-        return Alarms.deleteAlarm(getContentResolver(), alarmId);
+        return Alarms.deleteAlarm(this, alarmId);
     }
 }

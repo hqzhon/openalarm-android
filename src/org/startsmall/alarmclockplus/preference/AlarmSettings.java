@@ -46,7 +46,6 @@ public class AlarmSettings extends PreferenceActivity
     AlarmLabelPreference mLabelPreference;
     AlarmActionPreference mActionPreference;
     AlarmRepeatOnDialogPreference mRepeatOnPreference;
-    CheckBoxPreference mVibratePreference;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -73,10 +72,6 @@ public class AlarmSettings extends PreferenceActivity
                 }
             });
 
-        mVibratePreference =
-            (CheckBoxPreference)preferenceManager.findPreference(
-                getString(R.string.alarm_settings_vibrate_key));
-
         Intent intent = getIntent();
         int alarmId = intent.getIntExtra(
             Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
@@ -86,14 +81,19 @@ public class AlarmSettings extends PreferenceActivity
 
         Uri alarmUri = Alarms.getAlarmUri(alarmId);
         Alarms.forEachAlarm(
-            getContentResolver(),
+            this,
             alarmUri,
             new Alarms.OnVisitListener() {
-                public void onVisit(int id, String label,
-                                    int hour, int minutes,
-                                    int repeatDays,
-                                    boolean enabled, boolean vibrate,
-                                    String alertUrl) {
+                public void onVisit(final Context context,
+                                    final int id,
+                                    final String label,
+                                    final int hour,
+                                    final int minutes,
+                                    final int atTimeInMillis,
+                                    final int repeatDays,
+                                    final boolean enabled,
+                                    final String action,
+                                    final String extra) {
                     mLabelPreference.setPreferenceValue(label);
                     mTimePreference.setPreferenceValue(hour * 100 + minutes);
                     mRepeatOnPreference.setPreferenceValue(repeatDays);
@@ -158,17 +158,17 @@ public class AlarmSettings extends PreferenceActivity
             final int hourOfDay = time / 100;
             final int minutes = time % 100;
             final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
-            final boolean vibrate = mVibratePreference.isChecked();
 
-            Alarms.updateAlarm(
-                getContentResolver(),
-                alarmId,
-                label,
-                hourOfDay, minutes,
-                repeatOnCode,
-                false /* FIXME: should vibrate or not???? */,
-                vibrate,
-                "");
+            Alarms.updateAlarm(this,
+                               alarmId,
+                               label,
+                               hourOfDay, minutes,
+                               0 /* alarm goes off at this time */,
+                               repeatOnCode,
+                               true /* TODO: set alarm enabled? */,
+                               "" /* alarm action*/,
+                               "" /* extra data for this alarm */
+                );
         }
     }
 

@@ -22,14 +22,6 @@
        android:key="@string/alarm_settings_repeat_days_key"
        android:title="@string/alarm_settings_repeat_days_title"
        android:defaultValue="5"/>
-
-    <CheckBoxPreference
-       android:key="@string/alarm_settings_vibrate_key"
-       android:title="@string/alarm_settings_vibrate_title"
-       android:defaultValue="false"
-       android:summaryOn="@string/alarm_settings_vibrate_on_summary"
-       android:summaryOff="@string/alarm_settings_vibrate_off_summary" />
-
   </PreferenceCategory>
 
   <PreferenceCategory android:title="Extra Settings">

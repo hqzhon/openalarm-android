@@ -60,10 +60,11 @@ public class AlarmProvider extends ContentProvider {
             Alarms.AlarmColumns.LABEL + " TEXT, " +
             Alarms.AlarmColumns.HOUR  + " INTEGER, " +
             Alarms.AlarmColumns.MINUTES  + " INTEGER, " +
+            Alarms.AlarmColumns.AT_TIME_IN_MILLIS  + " INTEGER, " +
             Alarms.AlarmColumns.REPEAT_DAYS + " INTEGER, " +
             Alarms.AlarmColumns.ENABLED + " INTEGER, " +
-            Alarms.AlarmColumns.VIBRATE + " INTEGER, " +
-            Alarms.AlarmColumns.ALERT_URI + " TEXT);";
+            Alarms.AlarmColumns.ACTION + " TEXT, " +
+            Alarms.AlarmColumns.EXTRA + " TEXT);";
 
         private static final String DATABASE_DROP_CMD =
             "DROP TABLE IF EXISTS " + DATABASE_TABLE_NAME;
@@ -93,13 +94,14 @@ public class AlarmProvider extends ContentProvider {
                          Alarms.AlarmColumns.LABEL + ", " +
                          Alarms.AlarmColumns.HOUR + ", " +
                          Alarms.AlarmColumns.MINUTES + ", " +
+                         Alarms.AlarmColumns.AT_TIME_IN_MILLIS + ", " +
                          Alarms.AlarmColumns.REPEAT_DAYS + ", " +
                          Alarms.AlarmColumns.ENABLED + ", " +
-                         Alarms.AlarmColumns.VIBRATE + ", " +
-                         Alarms.AlarmColumns.ALERT_URI + ") VALUES ";
-            db.execSQL(cmd + "('default1', 7, 00, 1, 0, 1, '');");
-            db.execSQL(cmd + "('default2', 8, 30, 5, 0, 0, '');");
-            db.execSQL(cmd + "('default3', 9, 00, 9, 0, 1, '');");
+                         Alarms.AlarmColumns.ACTION + ", " +
+                         Alarms.AlarmColumns.EXTRA + ") VALUES ";
+            db.execSQL(cmd + "('default1', 7, 00, 0, 1, 0, '', '');");
+            db.execSQL(cmd + "('default2', 8, 30, 0, 5, 0, '', '');");
+            db.execSQL(cmd + "('default3', 9, 00, 0, 9, 0, '', '');");
         }
     }
 
@@ -167,6 +169,10 @@ public class AlarmProvider extends ContentProvider {
             values.put(Alarms.AlarmColumns.MINUTES, 0);
         }
 
+        if(!values.containsKey(Alarms.AlarmColumns.AT_TIME_IN_MILLIS)) {
+            values.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, 0);
+        }
+
         if(!values.containsKey(Alarms.AlarmColumns.REPEAT_DAYS)) {
             values.put(Alarms.AlarmColumns.REPEAT_DAYS, 0);
         }
@@ -175,16 +181,16 @@ public class AlarmProvider extends ContentProvider {
             values.put(Alarms.AlarmColumns.ENABLED, 0);
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.VIBRATE)) {
-            values.put(Alarms.AlarmColumns.VIBRATE, 0);
-        }
-
         if(!values.containsKey(Alarms.AlarmColumns.LABEL)) {
             values.put(Alarms.AlarmColumns.LABEL, "My Alarm");
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.ALERT_URI)) {
-            values.put(Alarms.AlarmColumns.ALERT_URI, "");
+        if(!values.containsKey(Alarms.AlarmColumns.ACTION)) {
+            values.put(Alarms.AlarmColumns.ACTION, "");
+        }
+
+        if(!values.containsKey(Alarms.AlarmColumns.EXTRA)) {
+            values.put(Alarms.AlarmColumns.EXTRA, "");
         }
 
         SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
