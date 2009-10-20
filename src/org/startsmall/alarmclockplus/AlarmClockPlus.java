@@ -87,7 +87,20 @@ public class AlarmClockPlus extends ListActivity {
                         int alarmId = data.getInt(Alarms.AlarmColumns._ID);
 
                         Log.d(TAG, "================> " + alarmId + " Run onCheckedChanged(" + isChecked + ", " + alarmId + ");");
-                        Alarms.setAlarm(AlarmClockPlus.this, alarmId, isChecked);
+                        // Alarms.setAlarm(getContext(), alarmId, isChecked);
+
+                        // Alarms.setAlarm(AlarmClockPlus.this, alarmId, isChecked);
+
+
+                        // FIXME: Cursor is listenning the
+                        // changes of Content via
+                        // c.setNotificationUril(...). If
+                        // Alarms.setAlarm is called,
+                        // updateAlarm() updates the content, the
+                        // cursor is notified and then cursor
+                        // adapter is notified to refresh views
+                        // (bindView() is called).
+
                     }
                 };
 
