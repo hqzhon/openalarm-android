@@ -253,17 +253,16 @@ public class Alarms {
         }
     }
 
-    public static Cursor getAlarmCursor(Context context, int alarmId) {
-        Uri alarmUri = getAlarmUri(alarmId);
-        Log.d(TAG, "Get alarm " + alarmUri);
-
-        return context.getContentResolver().query(
-            alarmUri,
-            AlarmColumns.QUERY_COLUMNS,
-            null,
-            null,
-            AlarmColumns.DEFAULT_SORT_ORDER);
+    public synchronized static Cursor getAlarmCursor(Context context, Uri alarmUri) {
+        return
+            context.getContentResolver().query(
+                alarmUri,
+                AlarmColumns.QUERY_COLUMNS,
+                null,
+                null,
+                AlarmColumns.DEFAULT_SORT_ORDER);
     }
+
 
    /**
      * Listern interface that is used to report settings for every alarm
@@ -283,16 +282,10 @@ public class Alarms {
                             final String extra);
     }
 
-    public synchronized static void forEachAlarm(Context context,
-                                                 Uri alarmUri,
-                                                 OnVisitListener listener) {
-        Cursor cursor =
-            context.getContentResolver().query(
-                alarmUri,
-                AlarmColumns.QUERY_COLUMNS,
-                null,
-                null,
-                AlarmColumns.DEFAULT_SORT_ORDER);
+    public static void forEachAlarm(final Context context,
+                                    final Uri alarmUri,
+                                    final OnVisitListener listener) {
+        Cursor cursor = getAlarmCursor(context, alarmUri);
         if(cursor.moveToFirst()) {
             do {
                 final int id =
@@ -345,9 +338,9 @@ public class Alarms {
             uri, newValues, null, null);
     }
 
-    public synchronized static void setAlarm(final Context context,
-                                             final int alarmId,
-                                             final boolean enabled) {
+    public static void setAlarm(final Context context,
+                                final int alarmId,
+                                final boolean enabled) {
         if(alarmId < 0) {
             return;
         }
@@ -380,6 +373,8 @@ public class Alarms {
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled);
         updateAlarm(context, alarmId, newValues);
+
+        Log.d(TAG, "===> Updated alarm " + alarmId);
 
         // Uri alarmUri = getAlarmUri(alarmId);
         // if(enabled) {
@@ -519,14 +514,5 @@ public class Alarms {
 
         return calendar.getTimeInMillis();
     }
-
-
-
-
-
-
-
-
-
 
 }

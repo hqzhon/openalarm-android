@@ -58,21 +58,21 @@ public class AlarmClockPlus extends ListActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Bundle data = (Bundle)view.getTag();
+                        Bundle attachment = (Bundle)view.getTag();
 
-                        int alarmId = data.getInt(Alarms.AlarmColumns._ID);
+                        int alarmId = attachment.getInt(Alarms.AlarmColumns._ID);
                         editAlarmSettings(alarmId);
                     }
                 };
             mOnCreateContextMenuListener =
                 new View.OnCreateContextMenuListener() {
                     public void onCreateContextMenu(ContextMenu menu,
-                                                    View v,
+                                                    View view,
                                                     ContextMenu.ContextMenuInfo menuInfo) {
-                        Bundle data = (Bundle)v.getTag();
+                        Bundle attachment = (Bundle)view.getTag();
 
-                        String label = data.getString(Alarms.AlarmColumns.LABEL);
-                        int alarmId = data.getInt(Alarms.AlarmColumns._ID);
+                        String label = attachment.getString(Alarms.AlarmColumns.LABEL);
+                        int alarmId = attachment.getInt(Alarms.AlarmColumns._ID);
 
                         menu.setHeaderTitle(label);
                         menu.add(alarmId, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
@@ -83,10 +83,10 @@ public class AlarmClockPlus extends ListActivity {
                     public void onCheckedChanged(CompoundButton buttonView,
                                                  boolean isChecked) {
                         View parent = (View)buttonView.getParent();
-                        Bundle data = (Bundle)parent.getTag();
-                        int alarmId = data.getInt(Alarms.AlarmColumns._ID);
+                        Bundle attachment = (Bundle)parent.getTag();
+                        int alarmId = attachment.getInt(Alarms.AlarmColumns._ID);
 
-                        Log.d(TAG, "===> onCheckedChanged(" + isChecked + "), alarmId=" + alarmId + ";");
+                        Log.d(TAG, "=====> onCheckedChanged(" + buttonView + "): parent=" + parent + ", isChecked=" + isChecked + ", alarmId=" + alarmId);
 
                         Alarms.setAlarm(AlarmClockPlus.this, alarmId, isChecked);
                     }
@@ -96,8 +96,6 @@ public class AlarmClockPlus extends ListActivity {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            Log.d(TAG, "=====> bindView() : " + view);
-
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
@@ -105,17 +103,15 @@ public class AlarmClockPlus extends ListActivity {
             final int daysCode = cursor.getInt(Alarms.AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
             final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
 
-            Bundle viewBundle = new Bundle();
-            viewBundle.putInt(Alarms.AlarmColumns._ID, id);
-            viewBundle.putString(Alarms.AlarmColumns.LABEL, label);
-            view.setTag(viewBundle);
+            Bundle attachment = (Bundle)view.getTag();
+            attachment.putInt(Alarms.AlarmColumns._ID, id);
+            attachment.putString(Alarms.AlarmColumns.LABEL, label);
 
             // Time
             TextView timeView = (TextView)view.findViewById(R.id.time);
-            Calendar calendar = Calendar.getInstance();
+            Calendar calendar = Alarms.getCalendarInstance();
             calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
             calendar.set(Calendar.MINUTE, minutes);
-            Alarms.formatDate("HH:mm", calendar);
             timeView.setText(Alarms.formatDate("HH:mm", calendar));
 
             // Label
@@ -126,9 +122,15 @@ public class AlarmClockPlus extends ListActivity {
             // Enable this alarm?
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
+
+            Log.d(TAG, "===> bindView(): view=" + view
+                  + ", label=" + label
+                  + ", id=" + id
+                  + ", isChecked(" + enabledCheckBox + ", " + enabledCheckBox.isChecked() + ")"
+                  + ", enabled=" + enabled);
             if(enabledCheckBox.isChecked() != enabled) {
                 // This sanity check is very important for this
-                // adaptor's not being trapped in a infinite loop
+                // adaptor's not being trapped in an infinite loop
                 // of running onCheckedChanged() and bindView().
                 enabledCheckBox.setChecked(enabled);
             }
@@ -146,13 +148,15 @@ public class AlarmClockPlus extends ListActivity {
         }
 
         @Override
-        public View newView(Context context,
-                            Cursor cursor, ViewGroup parent) {
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
             View view = mInflater.inflate(R.layout.alarm_list_item,
                                           parent,
                                           false);
+            Log.d(TAG, "=====> newView(): " + view + ", position=" + cursor.getPosition());
 
-            Log.d(TAG, "=====> newView() " + view);
+            Bundle attachment = new Bundle();
+            view.setTag(attachment);
+
 
             /**
              * Should follow Android's design. Click to go to
@@ -175,9 +179,13 @@ public class AlarmClockPlus extends ListActivity {
              */
             view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
 
-            // Enable this alarm?
+            //
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
+            final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
+            enabledCheckBox.setChecked(enabled);
+
+            // Enable this alarm?
             enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
             return view;
         }
@@ -188,12 +196,13 @@ public class AlarmClockPlus extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        Cursor alarmsCursor = Alarms.getAlarmCursor(this, -1);
+        Cursor alarmsCursor =
+            Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
 
         // FIXME: Don't know why enabling this line will prevent
         // deleted row from removing from ListView. Need to
         // figure out.
-        /* startManagingCursor(cursor); */
+        // startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, alarmsCursor));
     }
 
