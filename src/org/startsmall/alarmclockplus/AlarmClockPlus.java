@@ -96,6 +96,14 @@ public class AlarmClockPlus extends ListActivity {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            // Important note:
+            // You have to use all columns in cursor to update this
+            // view. Android seems to have an internal stack-alike
+            // structure to keep the views and it follows the
+            // first-in-last-out order to retrieve the view out of
+            // stack. The only thing you can trust is the order of
+            // positions is the same which is from 0 to the last.
+
             final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
             final String label = cursor.getString(Alarms.AlarmColumns.PROJECTION_LABEL_INDEX);
             final int hourOfDay = cursor.getInt(Alarms.AlarmColumns.PROJECTION_HOUR_INDEX);
@@ -124,16 +132,15 @@ public class AlarmClockPlus extends ListActivity {
                 (CheckBox)view.findViewById(R.id.enabled);
 
             Log.d(TAG, "===> bindView(): view=" + view
-                  + ", label=" + label
+                  + ", position=" + cursor.getPosition()
                   + ", id=" + id
+                  + ", attachment=" + Integer.toHexString(attachment.hashCode())
                   + ", isChecked(" + enabledCheckBox + ", " + enabledCheckBox.isChecked() + ")"
                   + ", enabled=" + enabled);
-            if(enabledCheckBox.isChecked() != enabled) {
-                // This sanity check is very important for this
-                // adaptor's not being trapped in an infinite loop
-                // of running onCheckedChanged() and bindView().
-                enabledCheckBox.setChecked(enabled);
-            }
+            // WORKAROUND: Do not invoke listener if toggling checkbox on/off from DB.
+            enabledCheckBox.setOnCheckedChangeListener(null);
+            enabledCheckBox.setChecked(enabled);
+            enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
 
             // Repeat days
             final TextView repeatDays =
@@ -152,11 +159,15 @@ public class AlarmClockPlus extends ListActivity {
             View view = mInflater.inflate(R.layout.alarm_list_item,
                                           parent,
                                           false);
-            Log.d(TAG, "=====> newView(): " + view + ", position=" + cursor.getPosition());
 
             Bundle attachment = new Bundle();
             view.setTag(attachment);
 
+            final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
+            Log.d(TAG, "=====> newView(): view=" + view
+                  + ", position=" + cursor.getPosition()
+                  + ", id=" + id
+                  + ", attachment=" + Integer.toHexString(attachment.hashCode()));
 
             /**
              * Should follow Android's design. Click to go to
@@ -182,11 +193,6 @@ public class AlarmClockPlus extends ListActivity {
             //
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
-            final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
-            enabledCheckBox.setChecked(enabled);
-
-            // Enable this alarm?
-            enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
             return view;
         }
     }

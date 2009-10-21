@@ -345,7 +345,7 @@ public class Alarms {
             return;
         }
 
-        Log.d(TAG, "setAlarm(" + alarmId + ") - " + enabled);
+        Log.d(TAG, "===> setAlarm(alarmId=" + alarmId + ", enabled=" + enabled + ")");
 
         class AlarmSettings implements OnVisitListener {
             public boolean mEnabled;
