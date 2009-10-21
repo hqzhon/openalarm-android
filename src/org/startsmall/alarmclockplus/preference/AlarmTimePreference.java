@@ -52,7 +52,7 @@ public class AlarmTimePreference extends TextViewPreference {
         int hourOfDay = mTime / 100;
         int minutes = mTime % 100;
 
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar = Alarms.getCalendarInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
         textView.setText(Alarms.formatDate("HH:mm", calendar));

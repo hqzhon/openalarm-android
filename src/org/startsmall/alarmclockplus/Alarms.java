@@ -77,6 +77,17 @@ public class Alarms {
     public static final String CONTENT_URI_SINGLE_ALARM =
         CONTENT_URI_ALL_ALARMS + "/#";
 
+    /**
+     * Calendar instance.
+     *
+     */
+    private static final Calendar CALENDAR = Calendar.getInstance();
+
+    public static Calendar getCalendarInstance() {
+        CALENDAR.setTimeInMillis(System.currentTimeMillis());
+        return CALENDAR;
+    }
+
     /*****************************************************************
      * For constants used in content provider and SQLiteDatabase.    *
      *****************************************************************/
@@ -133,6 +144,11 @@ public class Alarms {
         public static final int PROJECTION_ACTION_INDEX = 7;
         public static final int PROJECTION_EXTRA_INDEX = 8;
     }
+
+    /**
+     * Suppress default constructor for noninstantiability.
+     */
+    private Alarms() {}
 
     /******************************************************************
      * Key strings used in Intent data.                               *
@@ -411,7 +427,7 @@ public class Alarms {
                     updateAlarm(context, id, newValues);
 
                     // TODO: Notify system that an alarm has been set.
-                    Calendar calendar = Calendar.getInstance();
+                    Calendar calendar = getCalendarInstance();
                     calendar.setTimeInMillis(atTimeInMillis);
                     Log.d(TAG, "===> alarm set at " + calendar);
 
@@ -472,7 +488,7 @@ public class Alarms {
                                              final int minutes,
                                              final int repeatOnCode) {
         // Start with current date and time.
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar = getCalendarInstance();
 
         int nowHourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int nowMinutes = calendar.get(Calendar.MINUTE);
