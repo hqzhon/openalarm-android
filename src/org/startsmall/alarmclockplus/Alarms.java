@@ -308,12 +308,12 @@ public class Alarms {
         cursor.close();
     }
 
-    public static Uri newAlarm(Context context) {
+    public synchronized static Uri newAlarm(Context context) {
         return context.getContentResolver().insert(
             Uri.parse(CONTENT_URI_ALL_ALARMS), null);
     }
 
-    public static int deleteAlarm(Context context, int alarmId) {
+    public synchronized static int deleteAlarm(Context context, int alarmId) {
         Uri alarmUri = Alarms.getAlarmUri(alarmId);
         return context.getContentResolver().delete(alarmUri, null, null);
     }
@@ -329,14 +329,37 @@ public class Alarms {
             uri, newValues, null, null);
     }
 
-    public static void setAlarm(final Context context,
-                                final int alarmId,
-                                final boolean enabled) {
+    public synchronized static void setAlarm(final Context context,
+                                             final int alarmId,
+                                             final boolean enabled) {
         if(alarmId < 0) {
             return;
         }
 
         Log.d(TAG, "setAlarm(" + alarmId + ") - " + enabled);
+
+        class AlarmSettings implements OnVisitListener {
+            public boolean mEnabled;
+            public void onVisit(Context context,
+                                final int id,
+                                final String label,
+                                final int hour,
+                                final int minutes,
+                                final int atTimeInMillis,
+                                final int repeatOnDaysCode,
+                                final boolean enabled,
+                                final String action,
+                                final String extra) {
+                mEnabled = enabled;
+            }
+        }
+        AlarmSettings alarmSettings = new AlarmSettings();
+        forEachAlarm(context, getAlarmUri(alarmId), alarmSettings);
+
+        if(alarmSettings.mEnabled == enabled) {
+            Log.d(TAG, "===> setAlarm: I have nothing to do");
+            return;
+        }
 
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled);
@@ -350,8 +373,8 @@ public class Alarms {
         // }
     }
 
-    private static void activateAlarm(final Context context,
-                                      final Uri alarmUri) {
+    private synchronized static void activateAlarm(final Context context,
+                                                   final Uri alarmUri) {
         forEachAlarm(
             context, alarmUri,
             new OnVisitListener() {
@@ -444,8 +467,6 @@ public class Alarms {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
         return dateFormatter.format(calendar.getTime());
     }
-
-
 
     private static long getGoOffTimeInMillis(final int hourOfDay,
                                              final int minutes,

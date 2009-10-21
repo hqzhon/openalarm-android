@@ -86,21 +86,9 @@ public class AlarmClockPlus extends ListActivity {
                         Bundle data = (Bundle)parent.getTag();
                         int alarmId = data.getInt(Alarms.AlarmColumns._ID);
 
-                        Log.d(TAG, "================> " + alarmId + " Run onCheckedChanged(" + isChecked + ", " + alarmId + ");");
-                        // Alarms.setAlarm(getContext(), alarmId, isChecked);
+                        Log.d(TAG, "===> onCheckedChanged(" + isChecked + "), alarmId=" + alarmId + ";");
 
-                        // Alarms.setAlarm(AlarmClockPlus.this, alarmId, isChecked);
-
-
-                        // FIXME: Cursor is listenning the
-                        // changes of Content via
-                        // c.setNotificationUril(...). If
-                        // Alarms.setAlarm is called,
-                        // updateAlarm() updates the content, the
-                        // cursor is notified and then cursor
-                        // adapter is notified to refresh views
-                        // (bindView() is called).
-
+                        Alarms.setAlarm(AlarmClockPlus.this, alarmId, isChecked);
                     }
                 };
 
@@ -138,7 +126,12 @@ public class AlarmClockPlus extends ListActivity {
             // Enable this alarm?
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
-            enabledCheckBox.setChecked(enabled);
+            if(enabledCheckBox.isChecked() != enabled) {
+                // This sanity check is very important for this
+                // adaptor's not being trapped in a infinite loop
+                // of running onCheckedChanged() and bindView().
+                enabledCheckBox.setChecked(enabled);
+            }
 
             // Repeat days
             final TextView repeatDays =
@@ -153,7 +146,8 @@ public class AlarmClockPlus extends ListActivity {
         }
 
         @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        public View newView(Context context,
+                            Cursor cursor, ViewGroup parent) {
             View view = mInflater.inflate(R.layout.alarm_list_item,
                                           parent,
                                           false);
@@ -195,14 +189,12 @@ public class AlarmClockPlus extends ListActivity {
         setContentView(R.layout.main);
 
         Cursor alarmsCursor = Alarms.getAlarmCursor(this, -1);
+
         // FIXME: Don't know why enabling this line will prevent
         // deleted row from removing from ListView. Need to
         // figure out.
-
-        //-> startManagingCursor(cursor); <-
+        /* startManagingCursor(cursor); */
         setListAdapter(new AlarmAdapter(this, alarmsCursor));
-
-        // registerForContextMenu(getListView());
     }
 
     @Override
