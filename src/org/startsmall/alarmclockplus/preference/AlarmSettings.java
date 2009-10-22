@@ -37,8 +37,7 @@ import android.widget.TimePicker;
 
 import java.util.*;
 
-public class AlarmSettings extends PreferenceActivity
-                           implements DialogInterface.OnClickListener {
+public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
     private static final int LABEL_INPUT_DIALOG = 1;
     private static final int TIME_PICK_DIALOG = 2;
@@ -207,8 +206,21 @@ public class AlarmSettings extends PreferenceActivity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder
             .setTitle(R.string.alarm_settings_input_label_dialog_title)
-            .setPositiveButton(R.string.ok, this)
-            .setNegativeButton(R.string.cancel, this);
+            .setPositiveButton(
+                R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface d, int which) {
+                        Dialog dialog = (Dialog)d;
+                        switch(which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            EditText editText = (EditText)dialog.findViewById(R.id.input);
+                            mLabelPreference.setPreferenceValue(
+                                editText.getText().toString());
+                            break;
+                        }
+                    }
+                })
+            .setNegativeButton(R.string.cancel, null);
 
         LayoutInflater inflater =
             (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -257,18 +269,4 @@ public class AlarmSettings extends PreferenceActivity
             // actionPref.setEntryValues(entryValues);
         }
     }
-
-    public void onClick(DialogInterface d, int which) {
-        Dialog dialog = (Dialog)d;
-        switch(which) {
-        case DialogInterface.BUTTON_POSITIVE:
-            EditText editText = (EditText)dialog.findViewById(R.id.input);
-            mLabelPreference.setPreferenceValue(
-                editText.getText().toString());
-            break;
-        }
-    }
-
-
-
 }
