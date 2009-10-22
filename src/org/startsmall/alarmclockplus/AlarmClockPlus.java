@@ -15,6 +15,7 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -32,7 +33,6 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.CheckBox;
 import android.text.TextUtils;
@@ -40,6 +40,8 @@ import android.text.TextUtils;
 import java.util.*;
 
 public class AlarmClockPlus extends ListActivity {
+    public static final int OPEN_ALARM_SETTINGS_CODE = 1;
+
     private static final String TAG = "AlarmClockPlus";
     private static final int MENU_ITEM_DELETE_ID = 0;
 
@@ -84,11 +86,17 @@ public class AlarmClockPlus extends ListActivity {
                                                  boolean isChecked) {
                         View parent = (View)buttonView.getParent();
                         Bundle attachment = (Bundle)parent.getTag();
-                        int alarmId = attachment.getInt(Alarms.AlarmColumns._ID);
+                        int alarmId =
+                            attachment.getInt(Alarms.AlarmColumns._ID);
 
-                        Log.d(TAG, "=====> onCheckedChanged(" + buttonView + "): parent=" + parent + ", isChecked=" + isChecked + ", alarmId=" + alarmId);
+                        Log.d(TAG, "=====> onCheckedChanged("
+                              + buttonView + "): parent=" + parent
+                              + ", isChecked=" + isChecked
+                              + ", alarmId=" + alarmId);
 
-                        Alarms.setAlarm(AlarmClockPlus.this, alarmId, isChecked);
+                        Alarms.setAlarm(AlarmClockPlus.this,
+                                        Alarms.getAlarmUri(alarmId),
+                                        isChecked);
                     }
                 };
 
@@ -131,13 +139,17 @@ public class AlarmClockPlus extends ListActivity {
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
 
-            Log.d(TAG, "===> bindView(): view=" + view
-                  + ", position=" + cursor.getPosition()
-                  + ", id=" + id
-                  + ", attachment=" + Integer.toHexString(attachment.hashCode())
-                  + ", isChecked(" + enabledCheckBox + ", " + enabledCheckBox.isChecked() + ")"
-                  + ", enabled=" + enabled);
-            // WORKAROUND: Do not invoke listener if toggling checkbox on/off from DB.
+            // Log.d(TAG, "===> bindView(): view=" + view
+            //       + ", position=" + cursor.getPosition()
+            //       + ", id=" + id
+            //       + ", attachment=" + Integer.toHexString(attachment.hashCode())
+            //       + ", isChecked(" + enabledCheckBox + ", " + enabledCheckBox.isChecked() + ")"
+            //       + ", enabled=" + enabled);
+
+            // Set checkbox's listener to null. If set, the
+            // listener defined will try to update the database
+            // and make bindView() called which enters an
+            // infinite loop.
             enabledCheckBox.setOnCheckedChangeListener(null);
             enabledCheckBox.setChecked(enabled);
             enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
@@ -186,7 +198,6 @@ public class AlarmClockPlus extends ListActivity {
              * The ContextMenu.ContextMenuInfo object is returned
              * by getContextMenuInfo() overriden by
              * clients. Here, it is null.
-             *
              */
             view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
 
@@ -264,12 +275,129 @@ public class AlarmClockPlus extends ListActivity {
         return true;
     }
 
-    private void editAppPreferences() {
-        Log.d(TAG, "TODO: Editing application preferences");
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        Log.d(TAG, "===> onActivityResult(" + requestCode + ", " + resultCode + ", " + data + ")");
+
+        if(resultCode != RESULT_OK) {
+            return;
+        }
+
+        switch(requestCode) {
+        case OPEN_ALARM_SETTINGS_CODE:
+            Log.d(TAG, "===> save alarm seeting" + requestCode + ", " + resultCode);
+            int alarmId =
+                data.getIntExtra(Alarms.AlarmColumns._ID, -1);
+            String newLabel =
+                data.getStringExtra(Alarms.AlarmColumns.LABEL);
+            int newHourOfDay =
+                data.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
+            int newMinutes =
+                data.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
+            int newRepeatOnDaysCode =
+                data.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
+            String newAction =
+                data.getStringExtra(Alarms.AlarmColumns.ACTION);
+
+            Log.d(TAG, "===> Result back: alarmId=" + alarmId
+                  + ", label=" + newLabel
+                  + ", time=" + newHourOfDay + ":" + newMinutes);
+
+            // Get old values from database
+            class GetAlarmSettings implements Alarms.OnVisitListener {
+                public String mLabel;
+                public int mHour;
+                public int mMinutes;
+                public int mRepeatOnDaysCode;
+                public boolean mEnabled;
+                public String mAction;
+                public String mExtra;
+                public void onVisit(final Context context,
+                                    final int id,
+                                    final String label,
+                                    final int hour,
+                                    final int minutes,
+                                    final int atTimeInMillis,
+                                    final int repeatOnDaysCode,
+                                    final boolean enabled,
+                                    final String action,
+                                    final String extra) {
+                    mLabel = label;
+                    mHour = hour;
+                    mMinutes = minutes;
+                    mRepeatOnDaysCode = repeatOnDaysCode;
+                    mEnabled = enabled;
+                    mAction = action;
+                    mExtra = extra;
+                }
+            }
+            Uri alarmUri = Alarms.getAlarmUri(alarmId);
+            GetAlarmSettings settings = new GetAlarmSettings();
+            Alarms.forEachAlarm(this, alarmUri, settings);
+
+            Log.d(TAG, "===> Old values: alarmId=" + alarmId
+                  + ", label=" + settings.mLabel
+                  + ", time=" + settings.mHour + ":" + settings.mMinutes);
+
+            ContentValues newValues = new ContentValues();
+            if(newLabel != settings.mLabel) {
+                newValues.put(Alarms.AlarmColumns.LABEL, newLabel);
+            }
+
+            if(newHourOfDay != settings.mHour) {
+                newValues.put(Alarms.AlarmColumns.HOUR, newHourOfDay);
+            }
+
+            if(newMinutes != settings.mMinutes) {
+                newValues.put(Alarms.AlarmColumns.MINUTES, newMinutes);
+            }
+
+            if(newRepeatOnDaysCode != settings.mRepeatOnDaysCode) {
+                newValues.put(Alarms.AlarmColumns.REPEAT_DAYS,
+                              newRepeatOnDaysCode);
+            }
+
+            if(newAction != settings.mAction) {
+                newValues.put(Alarms.AlarmColumns.ACTION, newAction);
+            }
+
+            // newValues.put(Alarms.AlarmColumns.EXTRA, extra)
+            if(settings.mEnabled) {
+                // If these values were updated, we need to
+                // re-schedule the alarm with these new values.
+                if(newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
+                   newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
+                   newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
+                   newValues.containsKey(Alarms.AlarmColumns.ACTION)) {
+
+                    // Deactivate the old alarm.
+                    Alarms.setAlarm(this, alarmUri, false);
+
+                    // Update the alarm with new settings.
+                    Alarms.updateAlarm(this, alarmUri, newValues);
+
+                    // Activate the alarm now.
+                    Alarms.setAlarm(this, alarmUri, true);
+                }
+            } else {
+                if(newValues.size() > 0) {
+                    Alarms.updateAlarm(this, alarmUri, newValues);
+                }
+            }
+            break;
+        default:
+            break;
+        }
     }
 
+    // TODO:
+    private void editAppPreferences() {
+        Log.d(TAG, "===> Editing application preferences");
+    }
+
+    // TODO:
     private void showHelpDialog() {
-        Log.d(TAG, "TODO: Show help dialog and copyright");
+        Log.d(TAG, "===> Show help dialog and copyright");
     }
 
     private void addAlarm() {
@@ -279,10 +407,10 @@ public class AlarmClockPlus extends ListActivity {
     }
 
     private void editAlarmSettings(int alarmId) {
-        Log.d(TAG, "Edit " + Alarms.getAlarmUri(alarmId));
+        Log.d(TAG, "Edit alarm settings for " + Alarms.getAlarmUri(alarmId));
         Intent intent = new Intent(this, AlarmSettings.class);
-        intent.putExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, alarmId);
-        startActivity(intent);
+        intent.putExtra(Alarms.AlarmColumns._ID, alarmId);
+        startActivityForResult(intent, OPEN_ALARM_SETTINGS_CODE);
     }
 
     private int deleteAlarm(int alarmId) {

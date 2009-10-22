@@ -31,10 +31,6 @@ import java.text.SimpleDateFormat;
 public class Alarms {
     private static final String TAG = "Alarms";
 
-    /******************************************************************
-     * Convenient data that are used throughout the application       *
-     ******************************************************************/
-
     /**
      * Authority of this application.
      * <p>Value: org.startsmall.alarmclockplus</p>
@@ -78,18 +74,17 @@ public class Alarms {
         CONTENT_URI_ALL_ALARMS + "/#";
 
     /**
-     * Calendar instance.
+     * Convenient java.util.Calendar instance.
      *
      */
     private static final Calendar CALENDAR = Calendar.getInstance();
-
     public static Calendar getCalendarInstance() {
         CALENDAR.setTimeInMillis(System.currentTimeMillis());
         return CALENDAR;
     }
 
     /*****************************************************************
-     * For constants used in content provider and SQLiteDatabase.    *
+     * Constants used in content provider and SQLiteDatabase.    *
      *****************************************************************/
     public static class AlarmColumns implements BaseColumns {
 
@@ -153,10 +148,6 @@ public class Alarms {
     /******************************************************************
      * Key strings used in Intent data.                               *
      ******************************************************************/
-    public static final String INTENT_EXTRA_ALARM_ID_KEY = "alarm_id";
-    public static final String INTENT_EXTRA_ALARM_LABEL_KEY = "alarm_label";
-    public static final String INTENT_EXTRA_ALARM_ACTION_KEY = "alarm_action";
-    public static final String INTENT_EXTRA_ALARM_EXTRA_KEY = "alarm_extra";
 
     public static class RepeatWeekdays {
         /**
@@ -253,7 +244,16 @@ public class Alarms {
         }
     }
 
-    public synchronized static Cursor getAlarmCursor(Context context, Uri alarmUri) {
+    /**
+     *
+     *
+     * @param context
+     * @param alarmUri
+     *
+     * @return
+     */
+    public synchronized static Cursor getAlarmCursor(Context context,
+                                                     Uri alarmUri) {
         return
             context.getContentResolver().query(
                 alarmUri,
@@ -264,8 +264,8 @@ public class Alarms {
     }
 
 
-   /**
-     * Listern interface that is used to report settings for every alarm
+    /**
+     * Listener interface that is used to report settings for every alarm
      * existed on the database.
      *
      */
@@ -282,6 +282,13 @@ public class Alarms {
                             final String extra);
     }
 
+    /**
+     *
+     *
+     * @param context
+     * @param alarmUri
+     * @param listener
+     */
     public static void forEachAlarm(final Context context,
                                     final Uri alarmUri,
                                     final OnVisitListener listener) {
@@ -317,125 +324,120 @@ public class Alarms {
         cursor.close();
     }
 
+    /**
+     *
+     *
+     * @param context
+     *
+     * @return
+     */
     public synchronized static Uri newAlarm(Context context) {
         return context.getContentResolver().insert(
             Uri.parse(CONTENT_URI_ALL_ALARMS), null);
     }
 
-    public synchronized static int deleteAlarm(Context context, int alarmId) {
+    /**
+     *
+     *
+     * @param context
+     * @param alarmId
+     *
+     * @return
+     */
+    public synchronized static int deleteAlarm(Context context,
+                                               int alarmId) {
         Uri alarmUri = Alarms.getAlarmUri(alarmId);
         return context.getContentResolver().delete(alarmUri, null, null);
     }
 
+    /**
+     *
+     *
+     * @param context
+     * @param alarmId
+     * @param newValues
+     *
+     * @return
+     */
     public synchronized static int updateAlarm(final Context context,
-                                               final int alarmId,
+                                               final Uri alarmUri,
                                                final ContentValues newValues) {
-        if(alarmId < 0 || newValues == null) {
+        if(newValues == null) {
             return -1;
         }
-        Uri uri = Alarms.getAlarmUri(alarmId);
         return context.getContentResolver().update(
-            uri, newValues, null, null);
+            alarmUri, newValues, null, null);
     }
 
+    /**
+     *
+     *
+     * @param context
+     * @param alarmId
+     * @param enabled
+     */
     public static void setAlarm(final Context context,
-                                final int alarmId,
+                                final Uri alarmUri,
                                 final boolean enabled) {
-        if(alarmId < 0) {
-            return;
+        if(enabled) {
+            ContentValues newValues = new ContentValues();
+            long newAtTimeInMillis = activateAlarm(context, alarmUri);
+            newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
+            updateAlarm(context, alarmUri, newValues);
+
+            // TODO: Notify system that an alarm has been set.
+            Calendar calendar = getCalendarInstance();
+            calendar.setTimeInMillis(newAtTimeInMillis);
+            Log.d(TAG, "===> setAlarm(): Set alarm " + alarmUri + " to go off at " + calendar);
+        } else {
+            Log.d(TAG, "===> setAlarm(): deactivate alarm '" + alarmUri);
+            deactivateAlarm(context, alarmUri);
         }
+    }
 
-        Log.d(TAG, "===> setAlarm(alarmId=" + alarmId + ", enabled=" + enabled + ")");
+    private synchronized static long activateAlarm(final Context context,
+                                                   final Uri alarmUri) {
+        class ActivateAlarm implements OnVisitListener {
+            public long mAtTimeInMillis;
 
-        class AlarmSettings implements OnVisitListener {
-            public boolean mEnabled;
-            public void onVisit(Context context,
+            public void onVisit(final Context context,
                                 final int id,
                                 final String label,
                                 final int hour,
                                 final int minutes,
-                                final int atTimeInMillis,
+                                final int oldAtTimeInMillis,
                                 final int repeatOnDaysCode,
                                 final boolean enabled,
                                 final String action,
                                 final String extra) {
-                mEnabled = enabled;
+                Intent intent = new Intent(DISPATCH_ACTION);
+                intent.putExtra(Alarms.AlarmColumns._ID, id);
+                intent.putExtra(Alarms.AlarmColumns.LABEL, label);
+                intent.putExtra(Alarms.AlarmColumns.ACTION, action);
+                intent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
+
+                AlarmManager alarmManager =
+                    (AlarmManager)context.getSystemService(
+                        Context.ALARM_SERVICE);
+
+                mAtTimeInMillis =
+                    calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
+
+                // NotificationManager notificationManager =
+                //     (NotificationManager)context.getSystemService(
+                //                   Context.NOTIFICATION_SERVICE);
+
+                alarmManager.set(AlarmManager.RTC_WAKEUP,
+                                 mAtTimeInMillis,
+                                 PendingIntent.getBroadcast(
+                                     context, 0, intent,
+                                     PendingIntent.FLAG_CANCEL_CURRENT));
             }
         }
-        AlarmSettings alarmSettings = new AlarmSettings();
-        forEachAlarm(context, getAlarmUri(alarmId), alarmSettings);
 
-        if(alarmSettings.mEnabled == enabled) {
-            Log.d(TAG, "===> setAlarm: I have nothing to do");
-            return;
-        }
-
-        ContentValues newValues = new ContentValues();
-        newValues.put(AlarmColumns.ENABLED, enabled);
-        updateAlarm(context, alarmId, newValues);
-
-        Log.d(TAG, "===> Updated alarm " + alarmId);
-
-        // Uri alarmUri = getAlarmUri(alarmId);
-        // if(enabled) {
-        //     activateAlarm(context, alarmUri);
-        // } else {
-        //     deactivateAlarm(context, alarmUri);
-        // }
-    }
-
-    private synchronized static void activateAlarm(final Context context,
-                                                   final Uri alarmUri) {
-        forEachAlarm(
-            context, alarmUri,
-            new OnVisitListener() {
-                public void onVisit(final Context context,
-                                    final int id,
-                                    final String label,
-                                    final int hour,
-                                    final int minutes,
-                                    final int oldAtTimeInMillis,
-                                    final int repeatOnDaysCode,
-                                    final boolean enabled,
-                                    final String action,
-                                    final String extra) {
-                    if(enabled) {
-                        return;
-                    }
-
-                    Intent intent = new Intent(DISPATCH_ACTION);
-                    intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
-                    intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
-                    intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
-                    intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, extra);
-
-                    AlarmManager alarmManager =
-                        (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-
-                    long atTimeInMillis =
-                        getGoOffTimeInMillis(hour, minutes, repeatOnDaysCode);
-
-                    // Save this time into alarm settings for later use. For
-                    // example, deactivate this alarm.
-                    ContentValues newValues = new ContentValues();
-                    newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-                    updateAlarm(context, id, newValues);
-
-                    // TODO: Notify system that an alarm has been set.
-                    Calendar calendar = getCalendarInstance();
-                    calendar.setTimeInMillis(atTimeInMillis);
-                    Log.d(TAG, "===> alarm set at " + calendar);
-
-                    // NotificationManager notificationManager =
-                    //     (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-                    alarmManager.set(AlarmManager.RTC_WAKEUP,
-                                     atTimeInMillis,
-                                     PendingIntent.getBroadcast(
-                                         context, 0, intent,
-                                         PendingIntent.FLAG_CANCEL_CURRENT));
-                }
-            });
+        ActivateAlarm alarmSettings = new ActivateAlarm();
+        forEachAlarm(context, alarmUri, alarmSettings);
+        return alarmSettings.mAtTimeInMillis;
     }
 
     private static void deactivateAlarm(final Context context,
@@ -453,14 +455,11 @@ public class Alarms {
                                     final boolean enabled,
                                     final String action,
                                     final String extra) {
-                    if(!enabled) {
-                        return;
-                    }
                     Intent intent = new Intent(DISPATCH_ACTION);
-                    intent.putExtra(INTENT_EXTRA_ALARM_ID_KEY, id);
-                    intent.putExtra(INTENT_EXTRA_ALARM_LABEL_KEY, label);
-                    intent.putExtra(INTENT_EXTRA_ALARM_ACTION_KEY, action);
-                    intent.putExtra(INTENT_EXTRA_ALARM_EXTRA_KEY, extra);
+                    intent.putExtra(Alarms.AlarmColumns._ID, id);
+                    intent.putExtra(Alarms.AlarmColumns.LABEL, label);
+                    intent.putExtra(Alarms.AlarmColumns.ACTION, action);
+                    intent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
 
                     AlarmManager alarmManager =
                         (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
@@ -479,9 +478,9 @@ public class Alarms {
         return dateFormatter.format(calendar.getTime());
     }
 
-    private static long getGoOffTimeInMillis(final int hourOfDay,
-                                             final int minutes,
-                                             final int repeatOnCode) {
+    private static long calculateAlarmAtTimeInMillis(final int hourOfDay,
+                                                     final int minutes,
+                                                     final int repeatOnCode) {
         // Start with current date and time.
         Calendar calendar = getCalendarInstance();
 
@@ -490,7 +489,8 @@ public class Alarms {
 
         if((hourOfDay < nowHourOfDay) ||
            ((hourOfDay == nowHourOfDay) && (minutes < nowMinutes))) {
-            // If this alarm is behind current time. Move calendar to tomorrow.
+            // If this alarm is behind current time. Move
+            // calendar to tomorrow.
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
@@ -511,8 +511,6 @@ public class Alarms {
         }
 
         Log.d(TAG, "===> next alarm " + calendar.getTimeInMillis());
-
         return calendar.getTimeInMillis();
     }
-
 }

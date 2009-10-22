@@ -74,8 +74,7 @@ public class AlarmSettings extends PreferenceActivity
             });
 
         Intent intent = getIntent();
-        int alarmId = intent.getIntExtra(
-            Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
+        int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         if(alarmId == -1) {     // Insert a new alarm into DB
             throw new IllegalArgumentException("invalid alarm id");
         }
@@ -148,7 +147,7 @@ public class AlarmSettings extends PreferenceActivity
 
         Intent intent = getIntent();
         int alarmId =
-            intent.getIntExtra(Alarms.INTENT_EXTRA_ALARM_ID_KEY, -1);
+            intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         if(alarmId == -1) {
             throw new IllegalArgumentException("invalid alarm id");
         } else {
@@ -159,19 +158,19 @@ public class AlarmSettings extends PreferenceActivity
             final int hourOfDay = time / 100;
             final int minutes = time % 100;
             final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
+            // final String action = (String)mActionPreference.getPreferenceValue();
 
-            ContentValues newValues =
-                new ContentValues();
-            newValues.put(Alarms.AlarmColumns.LABEL, label);
-            newValues.put(Alarms.AlarmColumns.HOUR, hourOfDay);
-            newValues.put(Alarms.AlarmColumns.MINUTES, minutes);
-            newValues.put(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
+            Intent result = new Intent();
+            result.putExtra(Alarms.AlarmColumns._ID, alarmId);
+            result.putExtra(Alarms.AlarmColumns.LABEL, label);
+            result.putExtra(Alarms.AlarmColumns.HOUR, hourOfDay);
+            result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
+            result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
+            // result.putExtra(Alarms.AlarmColumns.ACTION, action);
+            // newValues.put(Alarms.AlarmColumns.EXTRA, extra);
 
-            // TODO: Should save
-            //       - action,
-            //       - any extra preferences
-
-            Alarms.updateAlarm(this, alarmId, newValues);
+            setResult(RESULT_OK, result);
+            Log.d(TAG, "=============> onPause()");
         }
     }
 
