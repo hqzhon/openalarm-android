@@ -29,6 +29,7 @@ import android.preference.PreferenceScreen;
 import android.preference.CheckBoxPreference;
 import android.net.Uri;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.widget.EditText;
@@ -120,6 +121,40 @@ public class AlarmSettings extends PreferenceActivity
         return true;
     }
 
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+
+            Intent intent = getIntent();
+            int alarmId =
+                intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
+            if(alarmId == -1) {
+                throw new IllegalArgumentException("invalid alarm id");
+            } else {
+                Uri alarmUri = Alarms.getAlarmUri(alarmId);
+
+                final String label = (String)mLabelPreference.getPreferenceValue();
+                final int time = (Integer)mTimePreference.getPreferenceValue();
+                final int hourOfDay = time / 100;
+                final int minutes = time % 100;
+                final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
+                // final String action = (String)mActionPreference.getPreferenceValue();
+
+                Intent result = new Intent();
+                result.putExtra(Alarms.AlarmColumns._ID, alarmId);
+                result.putExtra(Alarms.AlarmColumns.LABEL, label);
+                result.putExtra(Alarms.AlarmColumns.HOUR, hourOfDay);
+                result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
+                result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
+                // result.putExtra(Alarms.AlarmColumns.ACTION, action);
+                // newValues.put(Alarms.AlarmColumns.EXTRA, extra);
+
+                setResult(RESULT_OK, result);
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
     protected Dialog onCreateDialog(int dialogId) {
         Dialog dialog = new Dialog(this);
         switch(dialogId) {
@@ -145,33 +180,6 @@ public class AlarmSettings extends PreferenceActivity
     protected void onPause() {
         super.onPause();
 
-        Intent intent = getIntent();
-        int alarmId =
-            intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        if(alarmId == -1) {
-            throw new IllegalArgumentException("invalid alarm id");
-        } else {
-            Uri alarmUri = Alarms.getAlarmUri(alarmId);
-
-            final String label = (String)mLabelPreference.getPreferenceValue();
-            final int time = (Integer)mTimePreference.getPreferenceValue();
-            final int hourOfDay = time / 100;
-            final int minutes = time % 100;
-            final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
-            // final String action = (String)mActionPreference.getPreferenceValue();
-
-            Intent result = new Intent();
-            result.putExtra(Alarms.AlarmColumns._ID, alarmId);
-            result.putExtra(Alarms.AlarmColumns.LABEL, label);
-            result.putExtra(Alarms.AlarmColumns.HOUR, hourOfDay);
-            result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
-            result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
-            // result.putExtra(Alarms.AlarmColumns.ACTION, action);
-            // newValues.put(Alarms.AlarmColumns.EXTRA, extra);
-
-            setResult(RESULT_OK, result);
-            Log.d(TAG, "=============> onPause()");
-        }
     }
 
     private Dialog createTimePickDialog() {
