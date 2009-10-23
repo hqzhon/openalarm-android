@@ -89,10 +89,10 @@ public class AlarmClockPlus extends ListActivity {
                         int alarmId =
                             attachment.getInt(Alarms.AlarmColumns._ID);
 
-                        Log.d(TAG, "=====> onCheckedChanged("
-                              + buttonView + "): parent=" + parent
-                              + ", isChecked=" + isChecked
-                              + ", alarmId=" + alarmId);
+                        // Log.d(TAG, "=====> onCheckedChanged("
+                        //       + buttonView + "): parent=" + parent
+                        //       + ", isChecked=" + isChecked
+                        //       + ", alarmId=" + alarmId);
 
                         Alarms.setAlarm(AlarmClockPlus.this,
                                         Alarms.getAlarmUri(alarmId),
@@ -276,32 +276,29 @@ public class AlarmClockPlus extends ListActivity {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        Log.d(TAG, "===> onActivityResult(" + requestCode + ", " + resultCode + ", " + data + ")");
-
         if(resultCode != RESULT_OK) {
             return;
         }
 
         switch(requestCode) {
         case OPEN_ALARM_SETTINGS_CODE:
-            Log.d(TAG, "===> save alarm seeting" + requestCode + ", " + resultCode);
-            int alarmId =
+            final int alarmId =
                 data.getIntExtra(Alarms.AlarmColumns._ID, -1);
-            String newLabel =
+            final String newLabel =
                 data.getStringExtra(Alarms.AlarmColumns.LABEL);
-            int newHourOfDay =
+            final int newHourOfDay =
                 data.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
-            int newMinutes =
+            final int newMinutes =
                 data.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
-            int newRepeatOnDaysCode =
+            final int newRepeatOnDaysCode =
                 data.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
-            String newAction =
+            final String newAction =
                 data.getStringExtra(Alarms.AlarmColumns.ACTION);
 
             Log.d(TAG, "===> Result back: alarmId=" + alarmId
                   + ", label=" + newLabel
-                  + ", time=" + newHourOfDay + ":" + newMinutes);
+                  + ", time=" + newHourOfDay + ":" + newMinutes
+                  + ", action=" + newAction);
 
             // Get old values from database
             class GetAlarmSettings implements Alarms.OnVisitListener {

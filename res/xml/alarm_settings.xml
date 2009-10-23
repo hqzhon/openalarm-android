@@ -24,7 +24,9 @@
        android:defaultValue="5"/>
   </PreferenceCategory>
 
-  <PreferenceCategory android:title="Extra Settings">
+  <PreferenceCategory
+     android:title="Extra Settings"
+     android:key="extra settings" >
 
   </PreferenceCategory>
 

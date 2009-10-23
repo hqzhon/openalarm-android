@@ -25,6 +25,7 @@ public class AlarmActionPreference extends TextViewPreference {
 
     private int mCheckedActionEntryIndex = -1;
     private CharSequence[] mEntries;
+    private CharSequence[] mEntryValues;
 
     public AlarmActionPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -34,8 +35,20 @@ public class AlarmActionPreference extends TextViewPreference {
         mEntries = entries;
     }
 
+    public void setEntryValues(CharSequence[] values) {
+        mEntryValues = values;
+    }
+
     public CharSequence[] getEntries() {
         return mEntries;
+    }
+
+    public CharSequence getEntry() {
+        return mEntries[mCheckedActionEntryIndex];
+    }
+
+    public CharSequence getValue() {
+        return mEntryValues[mCheckedActionEntryIndex];
     }
 
     @Override

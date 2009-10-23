@@ -1,4 +1,3 @@
-
 package org.startsmall.alarmclockplus.receiver;
 
 import org.startsmall.alarmclockplus.*;

@@ -14,6 +14,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,6 +24,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
@@ -36,6 +38,7 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 
 import java.util.*;
+import java.lang.reflect.Method;
 
 public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
@@ -97,10 +100,17 @@ public class AlarmSettings extends PreferenceActivity {
                     mLabelPreference.setPreferenceValue(label);
                     mTimePreference.setPreferenceValue(hour * 100 + minutes);
                     mRepeatOnPreference.setPreferenceValue(repeatDays);
+
+                    // TODO:
+
+
+
+
+
                 }
             });
 
-        populateActionReceivers();
+        loadActionHandlers();
     }
 
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
@@ -136,7 +146,7 @@ public class AlarmSettings extends PreferenceActivity {
                 final int hourOfDay = time / 100;
                 final int minutes = time % 100;
                 final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
-                // final String action = (String)mActionPreference.getPreferenceValue();
+                final String action = (String)mActionPreference.getValue();
 
                 Intent result = new Intent();
                 result.putExtra(Alarms.AlarmColumns._ID, alarmId);
@@ -144,7 +154,7 @@ public class AlarmSettings extends PreferenceActivity {
                 result.putExtra(Alarms.AlarmColumns.HOUR, hourOfDay);
                 result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
                 result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
-                // result.putExtra(Alarms.AlarmColumns.ACTION, action);
+                result.putExtra(Alarms.AlarmColumns.ACTION, action);
                 // newValues.put(Alarms.AlarmColumns.EXTRA, extra);
 
                 setResult(RESULT_OK, result);
@@ -243,6 +253,7 @@ public class AlarmSettings extends PreferenceActivity {
                     public void onClick(DialogInterface dialog,
                                         int which) {
                         mActionPreference.setPreferenceValue(which);
+                        AlarmSettings.this.loadExtraSettingsForActionHandler(mActionPreference.getValue().toString());
                         dialog.dismiss();
                     }
                 });
@@ -250,7 +261,7 @@ public class AlarmSettings extends PreferenceActivity {
         return builder.create();
     }
 
-    private void populateActionReceivers() {
+    private void loadActionHandlers() {
         PackageManager pm = getPackageManager();
         Intent queryIntent = new Intent(Alarms.ALARM_ACTION);
         queryIntent.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -258,15 +269,44 @@ public class AlarmSettings extends PreferenceActivity {
         List<ResolveInfo> actions = pm.queryBroadcastReceivers(queryIntent, 0);
 
         CharSequence[] entries = new CharSequence[actions.size()];
+        CharSequence[] entryValues = new CharSequence[actions.size()];
         // Class<? extends BroadcastReceiver>[] entryValues = new Class<? extends BroadcastReceiver>[actions.size()];
         for(int i = 0; i < actions.size(); i++) {
+            ResolveInfo resInfo = actions.get(i);
             ActivityInfo info = actions.get(i).activityInfo;
             entries[i] = info.loadLabel(pm);
+            entryValues[i] = info.name;
         }
 
         if(entries.length > 0) {
             mActionPreference.setEntries(entries);
-            // actionPref.setEntryValues(entryValues);
+            mActionPreference.setEntryValues(entryValues);
+        }
+    }
+
+    private void loadExtraSettingsForActionHandler(String handlerClassName) {
+        PreferenceManager preferenceManager = getPreferenceManager();
+        PreferenceCategory extraSettingsCategory =
+            (PreferenceCategory)preferenceManager.findPreference(
+                "extra settings");
+        extraSettingsCategory.removeAll();
+
+        Log.d(TAG, "===> load extra settings for " + handlerClassName + "under category'" + extraSettingsCategory + "'");
+
+
+        try {
+            Class<?> handler = Class.forName(handlerClassName);
+            Method m = handler.getDeclaredMethod(
+                "addMyPreferences",
+                Class.forName("android.content.Context"),
+                Class.forName("android.preference.PreferenceCategory"));
+            m.invoke(handler.newInstance(), this, extraSettingsCategory);
+        } catch(ClassNotFoundException e) {
+        } catch(NoSuchMethodException e) {
+        } catch(IllegalAccessException e) {
+        } catch(IllegalArgumentException e) {
+        } catch(InstantiationException e) {
+        } catch(java.lang.reflect.InvocationTargetException e) {
         }
     }
 }

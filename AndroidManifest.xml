@@ -29,7 +29,7 @@
       </activity>
 
       <receiver android:name=".receiver.InitReceiver"
-                android:label="Alarm">
+                android:label="Init">
         <intent-filter>
           <action android:name="android.intent.action.BOOT_COMPLETED" />
           <action android:name="android.intent.action.TIME_SET"/>
@@ -45,9 +45,7 @@
         </intent-filter>
       </receiver>
 
-
-
-      <receiver android:name=".receiver.AlarmReceiver"
+      <receiver android:name=".receiver.AlarmActionHandler"
                 android:label="Alarm">
         <intent-filter>
           <action android:name="org.startsmall.alarmclockplus.ALARM_ACTION" />
@@ -55,16 +53,8 @@
         </intent-filter>
       </receiver>
 
-      <receiver android:name=".receiver.WifiOnReceiver"
-                android:label="Turn Wi-Fi On">
-        <intent-filter>
-          <action android:name="org.startsmall.alarmclockplus.ALARM_ACTION" />
-          <category android:name="android.intent.category.ALTERNATIVE" />
-        </intent-filter>
-      </receiver>
-
-      <receiver android:name=".receiver.WifiOffReceiver"
-                android:label="Turn Wi-Fi Off">
+      <receiver android:name=".receiver.WifiActionHandler"
+                android:label="Wi-Fi">
         <intent-filter>
           <action android:name="org.startsmall.alarmclockplus.ALARM_ACTION" />
           <category android:name="android.intent.category.ALTERNATIVE" />
