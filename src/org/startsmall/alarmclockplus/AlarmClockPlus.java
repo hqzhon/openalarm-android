@@ -216,7 +216,7 @@ public class AlarmClockPlus extends ListActivity {
         Cursor alarmsCursor =
             Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
 
-        // FIXME: Don't know why enabling this line will prevent
+        // FIXME: Still don't know why enabling this line will prevent
         // deleted row from removing from ListView. Need to
         // figure out.
         // startManagingCursor(cursor);

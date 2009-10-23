@@ -20,8 +20,11 @@ import android.provider.BaseColumns;
 import android.net.Uri;
 import android.util.Log;
 import android.text.format.DateUtils;
+import android.widget.Toast;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 /**
@@ -384,11 +387,6 @@ public class Alarms {
             long newAtTimeInMillis = activateAlarm(context, alarmUri);
             newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
             updateAlarm(context, alarmUri, newValues);
-
-            // TODO: Notify system that an alarm has been set.
-            Calendar calendar = getCalendarInstance();
-            calendar.setTimeInMillis(newAtTimeInMillis);
-            Log.d(TAG, "===> setAlarm(): Set alarm " + alarmUri + " to go off at " + calendar);
         } else {
             Log.d(TAG, "===> setAlarm(): deactivate alarm '" + alarmUri);
             deactivateAlarm(context, alarmUri);
@@ -432,6 +430,15 @@ public class Alarms {
                                  PendingIntent.getBroadcast(
                                      context, 0, intent,
                                      PendingIntent.FLAG_CANCEL_CURRENT));
+
+                // Prepare for notification and toast message
+                Date date = new Date(mAtTimeInMillis);
+                DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
+                                                                       DateFormat.MEDIUM);
+                String text =
+                    String.format(context.getString(R.string.alarm_activated_toast_text),
+                                  dateFormat.format(new Date(mAtTimeInMillis)));
+                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
             }
         }
 
