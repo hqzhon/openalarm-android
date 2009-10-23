@@ -1,6 +1,6 @@
 /**
  * @file   TextViewPreference.java
- * @author yenliangl <josh@alchip.com>
+ * @author yenliangl <yenliangl@gmail.com>
  * @date   Thu Oct  8 19:49:43 2009
  *
  * @brief

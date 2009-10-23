@@ -42,6 +42,7 @@ public class WifiActionHandler extends ActionHandler {
         }
 
         MyPreference onOffPref = new MyPreference(context);
+        onOffPref.setKey("wifi_state");
         onOffPref.setPersistent(true);
         onOffPref.setTitle(R.string.alarm_extra_settings_wifi_title);
         CharSequence[] entries = new CharSequence[]{"On", "Off"};

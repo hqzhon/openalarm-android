@@ -412,6 +412,8 @@ public class Alarms {
                 intent.putExtra(Alarms.AlarmColumns._ID, id);
                 intent.putExtra(Alarms.AlarmColumns.LABEL, label);
                 intent.putExtra(Alarms.AlarmColumns.ACTION, action);
+
+                intent.setClassName(context, action);
                 intent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
 
                 AlarmManager alarmManager =
@@ -420,6 +422,8 @@ public class Alarms {
 
                 mAtTimeInMillis =
                     calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
+
+                intent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, mAtTimeInMillis);
 
                 // NotificationManager notificationManager =
                 //     (NotificationManager)context.getSystemService(

@@ -294,11 +294,14 @@ public class AlarmClockPlus extends ListActivity {
                 data.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
             final String newAction =
                 data.getStringExtra(Alarms.AlarmColumns.ACTION);
+            final String newExtra =
+                data.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
             Log.d(TAG, "===> Result back: alarmId=" + alarmId
                   + ", label=" + newLabel
                   + ", time=" + newHourOfDay + ":" + newMinutes
-                  + ", action=" + newAction);
+                  + ", action=" + newAction
+                  + (TextUtils.isEmpty(newExtra) ? "" : (", extra=" + newExtra)));
 
             // Get old values from database
             class GetAlarmSettings implements Alarms.OnVisitListener {
@@ -358,14 +361,22 @@ public class AlarmClockPlus extends ListActivity {
                 newValues.put(Alarms.AlarmColumns.ACTION, newAction);
             }
 
-            // newValues.put(Alarms.AlarmColumns.EXTRA, extra)
+            if(newAction != settings.mAction) {
+                newValues.put(Alarms.AlarmColumns.ACTION, newAction);
+            }
+
+            if(newExtra != settings.mExtra) {
+                newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
+            }
+
             if(settings.mEnabled) {
                 // If these values were updated, we need to
                 // re-schedule the alarm with these new values.
                 if(newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
                    newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
                    newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
-                   newValues.containsKey(Alarms.AlarmColumns.ACTION)) {
+                   newValues.containsKey(Alarms.AlarmColumns.ACTION) ||
+                   newValues.containsKey(Alarms.AlarmColumns.EXTRA)) {
 
                     // Deactivate the old alarm.
                     Alarms.setAlarm(this, alarmUri, false);

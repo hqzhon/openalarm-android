@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceActivity;
@@ -30,6 +31,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.CheckBoxPreference;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -50,6 +52,7 @@ public class AlarmSettings extends PreferenceActivity {
     AlarmLabelPreference mLabelPreference;
     AlarmActionPreference mActionPreference;
     AlarmRepeatOnDialogPreference mRepeatOnPreference;
+    PreferenceCategory mExtraSettingsCategory;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -75,10 +78,13 @@ public class AlarmSettings extends PreferenceActivity {
                     mRepeatOnPreference.setSummary(weekdays.toString());
                 }
             });
+        mExtraSettingsCategory =
+            (PreferenceCategory)preferenceManager.findPreference(
+                getString(R.string.alarm_settings_extra_category_key));
 
         Intent intent = getIntent();
         int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        if(alarmId == -1) {     // Insert a new alarm into DB
+        if(alarmId == -1) {
             throw new IllegalArgumentException("invalid alarm id");
         }
 
@@ -101,12 +107,10 @@ public class AlarmSettings extends PreferenceActivity {
                     mTimePreference.setPreferenceValue(hour * 100 + minutes);
                     mRepeatOnPreference.setPreferenceValue(repeatDays);
 
-                    // TODO:
-
-
-
-
-
+                    // TODO: Load extra settings for this action.
+                    mActionPreference.setValue(action);
+                    AlarmSettings.this.loadExtraSettingsForActionHandler(
+                        action);
                 }
             });
 
@@ -131,7 +135,8 @@ public class AlarmSettings extends PreferenceActivity {
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+        if (keyCode == KeyEvent.KEYCODE_BACK &&
+            event.getRepeatCount() == 0) {
 
             Intent intent = getIntent();
             int alarmId =
@@ -147,6 +152,8 @@ public class AlarmSettings extends PreferenceActivity {
                 final int minutes = time % 100;
                 final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
                 final String action = (String)mActionPreference.getValue();
+                final String extra =
+                    getValueOfExtraSettings(mExtraSettingsCategory);
 
                 Intent result = new Intent();
                 result.putExtra(Alarms.AlarmColumns._ID, alarmId);
@@ -155,8 +162,9 @@ public class AlarmSettings extends PreferenceActivity {
                 result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
                 result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
                 result.putExtra(Alarms.AlarmColumns.ACTION, action);
-                // newValues.put(Alarms.AlarmColumns.EXTRA, extra);
-
+                if(!TextUtils.isEmpty(extra)) {
+                    result.putExtra(Alarms.AlarmColumns.EXTRA, extra);
+                }
                 setResult(RESULT_OK, result);
             }
         }
@@ -241,24 +249,27 @@ public class AlarmSettings extends PreferenceActivity {
     }
 
     private Dialog createActionPickDialog() {
-        int actionEntryIndex = (Integer)mActionPreference.getPersistedValue();
+        loadActionHandlers();
+        return mActionPreference.getDialog();
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder
-            .setTitle(R.string.alarm_settings_action_dialog_title)
-            .setSingleChoiceItems(
-                mActionPreference.getEntries(),
-                actionEntryIndex,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,
-                                        int which) {
-                        mActionPreference.setPreferenceValue(which);
-                        AlarmSettings.this.loadExtraSettingsForActionHandler(mActionPreference.getValue().toString());
-                        dialog.dismiss();
-                    }
-                });
+        // int actionEntryIndex = (Integer)mActionPreference.getPersistedValue();
 
-        return builder.create();
+        // AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // builder
+        //     .setTitle(R.string.alarm_settings_action_dialog_title)
+        //     .setSingleChoiceItems(
+        //         mActionPreference.getEntries(),
+        //         actionEntryIndex,
+        //         new DialogInterface.OnClickListener() {
+        //             public void onClick(DialogInterface dialog,
+        //                                 int which) {
+        //                 mActionPreference.setPreferenceValue(which);
+        //                 AlarmSettings.this.loadExtraSettingsForActionHandler(mActionPreference.getValue().toString());
+        //                 dialog.dismiss();
+        //             }
+        //         });
+
+        // return builder.create();
     }
 
     private void loadActionHandlers() {
@@ -285,13 +296,9 @@ public class AlarmSettings extends PreferenceActivity {
     }
 
     private void loadExtraSettingsForActionHandler(String handlerClassName) {
-        PreferenceManager preferenceManager = getPreferenceManager();
-        PreferenceCategory extraSettingsCategory =
-            (PreferenceCategory)preferenceManager.findPreference(
-                "extra settings");
-        extraSettingsCategory.removeAll();
+        mExtraSettingsCategory.removeAll();
 
-        Log.d(TAG, "===> load extra settings for " + handlerClassName + "under category'" + extraSettingsCategory + "'");
+        Log.d(TAG, "===> load extra settings for " + handlerClassName + "under category'" + mExtraSettingsCategory + "'");
 
 
         try {
@@ -300,7 +307,7 @@ public class AlarmSettings extends PreferenceActivity {
                 "addMyPreferences",
                 Class.forName("android.content.Context"),
                 Class.forName("android.preference.PreferenceCategory"));
-            m.invoke(handler.newInstance(), this, extraSettingsCategory);
+            m.invoke(handler.newInstance(), this, mExtraSettingsCategory);
         } catch(ClassNotFoundException e) {
         } catch(NoSuchMethodException e) {
         } catch(IllegalAccessException e) {
@@ -308,5 +315,27 @@ public class AlarmSettings extends PreferenceActivity {
         } catch(InstantiationException e) {
         } catch(java.lang.reflect.InvocationTargetException e) {
         }
+    }
+
+    private String getValueOfExtraSettings(PreferenceCategory category) {
+        SharedPreferences sharedPreferences =
+            category.getSharedPreferences();
+        String result = "";
+        int numberOfPreferences =
+            category.getPreferenceCount();
+        for(int i = 0; i < numberOfPreferences; i++) {
+            Preference preference = category.getPreference(i);
+
+            String key = preference.getKey();
+            String value = sharedPreferences.getString(key, "");
+            if(TextUtils.isEmpty(key) ||
+               TextUtils.isEmpty(value)) {
+                continue;
+            }
+
+            result += (key + "=" + value + '\n');
+        }
+
+        return result;
     }
 }
