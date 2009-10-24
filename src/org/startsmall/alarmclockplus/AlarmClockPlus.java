@@ -282,6 +282,8 @@ public class AlarmClockPlus extends ListActivity {
 
         switch(requestCode) {
         case OPEN_ALARM_SETTINGS_CODE:
+            // Extract alarm settings derived from user on AlarmSettings
+            // activity.
             final int alarmId =
                 data.getIntExtra(Alarms.AlarmColumns._ID, -1);
             final String newLabel =

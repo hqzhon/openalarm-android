@@ -85,9 +85,9 @@ public class AlarmRepeatOnDialogPreference extends DialogPreference
             }
             dialog.dismiss();
             break;
-        default:
-            dialog.cancel();
-            break;
+        // default:
+        //     dialog.cancel();
+        //     break;
         }
     }
 }

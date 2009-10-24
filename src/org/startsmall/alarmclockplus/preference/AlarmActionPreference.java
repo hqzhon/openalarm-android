@@ -10,177 +10,129 @@
 package org.startsmall.alarmclockplus.preference;
 
 import org.startsmall.alarmclockplus.*;
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.TypedArray;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager;
 import android.os.Parcel;
 import android.os.Parcelable;
-// import android.preference.Preference;
 import android.view.View;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.TextView;
 
-// public class AlarmActionPreference extends TextViewPreference {
-//     private static final String TAG = "AlarmActionPreference";
+import java.util.List;
 
-//     private int mCheckedActionEntryIndex = -1;
-//     private CharSequence[] mEntries;
-//     private CharSequence[] mEntryValues;
+public class AlarmActionPreference extends TextViewPreference {
+    public interface OnSelectActionListener {
+        void onSelectAction(String handlerClassName);
+    }
 
-//     public AlarmActionPreference(Context context, AttributeSet attrs) {
-//         super(context, attrs);
-//     }
-
-//     public void setEntries(CharSequence[] entries) {
-//         mEntries = entries;
-//     }
-
-//     public void setEntryValues(CharSequence[] values) {
-//         mEntryValues = values;
-//     }
-
-//     public CharSequence[] getEntries() {
-//         return mEntries;
-//     }
-
-//     public CharSequence getEntry() {
-//         return mEntries[mCheckedActionEntryIndex];
-//     }
-
-//     public CharSequence getValue() {
-//         return mEntryValues[mCheckedActionEntryIndex];
-//     }
-
-//     @Override
-//     protected void persistValue(Object value) {
-//         mCheckedActionEntryIndex = (Integer)value;
-//         persistInt(mCheckedActionEntryIndex);
-//     }
-
-//     @Override
-//     protected Object getPersistedValue() {
-//         return mCheckedActionEntryIndex;
-//     }
-
-//     @Override
-//     protected void onBindView(View view) {
-//         super.onBindView(view);
-
-//         if(mEntries.length > 0 &&
-//            mCheckedActionEntryIndex != -1) { // before showDialog()
-//             final TextView textView =
-//                 (TextView)view.findViewById(R.id.text);
-//             textView.setText(mEntries[mCheckedActionEntryIndex].toString());
-//         }
-//     }
-
-//     protected Object onGetDefaultValue(TypedArray a, int index) {
-//         return a.getInt(index, -1);
-//     }
-
-//     protected void onSetInitialValue(boolean restorePersistedValue,
-//                                      Object defValue) {
-//         setPreferenceValue(restorePersistedValue ?
-//                            getPersistedInt(mCheckedActionEntryIndex) :
-//                            (Integer)defValue);
-//     }
-
-//     @Override
-//     protected Parcelable onSaveInstanceState() {
-//         final Parcelable superState = super.onSaveInstanceState();
-//         if(isPersistent()) {    // persistent preference
-//             return superState;
-//         }
-
-//         SavedState myState = new SavedState(superState);
-//         myState.checkedActionEntryIndex = mCheckedActionEntryIndex;
-//         return myState;
-//     }
-
-//     @Override
-//     protected void onRestoreInstanceState(Parcelable state) {
-//         if(state != null && state.getClass().equals(SavedState.class)) {
-//             SavedState myState = (SavedState)state;
-//             super.onRestoreInstanceState(myState.getSuperState());
-//             setPreferenceValue(myState.checkedActionEntryIndex);
-//         } else {
-//             super.onRestoreInstanceState(state);
-//         }
-//     }
-
-//     private static class SavedState extends BaseSavedState {
-//         int checkedActionEntryIndex;
-
-//         public SavedState(Parcelable in) {
-//             super(in);
-//         }
-
-//         public SavedState(Parcel in) {
-//             super(in);
-//             checkedActionEntryIndex = in.readInt();
-//         }
-
-//         @Override
-//         public void writeToParcel(Parcel dest, int flags) {
-//             super.writeToParcel(dest, flags);
-//             dest.writeInt(checkedActionEntryIndex);
-//         }
-
-//         public static final Parcelable.Creator<SavedState> CREATOR =
-//             new Parcelable.Creator<SavedState>() {
-
-//             public SavedState createFromParcel(Parcel in) {
-//                 return new SavedState(in);
-//             }
-
-//             public SavedState[] newArray(int size) {
-//                 return new SavedState[size];
-//             }
-//         };
-//     }
-// }
-
-public class AlarmActionPreference extends ListPreference {
     private static final String TAG = "AlarmActionPreference";
 
-    // private int mCheckedActionEntryIndex = -1;
-    // private CharSequence[] mEntries;
-    // private CharSequence[] mEntryValues;
+    private int mCheckedActionEntryIndex = -1;
+    private CharSequence[] mEntries;
+    private CharSequence[] mEntryValues;
+    private OnSelectActionListener mOnSelectActionListener;
+    private DialogInterface.OnClickListener mOnClickListener =
+        new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                AlarmActionPreference.this.setPreferenceValueIndex(which);
+                if(AlarmActionPreference.this.mOnSelectActionListener != null) {
+                    mOnSelectActionListener.onSelectAction(
+                        AlarmActionPreference.this.getPreferenceValue());
+                }
+                dialog.dismiss();
+            }
+        };
 
     public AlarmActionPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setWidgetLayoutResource(R.layout.alarm_text_view_preference_widget);
+
+        loadHandlers();
     }
 
-    // public void setEntries(CharSequence[] entries) {
-    //     mEntries = entries;
-    // }
+    public CharSequence[] getEntries() {
+        return mEntries;
+    }
 
-    // public void setEntryValues(CharSequence[] values) {
-    //     mEntryValues = values;
-    // }
-
-    // public CharSequence[] getEntries() {
-    //     return mEntries;
-    // }
-
-    // public CharSequence getEntry() {
-    //     return mEntries[mCheckedActionEntryIndex];
-    // }
-
-    // public CharSequence getValue() {
-    //     return mEntryValues[mCheckedActionEntryIndex];
-    // }
-
-    @Override
-    protected void persistValue(Object value) {
-        mCheckedActionEntryIndex = (Integer)value;
-        persistInt(mCheckedActionEntryIndex);
+    public CharSequence[] getEntryValues() {
+        return mEntryValues;
     }
 
     @Override
-    protected Object getPersistedValue() {
-        return mCheckedActionEntryIndex;
+    public void setPreferenceValue(String value) {
+        int index = findIndexOfValue(value);
+
+        Log.d(TAG, "==================> found " + value + " + at index " + index);
+
+        if(index != -1) {
+            mCheckedActionEntryIndex = index;
+            super.setPreferenceValue(value);
+        }
     }
 
+    public final void setPreferenceValueIndex(int index) {
+        mCheckedActionEntryIndex = index;
+        setPreferenceValue(mEntryValues[index].toString());
+    }
+
+    public int findIndexOfValue(String value) {
+        if(mEntryValues != null) {
+            // Just search from start to the end.
+            for(int i = 0; i < mEntryValues.length; i++) {
+                if(value.equals(mEntryValues[i])) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public void setOnSelectActionListener(OnSelectActionListener listener) {
+        mOnSelectActionListener = listener;
+    }
+
+    protected String formatDisplayValue(String value) {
+        if(mCheckedActionEntryIndex < 0)  {
+            return value;
+        }
+
+        Log.d(TAG, "===> before format" + value);
+        Log.d(TAG, "===> after format" + mEntries[mCheckedActionEntryIndex].toString());
+
+        return mEntries[mCheckedActionEntryIndex].toString();
+    }
+
+    protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
+        builder
+            .setTitle(R.string.alarm_settings_action_dialog_title)
+            .setSingleChoiceItems(
+                mEntries,
+                mCheckedActionEntryIndex,
+                mOnClickListener);
+    }
+
+    private void loadHandlers() {
+        Intent queryIntent = new Intent(Alarms.ALARM_ACTION);
+        queryIntent.addCategory(Intent.CATEGORY_ALTERNATIVE);
+
+        PackageManager pm = getContext().getPackageManager();
+        List<ResolveInfo> actions =
+            pm.queryBroadcastReceivers(queryIntent, 0);
+
+        mEntries = new CharSequence[actions.size()];
+        mEntryValues = new CharSequence[actions.size()];
+        for(int i = 0; i < actions.size(); i++) {
+            ResolveInfo resInfo = actions.get(i);
+            ActivityInfo info = actions.get(i).activityInfo;
+            mEntries[i] = info.loadLabel(pm);
+            mEntryValues[i] = info.name;
+        }
+    }
 }

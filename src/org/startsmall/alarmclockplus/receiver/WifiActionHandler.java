@@ -1,14 +1,17 @@
 package org.startsmall.alarmclockplus.receiver;
 
 import org.startsmall.alarmclockplus.R;
+import org.startsmall.alarmclockplus.preference.TextViewPreference;
+
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
-import android.preference.ListPreference;
+// import android.preference.ListPreference;
 import android.preference.PreferenceCategory;
+import android.util.AttributeSet;
 import android.util.Log;
 
 public class WifiActionHandler extends ActionHandler {
@@ -17,40 +20,52 @@ public class WifiActionHandler extends ActionHandler {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.v(TAG, "=========> My WifiActionHandler.onReceive() haha");
+
+
+
+
+
+
     }
 
     public void addMyPreferences(Context context,
                                  PreferenceCategory category) {
-        class MyPreference extends ListPreference {
-            public MyPreference(Context context) {
-                super(context);
+        class MyPreference extends TextViewPreference {
+            public MyPreference(Context context, AttributeSet attrs) {
+                super(context, attrs);
             }
 
-            protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
+            protected void onClick() {
+                getDialog().show();
+            }
+
+            protected void onPrepareDialogBuilder(
+                AlertDialog.Builder builder) {
+                int checkedItemIndex = -1;
+                if(getPreferenceValue() != null) {
+                    checkedItemIndex = getPreferenceValue() == "On" ? 0 : 1;
+                }
+
                 builder
                     .setSingleChoiceItems(
-                        super.getEntries(),
-                        0,
+                        new CharSequence[] {"On", "Off"},
+                        checkedItemIndex,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,
                                                 int which) {
-                                MyPreference.this.setSummary(
-                                    MyPreference.this.getValue());
+                                MyPreference.this.setPreferenceValue(
+                                    which == 0? "On" : "Off");
+                                dialog.dismiss();
                             }
                         });
             }
         }
 
-        MyPreference onOffPref = new MyPreference(context);
+        MyPreference onOffPref = new MyPreference(context, null);
         onOffPref.setKey("wifi_state");
         onOffPref.setPersistent(true);
         onOffPref.setTitle(R.string.alarm_extra_settings_wifi_title);
-        CharSequence[] entries = new CharSequence[]{"On", "Off"};
-        CharSequence[] entryValues = new CharSequence[]{"On", "Off"};
-        onOffPref.setEntries(entries);
-        onOffPref.setEntryValues(entryValues);
-        onOffPref.setValueIndex(0);
-        onOffPref.setSummary(onOffPref.getValue());
+        onOffPref.setPreferenceValue("On");
 
         category.addPreference(onOffPref);
     }
@@ -62,5 +77,4 @@ public class WifiActionHandler extends ActionHandler {
             wm.setWifiEnabled(toggle);
         }
     }
-
 }
