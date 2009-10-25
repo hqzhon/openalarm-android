@@ -10,7 +10,9 @@
 
     <org.startsmall.alarmclockplus.preference.AlarmActionPreference
        android:key="@string/alarm_settings_action_key"
-       android:title="@string/alarm_settings_action_title"/>
+       android:title="@string/alarm_settings_action_title"
+       android:defaultValue=""
+       />
 
     <org.startsmall.alarmclockplus.preference.AlarmTimePreference
        android:key="@string/alarm_settings_time_key"

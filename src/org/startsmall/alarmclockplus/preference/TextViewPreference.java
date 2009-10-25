@@ -18,10 +18,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.Preference;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 public class TextViewPreference extends Preference {
+    private static final String TAG = "TextViewPreference";
     private String mValue;
 
     protected TextViewPreference(Context context, AttributeSet attrs) {
@@ -31,7 +33,10 @@ public class TextViewPreference extends Preference {
 
     public void setPreferenceValue(String value) {
         mValue = value;
-        notifyChanged();
+        if(shouldPersist()) {
+            persistString(mValue);
+            notifyChanged();
+        }
     }
 
     public String getPreferenceValue() {
@@ -62,15 +67,37 @@ public class TextViewPreference extends Preference {
 
     @Override
     protected Object onGetDefaultValue(TypedArray a, int index) {
-        // return a.getInt(index, -1);
         return a.getString(index);
     }
 
     @Override
     protected void onSetInitialValue(boolean restorePersistedValue,
                                      Object defValue) {
-        setPreferenceValue(restorePersistedValue ?
-                           getPersistedString(mValue) : (String)defValue);
+        Log.d(TAG, "===============> Object: " + this
+              + ", restorePersistedValue=" + restorePersistedValue
+              + ", shouldPersist=" + shouldPersist()
+              + ", persisted value=" + getPersistedString(mValue)
+              + ", defaultValue=" + (String)defValue
+            );
+
+        if(restorePersistedValue &&
+           shouldPersist()) {
+            setPreferenceValue(getPersistedString(mValue));
+            return;
+        }
+
+        setPreferenceValue((String)defValue);
+
+        // if(shouldPersist()) {
+        //     Log.d(TAG, "********* Object: " + this
+        //           + ", restorePersistedValue=" + restorePersistedValue
+        //           + ", persisted value=" + getPersistedString(mValue)
+        //           + ", defaultValue=" + (String)defValue
+        //         );
+
+        //     setPreferenceValue(restorePersistedValue ?
+        //                        getPersistedString(mValue) : (String)defValue);
+        // }
     }
 
     @Override
@@ -91,6 +118,8 @@ public class TextViewPreference extends Preference {
             SavedState myState = (SavedState)state;
             super.onRestoreInstanceState(myState.getSuperState());
             setPreferenceValue(myState.value);
+            Log.d(TAG, "+++++++++++ Object: " + this
+                  + "onRestoreInstanceState(" + myState.value + ")");
         } else {
             super.onRestoreInstanceState(state);
         }

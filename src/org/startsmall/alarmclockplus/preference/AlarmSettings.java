@@ -86,6 +86,26 @@ public class AlarmSettings extends PreferenceActivity {
             throw new IllegalArgumentException("invalid alarm id");
         }
 
+        if(bundle != null) {
+            int savedAlarmId =
+                bundle.getInt(Alarms.AlarmColumns._ID, -1);
+            if(alarmId == savedAlarmId) {
+                Log.d(TAG, "====> Load saved preferences for this alarm");
+
+                mLabelPreference.setPreferenceValue(
+                    bundle.getString(Alarms.AlarmColumns.LABEL));
+                mRepeatOnPreference.setPreferenceValue(
+                    bundle.getInt(Alarms.AlarmColumns.REPEAT_DAYS, -1));
+                mActionPreference.setPreferenceValue(
+                    bundle.getString(Alarms.AlarmColumns.ACTION));
+
+                // mTimePreference.setPreferenceValue(
+                //     Integer.toString(hour * 100 + minutes));
+
+                return;
+            }
+        }
+
         // Fetch settings of this alarm and show them on the preferences.
         Alarms.forEachAlarm(
             this,
@@ -101,13 +121,14 @@ public class AlarmSettings extends PreferenceActivity {
                                     final boolean enabled,
                                     final String action,
                                     final String extra) {
+                    Log.d(TAG, "========> Loading alarm settings " + id + " from SQL database");
+
                     mLabelPreference.setPreferenceValue(label);
 
                     mTimePreference.setPreferenceValue(
                         Integer.toString(hour * 100 + minutes));
                     mRepeatOnPreference.setPreferenceValue(repeatDays);
 
-                    Log.d(TAG, "========> from here");
                     mActionPreference.setPreferenceValue(action);
                     AlarmSettings.this.loadExtraSettingsOfActionHandler(action);
                 }
@@ -169,19 +190,49 @@ public class AlarmSettings extends PreferenceActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "============> onSaveInstanceState()");
+
+        Intent intent = getIntent();
+        int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        outState.putInt(Alarms.AlarmColumns._ID, alarmId);
+        outState.putString(Alarms.AlarmColumns.LABEL,
+                           mLabelPreference.getPreferenceValue());
+        outState.putInt(Alarms.AlarmColumns.REPEAT_DAYS,
+                        mRepeatOnPreference.getPreferenceValue());
+
+
+        // mTimePreference.setPreferenceValue(
+        //     Integer.toString(hour * 100 + minutes));
+
+        outState.putString(Alarms.AlarmColumns.ACTION,
+                           mActionPreference.getPreferenceValue());
+    }
+
+    protected void onRestoreInstanceState(Bundle outState) {
+        Log.d(TAG, "===========> onRestoreInstanceState()");
+    }
+
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.d(TAG, "======> AlarmSettings.onDestroy()");
+    }
+
+
     protected Dialog onCreateDialog(int dialogId) {
         Dialog dialog;
         switch(dialogId) {
         case LABEL_INPUT_DIALOG:
-            dialog = createLabelInputDialog();
+            dialog = mLabelPreference.getDialog();
             break;
 
         case TIME_PICK_DIALOG:
-            dialog = createTimePickDialog();
+            dialog = mTimePreference.getDialog();
             break;
 
         case ACTION_PICK_DIALOG:
-            dialog = createActionPickDialog();
+            dialog = mActionPreference.getDialog();
             break;
 
         default:
@@ -194,18 +245,6 @@ public class AlarmSettings extends PreferenceActivity {
     protected void onPause() {
         super.onPause();
 
-    }
-
-    private Dialog createTimePickDialog() {
-        return mTimePreference.getDialog();
-    }
-
-    private Dialog createLabelInputDialog() {
-        return mLabelPreference.getDialog();
-    }
-
-    private Dialog createActionPickDialog() {
-        return mActionPreference.getDialog();
     }
 
     private void loadExtraSettingsOfActionHandler(String handlerClassName) {
