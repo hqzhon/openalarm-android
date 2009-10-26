@@ -34,6 +34,7 @@ public class AlarmSettings extends PreferenceActivity {
     private static final int LABEL_INPUT_DIALOG = 1;
     private static final int TIME_PICK_DIALOG = 2;
     private static final int ACTION_PICK_DIALOG = 3;
+    private static final int REPEAT_DAYS_PICK_DIALOG = 4;
 
     AlarmLabelPreference mLabelPreference;
     AlarmTimePreference mTimePreference;
@@ -69,12 +70,12 @@ public class AlarmSettings extends PreferenceActivity {
         mRepeatOnPreference =
             (AlarmRepeatOnDialogPreference)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_repeat_days_key));
-        mRepeatOnPreference.setOnRepeatWeekdaysSetListener(
-            new AlarmRepeatOnDialogPreference.OnRepeatWeekdaysSetListener() {
-                public void onRepeatWeekdaysSet(Alarms.RepeatWeekdays weekdays) {
-                    mRepeatOnPreference.setSummary(weekdays.toString());
-                }
-            });
+        // mRepeatOnPreference.setOnRepeatWeekdaysSetListener(
+        //     new AlarmRepeatOnDialogPreference.OnRepeatWeekdaysSetListener() {
+        //         public void onRepeatWeekdaysSet(Alarms.RepeatWeekdays weekdays) {
+        //             mRepeatOnPreference.setSummary(weekdays.toString());
+        //         }
+        //     });
         mExtraSettingsCategory =
             (PreferenceCategory)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_extra_category_key));
@@ -171,6 +172,8 @@ public class AlarmSettings extends PreferenceActivity {
             id = TIME_PICK_DIALOG;
         } else if(preference == mActionPreference) {
             id = ACTION_PICK_DIALOG;
+        } else if(preference == mRepeatOnPreference) {
+            id = REPEAT_DAYS_PICK_DIALOG;
         }
 
         if(id != -1) {
@@ -197,7 +200,8 @@ public class AlarmSettings extends PreferenceActivity {
                 final int time = Integer.parseInt(mTimePreference.getPreferenceValue());
                 final int hourOfDay = time / 100;
                 final int minutes = time % 100;
-                final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
+                final int repeatOnCode = Integer.parseInt(
+                    mRepeatOnPreference.getPreferenceValue());
                 final String action = (String)mActionPreference.getPreferenceValue();
                 final String extra =
                     generateValueOfExtraSettings(mExtraSettingsCategory);
@@ -226,7 +230,8 @@ public class AlarmSettings extends PreferenceActivity {
         outState.putString(Alarms.AlarmColumns.LABEL,
                            mLabelPreference.getPreferenceValue());
         outState.putInt(Alarms.AlarmColumns.REPEAT_DAYS,
-                        mRepeatOnPreference.getPreferenceValue());
+                        Integer.parseInt(
+                            mRepeatOnPreference.getPreferenceValue()));
         outState.putString(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
                            mTimePreference.getPreferenceValue());
         outState.putString(Alarms.AlarmColumns.ACTION,
@@ -260,6 +265,10 @@ public class AlarmSettings extends PreferenceActivity {
 
         case ACTION_PICK_DIALOG:
             dialog = mActionPreference.getDialog();
+            break;
+
+        case REPEAT_DAYS_PICK_DIALOG:
+            dialog = mRepeatOnPreference.getDialog();
             break;
 
         default:

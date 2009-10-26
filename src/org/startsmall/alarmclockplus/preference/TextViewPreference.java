@@ -53,7 +53,7 @@ public class TextViewPreference extends Preference {
         throw new IllegalArgumentException("onPrepareDialogBuilder() must be defined");
     }
 
-    protected String formatDisplayValue(String value) {
+    protected String formatValue(String value) {
         return value;
     }
 
@@ -61,8 +61,12 @@ public class TextViewPreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
 
+        displayValueOnView(view);
+    }
+
+    protected void displayValueOnView(View view) {
         final TextView textView = (TextView)view.findViewById(R.id.text);
-        textView.setText(formatDisplayValue(mValue));
+        textView.setText(formatValue(mValue));
     }
 
     @Override

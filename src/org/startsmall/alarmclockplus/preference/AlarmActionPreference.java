@@ -43,12 +43,6 @@ public class AlarmActionPreference extends TextViewPreference {
     private DialogInterface.OnClickListener mOnClickListener =
         new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                // AlarmActionPreference.this.setPreferenceValueIndex(which);
-                // if(AlarmActionPreference.this.mOnSelectActionListener != null) {
-                //     mOnSelectActionListener.onSelectAction(
-                //         AlarmActionPreference.this.getPreferenceValue());
-                // }
-                // dialog.dismiss();
                 mSelectedItemIndex = which;
             }
         };
@@ -111,7 +105,7 @@ public class AlarmActionPreference extends TextViewPreference {
         mOnSelectActionListener = listener;
     }
 
-    protected String formatDisplayValue(String value) {
+    protected String formatValue(String value) {
         if(mCheckedActionEntryIndex < 0)  {
             return value;
         }

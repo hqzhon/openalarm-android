@@ -44,7 +44,7 @@ public class AlarmTimePreference extends TextViewPreference {
             true);
     }
 
-    protected String formatDisplayValue(String value) {
+    protected String formatValue(String value) {
         int time = Integer.parseInt(value);
         final int hourOfDay = time / 100;
         final int minutes = time % 100;

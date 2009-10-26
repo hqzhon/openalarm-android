@@ -20,6 +20,7 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ToggleButton;
 
 public class ToggleButtonPreference extends Preference {
@@ -49,14 +50,10 @@ public class ToggleButtonPreference extends Preference {
     protected void onClick() {
         super.onClick();
 
-        Log.d(TAG, "=====> onClick()");
-
         boolean newValue = !isChecked();
-
         if (!callChangeListener(newValue)) {
             return;
         }
-
         setChecked(newValue);
     }
 
@@ -67,6 +64,17 @@ public class ToggleButtonPreference extends Preference {
         final ToggleButton toggle =
             (ToggleButton)view.findViewById(R.id.toggle);
         toggle.setChecked(mValue);
+    }
+
+    protected View onCreateView(ViewGroup parent) {
+        View view = super.onCreateView(parent);
+        view.setOnClickListener(
+            new View.OnClickListener() {
+                public void onClick(View view) {
+                    ToggleButtonPreference.this.onClick();
+                }
+            });
+        return view;
     }
 
     @Override
