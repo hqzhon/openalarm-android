@@ -89,10 +89,10 @@ public class AlarmClockPlus extends ListActivity {
                         int alarmId =
                             attachment.getInt(Alarms.AlarmColumns._ID);
 
-                        // Log.d(TAG, "=====> onCheckedChanged("
-                        //       + buttonView + "): parent=" + parent
-                        //       + ", isChecked=" + isChecked
-                        //       + ", alarmId=" + alarmId);
+                        Log.d(TAG, "=====> onCheckedChanged("
+                              + buttonView + "): parent=" + parent
+                              + ", isChecked=" + isChecked
+                              + ", alarmId=" + alarmId);
 
                         Alarms.setAlarm(AlarmClockPlus.this,
                                         Alarms.getAlarmUri(alarmId),
@@ -139,12 +139,12 @@ public class AlarmClockPlus extends ListActivity {
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
 
-            // Log.d(TAG, "===> bindView(): view=" + view
-            //       + ", position=" + cursor.getPosition()
-            //       + ", id=" + id
-            //       + ", attachment=" + Integer.toHexString(attachment.hashCode())
-            //       + ", isChecked(" + enabledCheckBox + ", " + enabledCheckBox.isChecked() + ")"
-            //       + ", enabled=" + enabled);
+            Log.d(TAG, "===> bindView(): view=" + view
+                  + ", position=" + cursor.getPosition()
+                  + ", id=" + id
+                  + ", attachment=" + Integer.toHexString(attachment.hashCode())
+                  + ", isChecked(" + enabledCheckBox + ", " + enabledCheckBox.isChecked() + ")"
+                  + ", enabled=" + enabled);
 
             // Set checkbox's listener to null. If set, the
             // listener defined will try to update the database
@@ -303,7 +303,7 @@ public class AlarmClockPlus extends ListActivity {
                   + ", label=" + newLabel
                   + ", time=" + newHourOfDay + ":" + newMinutes
                   + ", action=" + newAction
-                  + (TextUtils.isEmpty(newExtra) ? "" : (", extra=" + newExtra)));
+                  + ", extra=" + newExtra);
 
             // Get old values from database
             class GetAlarmSettings implements Alarms.OnVisitListener {
@@ -339,10 +339,12 @@ public class AlarmClockPlus extends ListActivity {
 
             Log.d(TAG, "===> Old values: alarmId=" + alarmId
                   + ", label=" + settings.mLabel
-                  + ", time=" + settings.mHour + ":" + settings.mMinutes);
+                  + ", time=" + settings.mHour + ":" + settings.mMinutes
+                  + ", action=" + settings.mAction
+                  + ", extra=" + settings.mExtra);
 
             ContentValues newValues = new ContentValues();
-            if(newLabel != settings.mLabel) {
+            if(!newLabel.equals(settings.mLabel)) {
                 newValues.put(Alarms.AlarmColumns.LABEL, newLabel);
             }
 
@@ -359,15 +361,11 @@ public class AlarmClockPlus extends ListActivity {
                               newRepeatOnDaysCode);
             }
 
-            if(newAction != settings.mAction) {
+            if(!newAction.equals(settings.mAction)) {
                 newValues.put(Alarms.AlarmColumns.ACTION, newAction);
             }
 
-            if(newAction != settings.mAction) {
-                newValues.put(Alarms.AlarmColumns.ACTION, newAction);
-            }
-
-            if(newExtra != settings.mExtra) {
+            if(!newExtra.equals(settings.mExtra)) {
                 newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
             }
 

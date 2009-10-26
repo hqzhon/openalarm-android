@@ -382,15 +382,16 @@ public class Alarms {
     public static void setAlarm(final Context context,
                                 final Uri alarmUri,
                                 final boolean enabled) {
+        ContentValues newValues = new ContentValues();
+        newValues.put(AlarmColumns.ENABLED, enabled ? 1 : 0);
         if(enabled) {
-            ContentValues newValues = new ContentValues();
             long newAtTimeInMillis = activateAlarm(context, alarmUri);
             newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
-            updateAlarm(context, alarmUri, newValues);
         } else {
             Log.d(TAG, "===> setAlarm(): deactivate alarm '" + alarmUri);
             deactivateAlarm(context, alarmUri);
         }
+        updateAlarm(context, alarmUri, newValues);
     }
 
     private synchronized static long activateAlarm(final Context context,
@@ -442,7 +443,7 @@ public class Alarms {
                 String text =
                     String.format(context.getString(R.string.alarm_activated_toast_text),
                                   dateFormat.format(new Date(mAtTimeInMillis)));
-                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
             }
         }
 

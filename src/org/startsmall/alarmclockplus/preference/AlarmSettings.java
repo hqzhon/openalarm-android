@@ -220,8 +220,6 @@ public class AlarmSettings extends PreferenceActivity {
     }
 
     protected void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "============> onSaveInstanceState() " + outState);
-
         Intent intent = getIntent();
         int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         outState.putInt(Alarms.AlarmColumns._ID, alarmId);
