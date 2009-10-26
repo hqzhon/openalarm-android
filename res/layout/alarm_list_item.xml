@@ -11,6 +11,7 @@
      android:layout_height="wrap_content"
      android:scaleType="fitXY"
      android:src="@drawable/icon_default_black_bg"
+     android:layout_marginTop="6dip"
      android:layout_alignParentLeft="true"
      android:layout_alignParentTop="true"
      android:layout_alignParentBottom="true" />

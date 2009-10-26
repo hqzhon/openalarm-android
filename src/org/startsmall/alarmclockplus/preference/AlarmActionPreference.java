@@ -38,11 +38,25 @@ public class AlarmActionPreference extends TextViewPreference {
     private int mCheckedActionEntryIndex = -1;
     private CharSequence[] mEntries;
     private CharSequence[] mEntryValues;
+    private int mSelectedItemIndex = -1;
     private OnSelectActionListener mOnSelectActionListener;
     private DialogInterface.OnClickListener mOnClickListener =
         new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                AlarmActionPreference.this.setPreferenceValueIndex(which);
+                // AlarmActionPreference.this.setPreferenceValueIndex(which);
+                // if(AlarmActionPreference.this.mOnSelectActionListener != null) {
+                //     mOnSelectActionListener.onSelectAction(
+                //         AlarmActionPreference.this.getPreferenceValue());
+                // }
+                // dialog.dismiss();
+                mSelectedItemIndex = which;
+            }
+        };
+    private DialogInterface.OnClickListener mPositiveButtonClickListener =
+        new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                AlarmActionPreference.this.setPreferenceValueIndex(
+                    AlarmActionPreference.this.mSelectedItemIndex);
                 if(AlarmActionPreference.this.mOnSelectActionListener != null) {
                     mOnSelectActionListener.onSelectAction(
                         AlarmActionPreference.this.getPreferenceValue());
@@ -110,7 +124,9 @@ public class AlarmActionPreference extends TextViewPreference {
             .setSingleChoiceItems(
                 mEntries,
                 mCheckedActionEntryIndex,
-                mOnClickListener);
+                mOnClickListener)
+            .setPositiveButton(android.R.string.ok, mPositiveButtonClickListener)
+            .setNegativeButton(android.R.string.cancel, null);
     }
 
     private void loadHandlers() {
