@@ -17,12 +17,17 @@ public class AlarmActionHandler extends ActionHandler {
     }
 
     @Override
-    public void addMyPreferences(Context context, PreferenceCategory category) {
-        Log.d(TAG, "===>addMyPreferences");
-
+    public void addMyPreferences(Context context,
+                                 PreferenceCategory category,
+                                 String defaultValue) {
         CheckBoxPreference vibratePref = new CheckBoxPreference(context);
+        vibratePref.setKey("vibrate");
         vibratePref.setPersistent(true);
         vibratePref.setTitle(R.string.alarm_extra_settings_vibrate_title);
+
+
+
+
         category.addPreference(vibratePref);
     }
 }

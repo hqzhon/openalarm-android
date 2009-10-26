@@ -68,9 +68,6 @@ public class AlarmActionPreference extends TextViewPreference {
     @Override
     public void setPreferenceValue(String value) {
         int index = findIndexOfValue(value);
-
-        Log.d(TAG, "==================> found " + value + " + at index " + index);
-
         if(index != -1) {
             mCheckedActionEntryIndex = index;
             super.setPreferenceValue(value);
@@ -78,8 +75,10 @@ public class AlarmActionPreference extends TextViewPreference {
     }
 
     public final void setPreferenceValueIndex(int index) {
-        mCheckedActionEntryIndex = index;
-        setPreferenceValue(mEntryValues[index].toString());
+        if(mEntries != null && mEntries.length >= index) {
+            mCheckedActionEntryIndex = index;
+            setPreferenceValue(mEntryValues[index].toString());
+        }
     }
 
     public int findIndexOfValue(String value) {
@@ -102,10 +101,6 @@ public class AlarmActionPreference extends TextViewPreference {
         if(mCheckedActionEntryIndex < 0)  {
             return value;
         }
-
-        Log.d(TAG, "===> before format" + value);
-        Log.d(TAG, "===> after format" + mEntries[mCheckedActionEntryIndex].toString());
-
         return mEntries[mCheckedActionEntryIndex].toString();
     }
 

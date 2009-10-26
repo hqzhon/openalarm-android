@@ -62,8 +62,7 @@ public class AlarmSettings extends PreferenceActivity {
         mActionPreference.setOnSelectActionListener(
             new AlarmActionPreference.OnSelectActionListener() {
                 public void onSelectAction(String handlerClassName) {
-                    loadExtraSettingsOfActionHandler(
-                        handlerClassName);
+                    inflateExtraSettings(handlerClassName, null);
                 }
             });
 
@@ -87,52 +86,77 @@ public class AlarmSettings extends PreferenceActivity {
         }
 
         if(bundle != null) {
-            int savedAlarmId =
-                bundle.getInt(Alarms.AlarmColumns._ID, -1);
-            if(alarmId == savedAlarmId) {
-                Log.d(TAG, "====> Load saved preferences for this alarm");
+            // If this activity is destroyed and recreated due to
+            // some reasons, for instance, orientation change,
+            // the bundle is non-null, we should try to load
+            // settings of this alarm from persisted preferences
+            // (preferences can handle this by their own)
 
-                mLabelPreference.setPreferenceValue(
-                    bundle.getString(Alarms.AlarmColumns.LABEL));
-                mRepeatOnPreference.setPreferenceValue(
-                    bundle.getInt(Alarms.AlarmColumns.REPEAT_DAYS, -1));
-                mActionPreference.setPreferenceValue(
-                    bundle.getString(Alarms.AlarmColumns.ACTION));
+            // int savedAlarmId = bundle.getInt(Alarms.AlarmColumns._ID, -1);
+            // if(alarmId == savedAlarmId) {
+            Log.d(TAG, "====> Using persisted preferences for this alarm");
 
-                // mTimePreference.setPreferenceValue(
-                //     Integer.toString(hour * 100 + minutes));
+            // mLabelPreference.setPreferenceValue(
+            //     bundle.getString(Alarms.AlarmColumns.LABEL));
 
-                return;
-            }
+            // mRepeatOnPreference.setPreferenceValue(
+            //     bundle.getInt(Alarms.AlarmColumns.REPEAT_DAYS, -1));
+
+            // The extra settings under Extra Settings category
+            // were destroyed, need to inflate them again.
+            String handlerClassName =
+                bundle.getString(Alarms.AlarmColumns.ACTION);
+            // mActionPreference.setPreferenceValue(handlerClassName);
+            String extra = bundle.getString(
+                getString(R.string.alarm_settings_extra_category_key));
+            inflateExtraSettings(handlerClassName, extra);
+
+            // mTimePreference.setPreferenceValue(
+            //     bundle.getString(Alarms.AlarmColumns.AT_TIME_IN_MILLIS));
+        } else {
+            // If this activity is launched at its first time and
+            // fetch settings of this alarm and show them on the
+            // preferences.
+            Log.d(TAG,
+                  "========> Loading settings from SQL db for alarm"
+                  + alarmId);
+            Alarms.forEachAlarm(
+                this,
+                Alarms.getAlarmUri(alarmId),
+                new Alarms.OnVisitListener() {
+                    public void onVisit(final Context context,
+                                        final int id,
+                                        final String label,
+                                        final int hour,
+                                        final int minutes,
+                                        final int atTimeInMillis,
+                                        final int repeatDays,
+                                        final boolean enabled,
+                                        final String action,
+                                        final String extra) {
+                        mLabelPreference.setPreferenceValue(label);
+
+                        mTimePreference.setPreferenceValue(
+                            Integer.toString(hour * 100 + minutes));
+                        mRepeatOnPreference.setPreferenceValue(repeatDays);
+
+                        String newAction = action;
+                        if(TextUtils.isEmpty(action)) {
+                            // This happens when this is the
+                            // first time the user uses this
+                            // application and no any action
+                            // string has stored in the SQL db.
+                            mActionPreference.setPreferenceValueIndex(0);
+                            newAction =
+                                mActionPreference.getPreferenceValue();
+                        } else {
+                            mActionPreference.setPreferenceValue(action);
+                        }
+                        AlarmSettings.this.inflateExtraSettings(newAction,
+                                                                extra);
+                    }
+                });
         }
-
-        // Fetch settings of this alarm and show them on the preferences.
-        Alarms.forEachAlarm(
-            this,
-            Alarms.getAlarmUri(alarmId),
-            new Alarms.OnVisitListener() {
-                public void onVisit(final Context context,
-                                    final int id,
-                                    final String label,
-                                    final int hour,
-                                    final int minutes,
-                                    final int atTimeInMillis,
-                                    final int repeatDays,
-                                    final boolean enabled,
-                                    final String action,
-                                    final String extra) {
-                    Log.d(TAG, "========> Loading alarm settings " + id + " from SQL database");
-
-                    mLabelPreference.setPreferenceValue(label);
-
-                    mTimePreference.setPreferenceValue(
-                        Integer.toString(hour * 100 + minutes));
-                    mRepeatOnPreference.setPreferenceValue(repeatDays);
-
-                    mActionPreference.setPreferenceValue(action);
-                    AlarmSettings.this.loadExtraSettingsOfActionHandler(action);
-                }
-            });
     }
 
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
@@ -171,7 +195,7 @@ public class AlarmSettings extends PreferenceActivity {
                 final int repeatOnCode = mRepeatOnPreference.getPreferenceValue();
                 final String action = (String)mActionPreference.getPreferenceValue();
                 final String extra =
-                    getValueOfExtraSettings(mExtraSettingsCategory);
+                    generateValueOfExtraSettings(mExtraSettingsCategory);
 
                 Intent result = new Intent();
                 result.putExtra(Alarms.AlarmColumns._ID, alarmId);
@@ -191,7 +215,7 @@ public class AlarmSettings extends PreferenceActivity {
     }
 
     protected void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "============> onSaveInstanceState()");
+        Log.d(TAG, "============> onSaveInstanceState() " + outState);
 
         Intent intent = getIntent();
         int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
@@ -200,13 +224,14 @@ public class AlarmSettings extends PreferenceActivity {
                            mLabelPreference.getPreferenceValue());
         outState.putInt(Alarms.AlarmColumns.REPEAT_DAYS,
                         mRepeatOnPreference.getPreferenceValue());
-
-
-        // mTimePreference.setPreferenceValue(
-        //     Integer.toString(hour * 100 + minutes));
-
+        outState.putString(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
+                           mTimePreference.getPreferenceValue());
         outState.putString(Alarms.AlarmColumns.ACTION,
                            mActionPreference.getPreferenceValue());
+
+        outState.putString(
+            getString(R.string.alarm_settings_extra_category_key),
+            generateValueOfExtraSettings(mExtraSettingsCategory));
     }
 
     protected void onRestoreInstanceState(Bundle outState) {
@@ -215,7 +240,6 @@ public class AlarmSettings extends PreferenceActivity {
 
     protected void onDestroy() {
         super.onDestroy();
-
         Log.d(TAG, "======> AlarmSettings.onDestroy()");
     }
 
@@ -247,34 +271,36 @@ public class AlarmSettings extends PreferenceActivity {
 
     }
 
-    private void loadExtraSettingsOfActionHandler(String handlerClassName) {
+    private void inflateExtraSettings(String handlerClassName,
+                                      String defaultValue) {
         if(TextUtils.isEmpty(handlerClassName)) {
             return;
         }
-
         mExtraSettingsCategory.removeAll();
-
-        Log.d(TAG, "===> load extra settings for "
-              + handlerClassName + "under category'"
-              + mExtraSettingsCategory + "'");
-
         try {
             Class<?> handler = Class.forName(handlerClassName);
             Method m = handler.getDeclaredMethod(
                 "addMyPreferences",
                 Class.forName("android.content.Context"),
-                Class.forName("android.preference.PreferenceCategory"));
-            m.invoke(handler.newInstance(), this, mExtraSettingsCategory);
+                Class.forName("android.preference.PreferenceCategory"),
+                Class.forName("java.lang.String"));
+            m.invoke(handler.newInstance(), this, mExtraSettingsCategory, defaultValue);
         } catch(ClassNotFoundException e) {
+            Log.d(TAG, "===> class not found - " + e);
         } catch(NoSuchMethodException e) {
+            Log.d(TAG, "===> not such method - " + e);
         } catch(IllegalAccessException e) {
+            Log.d(TAG, "===> illegal access - " + e);
         } catch(IllegalArgumentException e) {
+            Log.d(TAG, "===> illegal argument - " + e);
         } catch(InstantiationException e) {
+            Log.d(TAG, "===> instantiation  - " + e);
         } catch(java.lang.reflect.InvocationTargetException e) {
+            Log.d(TAG, "===> invocation target - " + e);
         }
     }
 
-    private String getValueOfExtraSettings(PreferenceCategory category) {
+    private String generateValueOfExtraSettings(PreferenceCategory category) {
         SharedPreferences sharedPreferences =
             category.getSharedPreferences();
         String result = "";
@@ -284,14 +310,47 @@ public class AlarmSettings extends PreferenceActivity {
             Preference preference = category.getPreference(i);
 
             String key = preference.getKey();
-            String value = sharedPreferences.getString(key, "");
-            if(TextUtils.isEmpty(key) ||
-               TextUtils.isEmpty(value)) {
-                continue;
-            }
+            if(!TextUtils.isEmpty(key) &&
+               sharedPreferences.contains(key)) {
 
-            result += (key + "=" + value + '\n');
+                try {
+                    String value = sharedPreferences.getString(key, "");
+                    result += (key + "=" + value + ';');
+                    continue;
+                } catch(ClassCastException e) {
+                }
+
+                try {
+                    boolean value = sharedPreferences.getBoolean(key, false);
+                    result += (key + "=" + value + ';');
+                    continue;
+                } catch(ClassCastException e) {
+                }
+
+                try {
+                    float value = sharedPreferences.getFloat(key, -1.0f);
+                    result += (key + "=" + value + ';');
+                    continue;
+                } catch(ClassCastException e) {
+                }
+
+                try {
+                    int value = sharedPreferences.getInt(key, -1);
+                    result += (key + "=" + value + ';');
+                    continue;
+                } catch(ClassCastException e) {
+                }
+
+                try {
+                    long value = sharedPreferences.getLong(key, -1);
+                    result += (key + "=" + value + ';');
+                    continue;
+                } catch(ClassCastException e) {
+                }
+            }
         }
+
+        Log.d(TAG, "=======> value of extra settings=" + result);
 
         return result;
     }

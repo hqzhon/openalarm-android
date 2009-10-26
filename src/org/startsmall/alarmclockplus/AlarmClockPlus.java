@@ -299,7 +299,7 @@ public class AlarmClockPlus extends ListActivity {
             final String newExtra =
                 data.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
-            Log.d(TAG, "===> Result back: alarmId=" + alarmId
+            Log.d(TAG, "===> Get alarm settings back: alarmId=" + alarmId
                   + ", label=" + newLabel
                   + ", time=" + newHourOfDay + ":" + newMinutes
                   + ", action=" + newAction

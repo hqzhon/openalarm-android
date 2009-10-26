@@ -21,53 +21,49 @@ public class WifiActionHandler extends ActionHandler {
     public void onReceive(Context context, Intent intent) {
         Log.v(TAG, "=========> My WifiActionHandler.onReceive() haha");
 
-
-
-
-
-
     }
 
     public void addMyPreferences(Context context,
-                                 PreferenceCategory category) {
-        // class MyPreference extends TextViewPreference {
-        //     public MyPreference(Context context, AttributeSet attrs) {
-        //         super(context, attrs);
-        //     }
-
-        //     protected void onClick() {
-        //         getDialog().show();
-        //     }
-
-        //     protected void onPrepareDialogBuilder(
-        //         AlertDialog.Builder builder) {
-        //         int checkedItemIndex = -1;
-        //         if(getPreferenceValue() != null) {
-        //             checkedItemIndex = getPreferenceValue() == "On" ? 0 : 1;
-        //         }
-
-        //         builder
-        //             .setSingleChoiceItems(
-        //                 new CharSequence[] {"On", "Off"},
-        //                 checkedItemIndex,
-        //                 new DialogInterface.OnClickListener() {
-        //                     public void onClick(DialogInterface dialog,
-        //                                         int which) {
-        //                         MyPreference.this.setPreferenceValue(
-        //                             which == 0? "On" : "Off");
-        //                         dialog.dismiss();
-        //                     }
-        //                 });
-        //     }
-        // }
-
-        class MyPreference extends Preference {
+                                 PreferenceCategory category,
+                                 String defaultValue) {
+        class MyPreference extends TextViewPreference {
             public MyPreference(Context context, AttributeSet attrs) {
                 super(context, attrs);
-
-                setWidgetLayoutResource(R.layout.alarm_toggle_button_preference_widget);
-                setDefaultValue("On");
             }
+
+            protected void onClick() {
+                getDialog().show();
+            }
+
+            protected void onPrepareDialogBuilder(
+                AlertDialog.Builder builder) {
+                int checkedItemIndex = -1;
+                if(getPreferenceValue() != null) {
+                    checkedItemIndex = getPreferenceValue() == "On" ? 0 : 1;
+                }
+
+                builder
+                    .setSingleChoiceItems(
+                        new CharSequence[] {"On", "Off"},
+                        checkedItemIndex,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                MyPreference.this.setPreferenceValue(
+                                    which == 0? "On" : "Off");
+                                dialog.dismiss();
+                            }
+                        });
+            }
+        }
+
+        // class MyPreference extends Preference {
+        //     public MyPreference(Context context, AttributeSet attrs) {
+        //         super(context, attrs);
+
+        //         setWidgetLayoutResource(R.layout.alarm_toggle_button_preference_widget);
+        //         setDefaultValue("On");
+        //     }
 
             // protected void onPrepareDialogBuilder(
             //     AlertDialog.Builder builder) {
@@ -89,13 +85,17 @@ public class WifiActionHandler extends ActionHandler {
             //                 }
             //             });
             // }
-        }
+        // }
 
         MyPreference onOffPref = new MyPreference(context, null);
         onOffPref.setKey("wifi_state");
         onOffPref.setPersistent(true);
         onOffPref.setTitle(R.string.alarm_extra_settings_wifi_title);
-        // onOffPref.setPreferenceValue("On");
+        onOffPref.setPreferenceValue("On");
+
+
+        Log.d(TAG, "==========> default value=" + defaultValue);
+
 
         category.addPreference(onOffPref);
     }

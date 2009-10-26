@@ -11,5 +11,7 @@ import android.preference.PreferenceCategory;
 abstract class ActionHandler extends BroadcastReceiver {
     @Override
     public abstract void onReceive(Context context, Intent intent);
-    public abstract void addMyPreferences(Context context, PreferenceCategory category);
+    public abstract void addMyPreferences(Context context,
+                                          PreferenceCategory category,
+                                          String defaultValue);
 }
