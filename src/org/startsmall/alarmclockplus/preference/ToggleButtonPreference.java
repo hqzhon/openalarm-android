@@ -1,5 +1,5 @@
 /**
- * @file   TextViewPreference.java
+ * @file   ToggleButtonPreference.java
  * @author yenliangl <yenliangl@gmail.com>
  * @date   Thu Oct  8 19:49:43 2009
  *
@@ -20,54 +20,58 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.ToggleButton;
 
-public class TextViewPreference extends Preference {
-    private static final String TAG = "TextViewPreference";
-    private String mValue;
+public class ToggleButtonPreference extends Preference {
+    private static final String TAG = "ToggleButtonPreference";
+    private boolean mValue;
 
-    protected TextViewPreference(Context context, AttributeSet attrs) {
+    public ToggleButtonPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setWidgetLayoutResource(R.layout.alarm_text_view_preference_widget);
+        setWidgetLayoutResource(
+            R.layout.alarm_toggle_button_preference_widget);
+        setDefaultValue(false);
     }
 
-    public void setPreferenceValue(String value) {
-        mValue = value;
+    public void setChecked(boolean state) {
+        mValue = state;
         if(shouldPersist()) {
-            persistString(mValue);
+            persistBoolean(mValue);
             notifyChanged();
         }
     }
 
-    public String getPreferenceValue() {
+    public boolean isChecked() {
         return mValue;
     }
 
-    public Dialog getDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        onPrepareDialogBuilder(builder);
-        return builder.create();
-    }
+    @Override
+    protected void onClick() {
+        super.onClick();
 
-    protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        throw new IllegalArgumentException("onPrepareDialogBuilder() must be defined");
-    }
+        Log.d(TAG, "=====> onClick()");
 
-    protected String formatDisplayValue(String value) {
-        return value;
+        boolean newValue = !isChecked();
+
+        if (!callChangeListener(newValue)) {
+            return;
+        }
+
+        setChecked(newValue);
     }
 
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        final TextView textView = (TextView)view.findViewById(R.id.text);
-        textView.setText(formatDisplayValue(mValue));
+        final ToggleButton toggle =
+            (ToggleButton)view.findViewById(R.id.toggle);
+        toggle.setChecked(mValue);
     }
 
     @Override
     protected Object onGetDefaultValue(TypedArray a, int index) {
-        return a.getString(index);
+        return a.getBoolean(index, false);
     }
 
     @Override
@@ -75,10 +79,10 @@ public class TextViewPreference extends Preference {
                                      Object defValue) {
         if(restorePersistedValue &&
            shouldPersist()) {
-            setPreferenceValue(getPersistedString(mValue));
+            setChecked(getPersistedBoolean(mValue));
             return;
         }
-        setPreferenceValue((String)defValue);
+        setChecked((Boolean)defValue);
     }
 
     @Override
@@ -98,14 +102,14 @@ public class TextViewPreference extends Preference {
         if(state != null && state.getClass().equals(SavedState.class)) {
             SavedState myState = (SavedState)state;
             super.onRestoreInstanceState(myState.getSuperState());
-            setPreferenceValue(myState.value);
+            setChecked(myState.value);
         } else {
             super.onRestoreInstanceState(state);
         }
     }
 
     private static class SavedState extends BaseSavedState {
-        String value;
+        boolean value;
 
         public SavedState(Parcelable in) {
             super(in);
@@ -113,13 +117,13 @@ public class TextViewPreference extends Preference {
 
         public SavedState(Parcel in) {
             super(in);
-            value = in.readString();
+            value = (in.readInt() == 1);
         }
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             super.writeToParcel(dest, flags);
-            dest.writeString(value);
+            dest.writeInt(value ? 1 : 0);
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR =

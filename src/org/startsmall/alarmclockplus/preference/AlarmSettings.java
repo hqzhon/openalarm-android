@@ -161,6 +161,9 @@ public class AlarmSettings extends PreferenceActivity {
 
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
                                          Preference preference) {
+
+        Log.d(TAG, "====> onPreferenceTreeClick()");
+
         int id = -1;
         if(preference == mLabelPreference) {
             id = LABEL_INPUT_DIALOG;
@@ -172,8 +175,10 @@ public class AlarmSettings extends PreferenceActivity {
 
         if(id != -1) {
             showDialog(id);
+            return true;
         }
-        return true;
+
+        return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
