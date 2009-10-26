@@ -10,7 +10,7 @@
      android:layout_width="wrap_content"
      android:layout_height="wrap_content"
      android:scaleType="fitXY"
-     android:src="@drawable/default_alarm_action_type"
+     android:src="@drawable/android_black_bg"
      android:layout_alignParentLeft="true"
      android:layout_alignParentTop="true"
      android:layout_alignParentBottom="true" />

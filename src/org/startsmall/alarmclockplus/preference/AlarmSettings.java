@@ -45,7 +45,7 @@ public class AlarmSettings extends PreferenceActivity {
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
 
-        Log.d(TAG, "====> AlarmSettings.onCreate()");
+        Log.d(TAG, "====> AlarmSettings.onCreate(" + bundle + ")");
 
         addPreferencesFromResource(R.xml.alarm_settings);
 
