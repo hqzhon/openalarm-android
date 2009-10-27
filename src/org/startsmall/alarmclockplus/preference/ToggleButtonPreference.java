@@ -20,7 +20,7 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 //import android.util.Log;
 import android.view.View;
-//import android.view.ViewGroup;
+import android.view.ViewGroup;
 import android.widget.ToggleButton;
 
 public class ToggleButtonPreference extends Preference {
