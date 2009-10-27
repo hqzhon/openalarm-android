@@ -23,9 +23,17 @@ public class AlarmTimePreference extends TextViewPreference {
         super(context, attrs);
     }
 
+    protected Object parsePreferenceValue(String value) {
+        return Integer.parseInt(value);
+    }
+
+    protected String toPreferenceValue(Object obj) {
+        return Integer.toString((Integer)obj);
+    }
+
     @Override
     public Dialog getDialog() {
-        int time = Integer.parseInt(getPreferenceValue());
+        final int time = (Integer)getPreferenceValue();
         final int hourOfDay = time / 100;
         final int minutes = time % 100;
 
@@ -35,9 +43,7 @@ public class AlarmTimePreference extends TextViewPreference {
                 public void onTimeSet(TimePicker view,
                                       int hourOfDay,
                                       int minutes) {
-                    AlarmTimePreference.this.
-                        setPreferenceValue(
-                            Integer.toString(hourOfDay * 100 + minutes));
+                    setPreferenceValue(hourOfDay * 100 + minutes);
                 }
             },
             hourOfDay,
@@ -46,8 +52,8 @@ public class AlarmTimePreference extends TextViewPreference {
     }
 
     @Override
-    protected String formatDisplayValue(String value) {
-        int time = Integer.parseInt(value);
+    protected String transformValueBeforeDisplay(Object value) {
+        int time = (Integer)value;
         final int hourOfDay = time / 100;
         final int minutes = time % 100;
         Calendar calendar = Alarms.getCalendarInstance();

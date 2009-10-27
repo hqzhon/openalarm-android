@@ -138,7 +138,7 @@ public class AlarmSettings extends PreferenceActivity {
                         mLabelPreference.setPreferenceValue(label);
 
                         mTimePreference.setPreferenceValue(
-                            Integer.toString(hour * 100 + minutes));
+                            hour * 100 + minutes);
                         mRepeatOnPreference.setPreferenceValue(repeatDays);
 
                         String newAction = action;
@@ -149,7 +149,7 @@ public class AlarmSettings extends PreferenceActivity {
                             // string has stored in the SQL db.
                             mActionPreference.setPreferenceValueIndex(0);
                             newAction =
-                                mActionPreference.getPreferenceValue();
+                                (String)mActionPreference.getPreferenceValue();
                         } else {
                             mActionPreference.setPreferenceValue(action);
                         }
@@ -196,13 +196,16 @@ public class AlarmSettings extends PreferenceActivity {
             } else {
                 //Uri alarmUri = Alarms.getAlarmUri(alarmId);
 
-                final String label = (String)mLabelPreference.getPreferenceValue();
-                final int time = Integer.parseInt(mTimePreference.getPreferenceValue());
+                final String label =
+                    (String)mLabelPreference.getPreferenceValue();
+                final int time =
+                    (Integer)mTimePreference.getPreferenceValue();
                 final int hourOfDay = time / 100;
                 final int minutes = time % 100;
                 final int repeatOnCode =
-                    mRepeatOnPreference.getPreferenceValue();
-                final String action = (String)mActionPreference.getPreferenceValue();
+                    (Integer)mRepeatOnPreference.getPreferenceValue();
+                final String action =
+                    (String)mActionPreference.getPreferenceValue();
                 final String extra =
                     generateValueOfExtraSettings(mExtraSettingsCategory);
 
@@ -228,13 +231,13 @@ public class AlarmSettings extends PreferenceActivity {
         int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         outState.putInt(Alarms.AlarmColumns._ID, alarmId);
         outState.putString(Alarms.AlarmColumns.LABEL,
-                           mLabelPreference.getPreferenceValue());
+                           (String)mLabelPreference.getPreferenceValue());
         outState.putInt(Alarms.AlarmColumns.REPEAT_DAYS,
-                        mRepeatOnPreference.getPreferenceValue());
+                        (Integer)mRepeatOnPreference.getPreferenceValue());
         outState.putString(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
-                           mTimePreference.getPreferenceValue());
+                           (String)mTimePreference.getPreferenceValue());
         outState.putString(Alarms.AlarmColumns.ACTION,
-                           mActionPreference.getPreferenceValue());
+                           (String)mActionPreference.getPreferenceValue());
 
         outState.putString(
             getString(R.string.alarm_settings_extra_category_key),

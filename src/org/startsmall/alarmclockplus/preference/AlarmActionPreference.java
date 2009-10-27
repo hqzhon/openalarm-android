@@ -11,20 +11,14 @@ package org.startsmall.alarmclockplus.preference;
 
 import org.startsmall.alarmclockplus.*;
 import android.app.AlertDialog;
-//import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-//import android.content.res.TypedArray;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
-//import android.os.Parcel;
-//import android.os.Parcelable;
-//import android.view.View;
 import android.util.AttributeSet;
 import android.util.Log;
-//import android.widget.TextView;
 
 import java.util.List;
 
@@ -32,8 +26,6 @@ public class AlarmActionPreference extends TextViewPreference {
     public interface OnSelectActionListener {
         void onSelectAction(String handlerClassName);
     }
-
-    private static final String TAG = "AlarmActionPreference";
 
     private int mCheckedActionEntryIndex = -1;
     private CharSequence[] mEntries;
@@ -49,18 +41,13 @@ public class AlarmActionPreference extends TextViewPreference {
     private DialogInterface.OnClickListener mPositiveButtonClickListener =
         new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-
-                Log.d(TAG, "========> AlarmActionPreference.onClick()");
-
-
                 AlarmActionPreference.this.setPreferenceValueIndex(
                     AlarmActionPreference.this.mSelectedItemIndex);
                 if(AlarmActionPreference.this.mOnSelectActionListener != null) {
                     mOnSelectActionListener.onSelectAction(
-                        AlarmActionPreference.this.getPreferenceValue());
+                        (String)AlarmActionPreference.this.getPreferenceValue());
                 }
                 dialog.dismiss();
-                Log.d(TAG, "========> AlarmActionPreference.onClick() 2");
             }
         };
 
@@ -78,7 +65,6 @@ public class AlarmActionPreference extends TextViewPreference {
         return mEntryValues;
     }
 
-    @Override
     public void setPreferenceValue(String value) {
         int index = findIndexOfValue(value);
         if(index != -1) {
@@ -110,9 +96,10 @@ public class AlarmActionPreference extends TextViewPreference {
         mOnSelectActionListener = listener;
     }
 
-    protected String formatDisplayValue(String value) {
+    @Override
+    protected String transformValueBeforeDisplay(Object value) {
         if(mCheckedActionEntryIndex < 0)  {
-            return value;
+            return (String)value;
         }
         return mEntries[mCheckedActionEntryIndex].toString();
     }
@@ -139,7 +126,6 @@ public class AlarmActionPreference extends TextViewPreference {
         mEntries = new CharSequence[actions.size()];
         mEntryValues = new CharSequence[actions.size()];
         for(int i = 0; i < actions.size(); i++) {
-            //ResolveInfo resInfo = actions.get(i);
             ActivityInfo info = actions.get(i).activityInfo;
             mEntries[i] = info.loadLabel(pm);
             mEntryValues[i] = info.name;

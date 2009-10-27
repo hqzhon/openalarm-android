@@ -14,15 +14,10 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-//import android.content.res.TypedArray;
-//import android.os.Parcelable;
-//import android.os.Parcel;
 import android.view.View;
 import android.util.AttributeSet;
-//import android.view.View;
 import android.view.LayoutInflater;
 import android.widget.EditText;
-//import android.widget.TextView;
 
 public class AlarmLabelPreference extends TextViewPreference {
     public AlarmLabelPreference(Context context, AttributeSet attrs) {
@@ -52,7 +47,7 @@ public class AlarmLabelPreference extends TextViewPreference {
 
         LayoutInflater inflater =
             (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        String label = getPreferenceValue();
+        String label = (String)getPreferenceValue();
         View contentView =
             inflater.inflate(R.layout.text_input_dialog_widget, null);
         ((EditText)contentView).setText(label);

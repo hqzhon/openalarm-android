@@ -10,62 +10,58 @@
 package org.startsmall.alarmclockplus.preference;
 
 import org.startsmall.alarmclockplus.*;
-//import android.app.AlertDialog;
-//import android.app.Dialog;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.Preference;
 import android.util.AttributeSet;
-//import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.util.Log;
 import android.widget.ToggleButton;
 
-public class ToggleButtonPreference extends Preference {
-    //private static final String TAG = "ToggleButtonPreference";
-    private boolean mValue;
-
+public class ToggleButtonPreference extends MyPreference {
     public ToggleButtonPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWidgetLayoutResource(
             R.layout.alarm_toggle_button_preference_widget);
-        setDefaultValue(false);
+        setDefaultValue("false");
     }
 
     public void setChecked(boolean state) {
-        mValue = state;
-        if(shouldPersist()) {
-            persistBoolean(mValue);
-            notifyChanged();
-        }
+        setPreferenceValue(state);
     }
 
     public boolean isChecked() {
-        return mValue;
+        return ((Boolean)getPreferenceValue()).booleanValue();
+    }
+
+    @Override
+    protected Object parsePreferenceValue(String value) {
+        return Boolean.parseBoolean(value);
+    }
+
+    @Override
+    protected String toPreferenceValue(Object obj) {
+        return ((Boolean)obj).toString();
     }
 
     @Override
     protected void onClick() {
-
         boolean newValue = !isChecked();
         // if (!callChangeListener(newValue)) {
         //     return;
         // }
         setChecked(newValue);
-
         super.onClick();
-
     }
 
     @Override
     protected void onBindView(View view) {
-
         final ToggleButton toggle =
             (ToggleButton)view.findViewById(R.id.toggle);
-        toggle.setChecked(mValue);
-
+        toggle.setChecked(isChecked());
         super.onBindView(view);
     }
 
@@ -78,75 +74,5 @@ public class ToggleButtonPreference extends Preference {
                 }
             });
         return view;
-    }
-
-    @Override
-    protected Object onGetDefaultValue(TypedArray a, int index) {
-        return a.getBoolean(index, false);
-    }
-
-    @Override
-    protected void onSetInitialValue(boolean restorePersistedValue,
-                                     Object defValue) {
-        if(restorePersistedValue &&
-           shouldPersist()) {
-            setChecked(getPersistedBoolean(mValue));
-            return;
-        }
-        setChecked((Boolean)defValue);
-    }
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        final Parcelable superState = super.onSaveInstanceState();
-        if(isPersistent()) {    // persistent preference
-            return superState;
-        }
-
-        SavedState myState = new SavedState(superState);
-        myState.value = mValue;
-        return myState;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        if(state != null && state.getClass().equals(SavedState.class)) {
-            SavedState myState = (SavedState)state;
-            super.onRestoreInstanceState(myState.getSuperState());
-            setChecked(myState.value);
-        } else {
-            super.onRestoreInstanceState(state);
-        }
-    }
-
-    private static class SavedState extends BaseSavedState {
-        boolean value;
-
-        public SavedState(Parcelable in) {
-            super(in);
-        }
-
-        public SavedState(Parcel in) {
-            super(in);
-            value = (in.readInt() == 1);
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            super.writeToParcel(dest, flags);
-            dest.writeInt(value ? 1 : 0);
-        }
-
-        public static final Parcelable.Creator<SavedState> CREATOR =
-            new Parcelable.Creator<SavedState>() {
-
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
-
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
     }
 }
