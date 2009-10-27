@@ -46,7 +46,6 @@ public class AlarmClockPlus extends ListActivity {
 
     private class AlarmAdapter extends CursorAdapter {
         private LayoutInflater mInflater;
-        private Alarms.RepeatWeekdays mRepeatOn;
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
@@ -54,7 +53,6 @@ public class AlarmClockPlus extends ListActivity {
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
             mInflater = AlarmClockPlus.this.getLayoutInflater();
-            mRepeatOn = Alarms.RepeatWeekdays.getInstance();
             mOnClickListener =
                 new View.OnClickListener() {
                     @Override
@@ -156,8 +154,7 @@ public class AlarmClockPlus extends ListActivity {
             // Repeat days
             final TextView repeatDays =
                 (TextView)view.findViewById(R.id.repeat_days);
-            mRepeatOn.setCode(daysCode);
-            repeatDays.setText(mRepeatOn.toString());
+            repeatDays.setText(Alarms.RepeatWeekdays.toString(daysCode));
             if(daysCode == 0) {
                 repeatDays.setVisibility(View.GONE);
             } else {

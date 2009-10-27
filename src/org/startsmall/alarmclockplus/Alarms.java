@@ -164,62 +164,41 @@ public class Alarms {
          *
          * 0x7F On everyday
          */
-        private int mDays;
 
-        public static RepeatWeekdays getInstance() {
-            return new RepeatWeekdays();
-        }
-        public static RepeatWeekdays getInstance(int daysCode) {
-            return new RepeatWeekdays(daysCode);
-        }
-
+        /**
+         * Suppress default constructor for noninstantiability.
+         */
         private RepeatWeekdays() {}
-        private RepeatWeekdays(int daysCode) {
-            mDays = daysCode;
+
+        public static boolean isSet(int code, int day) {
+            return (code & encode(day)) > 0;
         }
 
-        public boolean isEmpty() {
-            return mDays == 0;
-        }
-        public void reset() {
-            mDays = 0;
-        }
-
-        public boolean hasDay(int day) {
-            return (mDays & getCode(day)) > 0;
-        }
-
-        public void set(int day, boolean enabled) {
+        public static int set(int code, int day, boolean enabled) {
             if(enabled) {
-                mDays = mDays | getCode(day);
+                code = code | encode(day);
             } else {
-                mDays = mDays & ~getCode(day);
+                code = code & ~encode(day);
             }
+            return code;
         }
 
-        private int getCode(int day) {
+        private static int encode(int day) {
             if(day < Calendar.SUNDAY || day > Calendar.SATURDAY) {
-                throw new IllegalArgumentException("Weekday must be at SUNDAY to SATURDAY");
+                throw new IllegalArgumentException(
+                    "Weekday must be among SUNDAY to SATURDAY");
             }
             return (1 << (day - 1));
         }
 
-        public int getCode() {
-            return mDays;
-        }
-
-        public void setCode(int daysCode) {
-            mDays = daysCode;
-        }
-
-        public String toString() {
+        public static String toString(int code) {
             String result = "";
-            if(mDays > 0) {
-                if(mDays == 0x7F) { // b1111111
+            if(code > 0) {
+                if(code == 0x7F) { // b1111111
                     result = "On Everyday";
                 } else {
                     for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
-                        if(hasDay(i)) {
+                        if(isSet(code, i)) {
                             result =
                                 result +
                                 DateUtils.getDayOfWeekString(
@@ -514,9 +493,9 @@ public class Alarms {
 
         // Try to shift calendar by days in order to find the
         // nearest alarm.
-        RepeatWeekdays repeatOn = RepeatWeekdays.getInstance(repeatOnCode);
         while(true) {
-            if(repeatOn.hasDay(calendar.get(Calendar.DAY_OF_WEEK))) {
+            if(RepeatWeekdays.isSet(repeatOnCode,
+                                    calendar.get(Calendar.DAY_OF_WEEK))) {
                 break;
             }
             calendar.add(Calendar.DAY_OF_YEAR, 1);

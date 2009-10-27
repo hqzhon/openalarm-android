@@ -34,7 +34,7 @@ public class TextViewPreference extends Preference {
     public void setPreferenceValue(String value) {
         mValue = value;
         if(shouldPersist()) {
-            persistString(mValue);
+            persistString(formatPersistedValue(mValue));
             notifyChanged();
         }
     }
@@ -53,7 +53,11 @@ public class TextViewPreference extends Preference {
         throw new IllegalArgumentException("onPrepareDialogBuilder() must be defined");
     }
 
-    protected String formatValue(String value) {
+    protected String formatDisplayValue(String value) {
+        return value;
+    }
+
+    protected String formatPersistedValue(String value) {
         return value;
     }
 
@@ -66,7 +70,7 @@ public class TextViewPreference extends Preference {
 
     protected void displayValueOnView(View view) {
         final TextView textView = (TextView)view.findViewById(R.id.text);
-        textView.setText(formatValue(mValue));
+        textView.setText(formatDisplayValue(mValue));
     }
 
     @Override

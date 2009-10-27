@@ -39,7 +39,7 @@ public class AlarmSettings extends PreferenceActivity {
     AlarmLabelPreference mLabelPreference;
     AlarmTimePreference mTimePreference;
     AlarmActionPreference mActionPreference;
-    AlarmRepeatOnDialogPreference mRepeatOnPreference;
+    AlarmRepeatOnPreference mRepeatOnPreference;
     PreferenceCategory mExtraSettingsCategory;
 
     @Override
@@ -68,10 +68,10 @@ public class AlarmSettings extends PreferenceActivity {
             });
 
         mRepeatOnPreference =
-            (AlarmRepeatOnDialogPreference)preferenceManager.findPreference(
+            (AlarmRepeatOnPreference)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_repeat_days_key));
         // mRepeatOnPreference.setOnRepeatWeekdaysSetListener(
-        //     new AlarmRepeatOnDialogPreference.OnRepeatWeekdaysSetListener() {
+        //     new AlarmRepeatOnPreference.OnRepeatWeekdaysSetListener() {
         //         public void onRepeatWeekdaysSet(Alarms.RepeatWeekdays weekdays) {
         //             mRepeatOnPreference.setSummary(weekdays.toString());
         //         }

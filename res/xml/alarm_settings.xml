@@ -19,7 +19,7 @@
        android:title="@string/alarm_settings_time_title"
        android:defaultValue="0830" />
 
-    <org.startsmall.alarmclockplus.preference.AlarmRepeatOnDialogPreference
+    <org.startsmall.alarmclockplus.preference.AlarmRepeatOnPreference
        android:key="@string/alarm_settings_repeat_days_key"
        android:title="@string/alarm_settings_repeat_days_title"
        android:defaultValue="5"/>

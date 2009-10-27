@@ -20,41 +20,41 @@ import java.text.DateFormatSymbols;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-public class AlarmRepeatOnDialogPreference extends TextViewPreference
+public class AlarmRepeatOnPreference extends TextViewPreference
     implements DialogInterface.OnMultiChoiceClickListener,
                DialogInterface.OnClickListener {
     private static final String TAG = "AlarmRepeatOnDialogPreference";
-    private Alarms.RepeatWeekdays mRepeatWeekdays = Alarms.RepeatWeekdays.getInstance();
+    private int mCode = -1;
 
-    public AlarmRepeatOnDialogPreference(Context context,
-                                         AttributeSet attrs) {
+    public AlarmRepeatOnPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     public void setPreferenceValue(int daysCode) {
-        mRepeatWeekdays.setCode(daysCode);
-        setPreferenceValue(Integer.valueOf(daysCode).toString());
+        mCode = daysCode;
+        setPreferenceValue(Integer.valueOf(mCode).toString());
     }
 
-    protected String formatValue(String value) {
-        int code = Integer.parseInt(value);
-        mRepeatWeekdays.setCode(code);
-        return mRepeatWeekdays.toString();
+    protected String formatDisplayValue(String value) {
+        return Alarms.RepeatWeekdays.toString(mCode);
+    }
+
+    protected String formatPersistedValue(String value) {
+        mCode = Integer.parseInt(value);
+        return value;
     }
 
     protected void displayValueOnView(View view) {
-
-        Log.d(TAG, "====> displayValueOnView(view)");
-
-
-        setSummary(formatValue(getPreferenceValue()));
+        setSummary(formatDisplayValue(getPreferenceValue()));
+        Log.d(TAG, "====> displayValueOnView(view): "
+              + formatDisplayValue(getPreferenceValue()));
     }
 
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         boolean[] checked = new boolean[7];
         for(int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
-            if(mRepeatWeekdays.hasDay(i)) {
+            if(Alarms.RepeatWeekdays.isSet(mCode, i)) {
                 checked[i-1] = true;
             }
         }
@@ -78,14 +78,15 @@ public class AlarmRepeatOnDialogPreference extends TextViewPreference
     public void onClick(DialogInterface dialog,
                         int which,
                         boolean isChecked) {
-        mRepeatWeekdays.set(which + 1, isChecked);
+        mCode = Alarms.RepeatWeekdays.set(mCode, which+1, isChecked);
+        Log.d(TAG, "=======> current selected days: "
+              + Alarms.RepeatWeekdays.toString(mCode));
     }
 
     public void onClick(DialogInterface dialog, int which) {
         switch(which) {
         case DialogInterface.BUTTON_POSITIVE:
-            setPreferenceValue(
-                Integer.valueOf(mRepeatWeekdays.getCode()).toString());
+            setPreferenceValue(mCode);
             dialog.dismiss();
             break;
         }

@@ -105,7 +105,7 @@ public class AlarmActionPreference extends TextViewPreference {
         mOnSelectActionListener = listener;
     }
 
-    protected String formatValue(String value) {
+    protected String formatDisplayValue(String value) {
         if(mCheckedActionEntryIndex < 0)  {
             return value;
         }
