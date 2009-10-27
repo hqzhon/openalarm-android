@@ -10,21 +10,21 @@
 package org.startsmall.alarmclockplus.preference;
 
 import org.startsmall.alarmclockplus.*;
-import android.app.AlertDialog;
-import android.app.Dialog;
+//import android.app.AlertDialog;
+//import android.app.Dialog;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.Preference;
 import android.util.AttributeSet;
-import android.util.Log;
+//import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
+//import android.view.ViewGroup;
 import android.widget.ToggleButton;
 
 public class ToggleButtonPreference extends Preference {
-    private static final String TAG = "ToggleButtonPreference";
+    //private static final String TAG = "ToggleButtonPreference";
     private boolean mValue;
 
     public ToggleButtonPreference(Context context, AttributeSet attrs) {
@@ -48,22 +48,25 @@ public class ToggleButtonPreference extends Preference {
 
     @Override
     protected void onClick() {
-        super.onClick();
 
         boolean newValue = !isChecked();
-        if (!callChangeListener(newValue)) {
-            return;
-        }
+        // if (!callChangeListener(newValue)) {
+        //     return;
+        // }
         setChecked(newValue);
+
+        super.onClick();
+
     }
 
     @Override
     protected void onBindView(View view) {
-        super.onBindView(view);
 
         final ToggleButton toggle =
             (ToggleButton)view.findViewById(R.id.toggle);
         toggle.setChecked(mValue);
+
+        super.onBindView(view);
     }
 
     protected View onCreateView(ViewGroup parent) {

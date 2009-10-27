@@ -65,12 +65,18 @@ public class TextViewPreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
 
+        Log.d(TAG, "====> onBindView(this=" + this + ", view=" + view + ")");
+
         displayValueOnView(view);
     }
 
     protected void displayValueOnView(View view) {
         final TextView textView = (TextView)view.findViewById(R.id.text);
         textView.setText(formatDisplayValue(mValue));
+
+        Log.d(TAG, "======> displayValueOnView(this=" + this
+              + ", view=" + view
+              + ", value=" + formatDisplayValue(mValue));
     }
 
     @Override

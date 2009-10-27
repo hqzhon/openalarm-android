@@ -23,6 +23,7 @@ public class AlarmTimePreference extends TextViewPreference {
         super(context, attrs);
     }
 
+    @Override
     public Dialog getDialog() {
         int time = Integer.parseInt(getPreferenceValue());
         final int hourOfDay = time / 100;
@@ -44,7 +45,8 @@ public class AlarmTimePreference extends TextViewPreference {
             true);
     }
 
-    protected String formatValue(String value) {
+    @Override
+    protected String formatDisplayValue(String value) {
         int time = Integer.parseInt(value);
         final int hourOfDay = time / 100;
         final int minutes = time % 100;

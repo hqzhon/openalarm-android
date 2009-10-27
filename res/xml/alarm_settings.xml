@@ -22,6 +22,7 @@
     <org.startsmall.alarmclockplus.preference.AlarmRepeatOnPreference
        android:key="@string/alarm_settings_repeat_days_key"
        android:title="@string/alarm_settings_repeat_days_title"
+       android:summary="no days"
        android:defaultValue="5"/>
   </PreferenceCategory>
 

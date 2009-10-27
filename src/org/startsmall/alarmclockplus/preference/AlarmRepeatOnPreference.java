@@ -9,22 +9,22 @@ import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.os.Parcelable;
 import android.os.Parcel;
-import android.preference.DialogPreference;
+import android.preference.Preference;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.text.DateFormatSymbols;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-public class AlarmRepeatOnPreference extends TextViewPreference
+public class AlarmRepeatOnPreference extends Preference
     implements DialogInterface.OnMultiChoiceClickListener,
                DialogInterface.OnClickListener {
     private static final String TAG = "AlarmRepeatOnDialogPreference";
-    private int mCode = -1;
+    private int mCode;
+    private int mWhichDaysChecked;
 
     public AlarmRepeatOnPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -32,25 +32,29 @@ public class AlarmRepeatOnPreference extends TextViewPreference
 
     public void setPreferenceValue(int daysCode) {
         mCode = daysCode;
-        setPreferenceValue(Integer.valueOf(mCode).toString());
+        if(shouldPersist()) {
+            persistInt(mCode);
+            notifyChanged();
+        }
     }
 
-    protected String formatDisplayValue(String value) {
-        return Alarms.RepeatWeekdays.toString(mCode);
+    public int getPreferenceValue() {
+        return mCode;
     }
 
-    protected String formatPersistedValue(String value) {
-        mCode = Integer.parseInt(value);
-        return value;
-    }
-
-    protected void displayValueOnView(View view) {
-        setSummary(formatDisplayValue(getPreferenceValue()));
-        Log.d(TAG, "====> displayValueOnView(view): "
-              + formatDisplayValue(getPreferenceValue()));
+    public Dialog getDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        onPrepareDialogBuilder(builder);
+        mWhichDaysChecked = mCode;
+        return builder.create();
     }
 
     @Override
+    protected void onBindView(View view) {
+        setSummary(Alarms.RepeatWeekdays.toString(mCode));
+        super.onBindView(view);
+    }
+
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         boolean[] checked = new boolean[7];
         for(int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
@@ -78,17 +82,90 @@ public class AlarmRepeatOnPreference extends TextViewPreference
     public void onClick(DialogInterface dialog,
                         int which,
                         boolean isChecked) {
-        mCode = Alarms.RepeatWeekdays.set(mCode, which+1, isChecked);
-        Log.d(TAG, "=======> current selected days: "
-              + Alarms.RepeatWeekdays.toString(mCode));
+        mWhichDaysChecked = Alarms.RepeatWeekdays.set(mWhichDaysChecked,
+                                                      which+1,
+                                                      isChecked);
     }
 
     public void onClick(DialogInterface dialog, int which) {
         switch(which) {
         case DialogInterface.BUTTON_POSITIVE:
+            mCode = mWhichDaysChecked;
             setPreferenceValue(mCode);
-            dialog.dismiss();
+            break;
+        case DialogInterface.BUTTON_NEGATIVE:
             break;
         }
+        dialog.dismiss();
+    }
+
+    @Override
+    protected Object onGetDefaultValue(TypedArray a, int index) {
+        return a.getInt(index, -1);
+    }
+
+    @Override
+    protected void onSetInitialValue(boolean restorePersistedValue,
+                                     Object defValue) {
+        if(restorePersistedValue &&
+           shouldPersist()) {
+            setPreferenceValue(getPersistedInt(mCode));
+            return;
+        }
+        setPreferenceValue((Integer)defValue);
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        final Parcelable superState = super.onSaveInstanceState();
+        if(isPersistent()) {    // persistent preference
+            return superState;
+        }
+
+        SavedState myState = new SavedState(superState);
+        myState.code = mCode;
+        return myState;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if(state != null && state.getClass().equals(SavedState.class)) {
+            SavedState myState = (SavedState)state;
+            super.onRestoreInstanceState(myState.getSuperState());
+            setPreferenceValue(myState.code);
+        } else {
+            super.onRestoreInstanceState(state);
+        }
+    }
+
+    private static class SavedState extends BaseSavedState {
+        int code;
+
+        public SavedState(Parcelable in) {
+            super(in);
+        }
+
+        public SavedState(Parcel in) {
+            super(in);
+            code = in.readInt();
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+            dest.writeInt(code);
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR =
+            new Parcelable.Creator<SavedState>() {
+
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
     }
 }

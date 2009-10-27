@@ -12,7 +12,7 @@ package org.startsmall.alarmclockplus.preference;
 import org.startsmall.alarmclockplus.*;
 import android.app.Dialog;
 import android.os.Bundle;
-import android.content.ContentUris;
+//import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,12 +21,12 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.net.Uri;
+//import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import java.util.*;
+//import java.util.*;
 import java.lang.reflect.Method;
 
 public class AlarmSettings extends PreferenceActivity {
@@ -194,14 +194,14 @@ public class AlarmSettings extends PreferenceActivity {
             if(alarmId == -1) {
                 throw new IllegalArgumentException("invalid alarm id");
             } else {
-                Uri alarmUri = Alarms.getAlarmUri(alarmId);
+                //Uri alarmUri = Alarms.getAlarmUri(alarmId);
 
                 final String label = (String)mLabelPreference.getPreferenceValue();
                 final int time = Integer.parseInt(mTimePreference.getPreferenceValue());
                 final int hourOfDay = time / 100;
                 final int minutes = time % 100;
-                final int repeatOnCode = Integer.parseInt(
-                    mRepeatOnPreference.getPreferenceValue());
+                final int repeatOnCode =
+                    mRepeatOnPreference.getPreferenceValue();
                 final String action = (String)mActionPreference.getPreferenceValue();
                 final String extra =
                     generateValueOfExtraSettings(mExtraSettingsCategory);
@@ -230,8 +230,7 @@ public class AlarmSettings extends PreferenceActivity {
         outState.putString(Alarms.AlarmColumns.LABEL,
                            mLabelPreference.getPreferenceValue());
         outState.putInt(Alarms.AlarmColumns.REPEAT_DAYS,
-                        Integer.parseInt(
-                            mRepeatOnPreference.getPreferenceValue()));
+                        mRepeatOnPreference.getPreferenceValue());
         outState.putString(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
                            mTimePreference.getPreferenceValue());
         outState.putString(Alarms.AlarmColumns.ACTION,
@@ -269,6 +268,8 @@ public class AlarmSettings extends PreferenceActivity {
 
         case REPEAT_DAYS_PICK_DIALOG:
             dialog = mRepeatOnPreference.getDialog();
+            Log.d(TAG, "============> getSUmmary()=" +
+                  mRepeatOnPreference.getSummary());
             break;
 
         default:

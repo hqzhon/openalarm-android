@@ -13,8 +13,8 @@ import org.startsmall.alarmclockplus.preference.*;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
-import android.content.ContentResolver;
-import android.content.ContentUris;
+//import android.content.ContentResolver;
+//import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,7 +29,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
-import android.widget.Button;
+//import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
@@ -55,7 +55,7 @@ public class AlarmClockPlus extends ListActivity {
             mInflater = AlarmClockPlus.this.getLayoutInflater();
             mOnClickListener =
                 new View.OnClickListener() {
-                    @Override
+                    // @Override
                     public void onClick(View view) {
                         Bundle attachment = (Bundle)view.getTag();
 
@@ -171,7 +171,7 @@ public class AlarmClockPlus extends ListActivity {
             Bundle attachment = new Bundle();
             view.setTag(attachment);
 
-            final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
+            // final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
             // Log.d(TAG, "=====> newView(): view=" + view
             //       + ", position=" + cursor.getPosition()
             //       + ", id=" + id
@@ -198,8 +198,8 @@ public class AlarmClockPlus extends ListActivity {
             view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
 
             //
-            final CheckBox enabledCheckBox =
-                (CheckBox)view.findViewById(R.id.enabled);
+            // final CheckBox enabledCheckBox =
+            //     (CheckBox)view.findViewById(R.id.enabled);
             return view;
         }
     }
@@ -350,11 +350,13 @@ public class AlarmClockPlus extends ListActivity {
                               newRepeatOnDaysCode);
             }
 
-            if(!newAction.equals(settings.mAction)) {
+            if(!TextUtils.isEmpty(newAction) &&
+               !newAction.equals(settings.mAction)) {
                 newValues.put(Alarms.AlarmColumns.ACTION, newAction);
             }
 
-            if(!newExtra.equals(settings.mExtra)) {
+            if(!TextUtils.isEmpty(newExtra) &&
+               !newExtra.equals(settings.mExtra)) {
                 newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
             }
 

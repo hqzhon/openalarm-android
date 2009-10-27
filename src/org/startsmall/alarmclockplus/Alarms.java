@@ -11,7 +11,7 @@ package org.startsmall.alarmclockplus;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ContentResolver;
+//import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -416,7 +416,7 @@ public class Alarms {
                                      PendingIntent.FLAG_CANCEL_CURRENT));
 
                 // Prepare for notification and toast message
-                Date date = new Date(mAtTimeInMillis);
+                // Date date = new Date(mAtTimeInMillis);
                 DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
                                                                        DateFormat.MEDIUM);
                 String text =

@@ -14,15 +14,15 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.TypedArray;
-import android.os.Parcelable;
-import android.os.Parcel;
+//import android.content.res.TypedArray;
+//import android.os.Parcelable;
+//import android.os.Parcel;
 import android.view.View;
 import android.util.AttributeSet;
-import android.view.View;
+//import android.view.View;
 import android.view.LayoutInflater;
 import android.widget.EditText;
-import android.widget.TextView;
+//import android.widget.TextView;
 
 public class AlarmLabelPreference extends TextViewPreference {
     public AlarmLabelPreference(Context context, AttributeSet attrs) {
