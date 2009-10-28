@@ -180,15 +180,14 @@ public class AlarmClockPlus extends ListActivity {
                     // ImageView iconView =
                     //     (ImageView)view.findViewById(R.id.icon);
                     // iconView.setImageDrawable(actionIcon);
-                    Class<?> actionClass = Class.forName(action);
+                    // Class<?> actionClass = Class.forName(action);
 
                     Log.d(TAG, "=======> haha 1 " +
                           action);
 
 
                     Drawable handlerIcon = pm.getActivityIcon(
-                        new ComponentName(
-                            context, action));
+                        new ComponentName(context, action));
 
                     Log.d(TAG, "=======> haha 2" +
                           action);
@@ -202,10 +201,12 @@ public class AlarmClockPlus extends ListActivity {
                 } catch(PackageManager.NameNotFoundException e) {
                     Log.d(TAG, "xxxxxxxxxxxc 1" + e);
 
-                } catch(ClassNotFoundException e) {
-                    Log.d(TAG, "xxxxxxxxxxxc 2" + e);
-
                 }
+
+                // catch(ClassNotFoundException e) {
+                //     Log.d(TAG, "xxxxxxxxxxxc 2" + e);
+
+                // }
             }
         }
 
