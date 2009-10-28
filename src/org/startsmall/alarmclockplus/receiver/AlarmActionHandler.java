@@ -15,9 +15,7 @@ import java.util.regex.Pattern;
 
 public class AlarmActionHandler extends ActionHandler {
     private static final String TAG = "AlarmActionHandler";
-
-    private static final String VIBRATE_KEY = "vibrate";
-
+    private static final String KEY = "vibrate";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -36,7 +34,7 @@ public class AlarmActionHandler extends ActionHandler {
                     continue;
                 }
 
-                String value = parseExtra(values[i], VIBRATE_KEY);
+                String value = parseExtra(values[i], KEY);
                 if(!TextUtils.isEmpty(value)) {
                     vibrate = Boolean.parseBoolean(value);
                 }
@@ -49,11 +47,11 @@ public class AlarmActionHandler extends ActionHandler {
     }
 
     @Override
-    public void addMyPreferences(Context context,
-                                 PreferenceCategory category,
-                                 String defaultValue) {
+    public void addMyPreferences(final Context context,
+                                 final PreferenceCategory category,
+                                 final String defaultValue) {
         CheckBoxPreference vibratePref = new CheckBoxPreference(context);
-        vibratePref.setKey(VIBRATE_KEY);
+        vibratePref.setKey(KEY);
         vibratePref.setPersistent(true);
         vibratePref.setTitle(R.string.alarm_extra_settings_vibrate_title);
 
@@ -64,7 +62,7 @@ public class AlarmActionHandler extends ActionHandler {
                     continue;
                 }
 
-                String value = parseExtra(values[i], VIBRATE_KEY);
+                String value = parseExtra(values[i], KEY);
                 if(!TextUtils.isEmpty(value)) {
                     vibratePref.setChecked(Boolean.parseBoolean(value));
                 }

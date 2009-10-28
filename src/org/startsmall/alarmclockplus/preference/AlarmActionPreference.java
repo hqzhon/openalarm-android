@@ -20,30 +20,20 @@ import android.content.pm.PackageManager;
 import android.util.AttributeSet;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class AlarmActionPreference extends TextViewPreference {
+public class AlarmActionPreference extends ListPreference {
     public interface OnSelectActionListener {
         void onSelectAction(String handlerClassName);
     }
 
-    private int mCheckedActionEntryIndex = -1;
-    private CharSequence[] mEntries;
-    private CharSequence[] mEntryValues;
-    private int mSelectedItemIndex = -1;
     private OnSelectActionListener mOnSelectActionListener;
     private DialogInterface.OnClickListener mOnClickListener =
         new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                mSelectedItemIndex = which;
-            }
-        };
-    private DialogInterface.OnClickListener mPositiveButtonClickListener =
-        new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                AlarmActionPreference.this.setPreferenceValueIndex(
-                    AlarmActionPreference.this.mSelectedItemIndex);
-                if(AlarmActionPreference.this.mOnSelectActionListener != null) {
+                AlarmActionPreference.this.setPreferenceValueIndex(which);
+                if(mOnSelectActionListener != null) {
                     mOnSelectActionListener.onSelectAction(
                         (String)AlarmActionPreference.this.getPreferenceValue());
                 }
@@ -53,43 +43,6 @@ public class AlarmActionPreference extends TextViewPreference {
 
     public AlarmActionPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        loadHandlers();
-    }
-
-    public CharSequence[] getEntries() {
-        return mEntries;
-    }
-
-    public CharSequence[] getEntryValues() {
-        return mEntryValues;
-    }
-
-    public void setPreferenceValue(String value) {
-        int index = findIndexOfValue(value);
-        if(index != -1) {
-            mCheckedActionEntryIndex = index;
-            super.setPreferenceValue(value);
-        }
-    }
-
-    public final void setPreferenceValueIndex(int index) {
-        if(mEntries != null && mEntries.length >= index) {
-            mCheckedActionEntryIndex = index;
-            setPreferenceValue(mEntryValues[index].toString());
-        }
-    }
-
-    public int findIndexOfValue(String value) {
-        if(mEntryValues != null) {
-            // Just search from start to the end.
-            for(int i = 0; i < mEntryValues.length; i++) {
-                if(value.equals(mEntryValues[i])) {
-                    return i;
-                }
-            }
-        }
-        return -1;
     }
 
     public void setOnSelectActionListener(OnSelectActionListener listener) {
@@ -97,25 +50,19 @@ public class AlarmActionPreference extends TextViewPreference {
     }
 
     @Override
-    protected String transformValueBeforeDisplay(Object value) {
-        if(mCheckedActionEntryIndex < 0)  {
-            return (String)value;
-        }
-        return mEntries[mCheckedActionEntryIndex].toString();
-    }
-
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         builder
             .setTitle(R.string.alarm_settings_action_dialog_title)
             .setSingleChoiceItems(
-                mEntries,
-                mCheckedActionEntryIndex,
+                getEntries(),
+                getCheckedEntryIndex(),
                 mOnClickListener)
-            .setPositiveButton(android.R.string.ok, mPositiveButtonClickListener)
             .setNegativeButton(android.R.string.cancel, null);
     }
 
-    private void loadHandlers() {
+    @Override
+    protected void generateListItems(ArrayList<CharSequence> entries,
+                                     ArrayList<CharSequence> entryValues) {
         Intent queryIntent = new Intent(Alarms.ALARM_ACTION);
         queryIntent.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
@@ -123,12 +70,13 @@ public class AlarmActionPreference extends TextViewPreference {
         List<ResolveInfo> actions =
             pm.queryBroadcastReceivers(queryIntent, 0);
 
-        mEntries = new CharSequence[actions.size()];
-        mEntryValues = new CharSequence[actions.size()];
-        for(int i = 0; i < actions.size(); i++) {
+        final int numberOfHandlers = actions.size();
+        entries.ensureCapacity(numberOfHandlers);
+        entryValues.ensureCapacity(numberOfHandlers);
+        for(int i = 0; i < numberOfHandlers; i++) {
             ActivityInfo info = actions.get(i).activityInfo;
-            mEntries[i] = info.loadLabel(pm);
-            mEntryValues[i] = info.name;
+            entries.add(info.loadLabel(pm));
+            entryValues.add(info.name);
         }
     }
 }

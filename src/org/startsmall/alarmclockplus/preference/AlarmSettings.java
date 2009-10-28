@@ -25,7 +25,7 @@ import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-
+import android.view.MotionEvent;
 //import java.util.*;
 import java.lang.reflect.Method;
 
@@ -66,16 +66,9 @@ public class AlarmSettings extends PreferenceActivity {
                     inflateExtraSettings(handlerClassName, null);
                 }
             });
-
         mRepeatOnPreference =
             (AlarmRepeatOnPreference)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_repeat_days_key));
-        // mRepeatOnPreference.setOnRepeatWeekdaysSetListener(
-        //     new AlarmRepeatOnPreference.OnRepeatWeekdaysSetListener() {
-        //         public void onRepeatWeekdaysSet(Alarms.RepeatWeekdays weekdays) {
-        //             mRepeatOnPreference.setSummary(weekdays.toString());
-        //         }
-        //     });
         mExtraSettingsCategory =
             (PreferenceCategory)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_extra_category_key));
@@ -317,8 +310,7 @@ public class AlarmSettings extends PreferenceActivity {
     }
 
     private String generateValueOfExtraSettings(PreferenceCategory category) {
-        SharedPreferences sharedPreferences =
-            category.getSharedPreferences();
+        SharedPreferences sharedPreferences = category.getSharedPreferences();
         String result = "";
         int numberOfPreferences =
             category.getPreferenceCount();

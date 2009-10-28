@@ -21,6 +21,14 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+// interface Persistable {
+//     Object parsePreferenceValue(String value);
+//     String toPreferenceValue(Object obj);
+// }
+
+// interface Dialogable {
+// }
+
 public abstract class MyPreference extends Preference {
     private String mTag;
     private String mValue;
@@ -87,9 +95,9 @@ public abstract class MyPreference extends Preference {
     @Override
     protected Parcelable onSaveInstanceState() {
         final Parcelable superState = super.onSaveInstanceState();
-        if(isPersistent()) {    // persistent preference
-            return superState;
-        }
+        // if(isPersistent()) {    // persistent preference
+        //     return superState;
+        // }
 
         SavedState myState = new SavedState(superState);
         myState.value = mValue;
@@ -101,7 +109,7 @@ public abstract class MyPreference extends Preference {
         if(state != null && state.getClass().equals(SavedState.class)) {
             SavedState myState = (SavedState)state;
             super.onRestoreInstanceState(myState.getSuperState());
-            persistPreferenceValue(myState.value);
+            // persistPreferenceValue(myState.value);
         } else {
             super.onRestoreInstanceState(state);
         }
