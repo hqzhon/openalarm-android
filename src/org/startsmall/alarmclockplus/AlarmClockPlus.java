@@ -12,13 +12,15 @@ package org.startsmall.alarmclockplus;
 import org.startsmall.alarmclockplus.preference.*;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ComponentName;
 import android.content.Context;
-//import android.content.ContentResolver;
+import android.content.pm.PackageManager;
 //import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -29,11 +31,11 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
-//import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.CheckBox;
 import android.text.TextUtils;
 
 import java.util.*;
@@ -115,6 +117,7 @@ public class AlarmClockPlus extends ListActivity {
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
             final int daysCode = cursor.getInt(Alarms.AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
             final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
+            final String action = cursor.getString(Alarms.AlarmColumns.PROJECTION_ACTION_INDEX);
 
             Bundle attachment = (Bundle)view.getTag();
             attachment.putInt(Alarms.AlarmColumns._ID, id);
@@ -159,6 +162,50 @@ public class AlarmClockPlus extends ListActivity {
                 repeatDays.setVisibility(View.GONE);
             } else {
                 repeatDays.setVisibility(View.VISIBLE);
+            }
+
+            // Action
+            if(!TextUtils.isEmpty(action)) {
+                final TextView actionView =
+                    (TextView)view.findViewById(R.id.action);
+                PackageManager pm = context.getPackageManager();
+                try {
+
+                    // Drawable actionIcon =
+                    //     pm.getActivityIcon(
+                    //         new Intent(
+                    //             context,
+                    //             Class.forName(
+                    //                 action)));
+                    // ImageView iconView =
+                    //     (ImageView)view.findViewById(R.id.icon);
+                    // iconView.setImageDrawable(actionIcon);
+                    Class<?> actionClass = Class.forName(action);
+
+                    Log.d(TAG, "=======> haha 1 " +
+                          action);
+
+
+                    Drawable handlerIcon = pm.getActivityIcon(
+                        new ComponentName(
+                            context, action));
+
+                    Log.d(TAG, "=======> haha 2" +
+                          action);
+
+                    ImageView iconView =
+                        (ImageView)view.findViewById(R.id.icon);
+                    iconView.setImageDrawable(handlerIcon);
+
+
+
+                } catch(PackageManager.NameNotFoundException e) {
+                    Log.d(TAG, "xxxxxxxxxxxc 1" + e);
+
+                } catch(ClassNotFoundException e) {
+                    Log.d(TAG, "xxxxxxxxxxxc 2" + e);
+
+                }
             }
         }
 

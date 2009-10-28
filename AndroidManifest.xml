@@ -10,12 +10,13 @@
   <uses-permission android:name="android.permission.WRITE_SETTINGS" />
   <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
-  <application android:label="@string/app_name">
+  <application android:label="@string/app_name"
+               android:theme="@style/android:Theme.Light"
+               >
       <provider android:name="AlarmProvider"
                 android:authorities="org.startsmall.alarmclockplus" />
 
       <activity android:name=".AlarmClockPlus"
-                android:theme="@android:style/Theme"
                 android:label="@string/app_name">
         <intent-filter>
           <action android:name="android.intent.action.MAIN" />
@@ -23,12 +24,12 @@
         </intent-filter>
       </activity>
 
-      <activity android:name=".preference.AlarmSettings"
-                android:theme="@android:style/Theme.NoTitleBar"
+      <activity android:name=".AlarmSettings"
+                android:theme="@android:style/Theme.Light.NoTitleBar"
                 android:label="@string/app_name">
       </activity>
 
-      <receiver android:name=".receiver.InitReceiver"
+      <receiver android:name=".InitReceiver"
                 android:label="Init">
         <intent-filter>
           <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -37,7 +38,7 @@
         </intent-filter>
       </receiver>
 
-      <receiver android:name=".receiver.ActionDispatcher"
+      <receiver android:name=".ActionDispatcher"
                 android:label="Alarm Dispatcher">
         <intent-filter>
           <action android:name="org.startsmall.alarmclockplus.DISPATCH_ACTION" />
@@ -45,7 +46,7 @@
         </intent-filter>
       </receiver>
 
-      <receiver android:name=".receiver.AlarmActionHandler"
+      <receiver android:name=".AlarmActionHandler"
                 android:label="Alarm">
         <intent-filter>
           <action android:name="org.startsmall.alarmclockplus.ALARM_ACTION" />
@@ -53,7 +54,7 @@
         </intent-filter>
       </receiver>
 
-      <receiver android:name=".receiver.WifiActionHandler"
+      <receiver android:name=".WifiActionHandler"
                 android:label="Wi-Fi"
                 android:icon="@drawable/icon_wifi_black_bg">
         <intent-filter>

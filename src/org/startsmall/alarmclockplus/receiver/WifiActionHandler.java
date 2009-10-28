@@ -1,7 +1,5 @@
-package org.startsmall.alarmclockplus.receiver;
+package org.startsmall.alarmclockplus;
 
-import org.startsmall.alarmclockplus.*;
-import org.startsmall.alarmclockplus.preference.ListPreference;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;

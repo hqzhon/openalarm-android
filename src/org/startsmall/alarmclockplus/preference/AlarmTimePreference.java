@@ -7,9 +7,8 @@
  *
  *
  */
-package org.startsmall.alarmclockplus.preference;
+package org.startsmall.alarmclockplus;
 
-import org.startsmall.alarmclockplus.*;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
