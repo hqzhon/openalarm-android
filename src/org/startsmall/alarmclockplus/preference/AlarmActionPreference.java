@@ -7,8 +7,9 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.alarmclockplus.preference;
 
+import org.startsmall.alarmclockplus.*;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -70,19 +71,21 @@ public class AlarmActionPreference extends ListPreference {
             pm.queryBroadcastReceivers(queryIntent, 0);
 
         final int numberOfHandlers = actions.size();
-        entries.ensureCapacity(numberOfHandlers);
-        entryValues.ensureCapacity(numberOfHandlers);
-        for(int i = 0; i < numberOfHandlers; i++) {
-            ActivityInfo info = actions.get(i).activityInfo;
+        if(numberOfHandlers > 0) {
+            entries.ensureCapacity(numberOfHandlers);
+            entryValues.ensureCapacity(numberOfHandlers);
+            for(int i = 0; i < numberOfHandlers; i++) {
+                ActivityInfo info = actions.get(i).activityInfo;
 
-            Log.d(getTag(), "=======> wawa " + info.toString()
-                  + ", package=" + info.packageName
-                  + ", name=" + info.name
-                );
+                Log.d(getTag(), "=======> wawa " + info.toString()
+                      + ", package=" + info.packageName
+                      + ", name=" + info.name
+                    );
 
 
-            entries.add(info.loadLabel(pm));
-            entryValues.add(info.name);
+                entries.add(info.loadLabel(pm));
+                entryValues.add(info.name);
+            }
         }
     }
 }

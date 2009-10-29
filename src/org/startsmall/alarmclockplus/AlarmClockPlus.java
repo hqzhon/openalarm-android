@@ -14,7 +14,9 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 //import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -166,47 +168,28 @@ public class AlarmClockPlus extends ListActivity {
 
             // Action
             if(!TextUtils.isEmpty(action)) {
-                final TextView actionView =
-                    (TextView)view.findViewById(R.id.action);
                 PackageManager pm = context.getPackageManager();
                 try {
+                    ActivityInfo info =
+                        pm.getReceiverInfo(
+                            new ComponentName(context, action), 0);
+                    Drawable actionIcon = info.loadIcon(pm);
+                    String actionLabel = info.loadLabel(pm).toString();
 
-                    // Drawable actionIcon =
-                    //     pm.getActivityIcon(
-                    //         new Intent(
-                    //             context,
-                    //             Class.forName(
-                    //                 action)));
-                    // ImageView iconView =
-                    //     (ImageView)view.findViewById(R.id.icon);
-                    // iconView.setImageDrawable(actionIcon);
-                    // Class<?> actionClass = Class.forName(action);
-
-                    Log.d(TAG, "=======> haha 1 " +
-                          action);
-
-
-                    Drawable handlerIcon = pm.getActivityIcon(
-                        new ComponentName(context, action));
-
-                    Log.d(TAG, "=======> haha 2" +
-                          action);
-
-                    ImageView iconView =
+                    ImageView actionIconView =
                         (ImageView)view.findViewById(R.id.icon);
-                    iconView.setImageDrawable(handlerIcon);
+                    actionIconView.setImageDrawable(actionIcon);
 
-
-
+                    TextView actionTextView =
+                        (TextView)view.findViewById(R.id.action);
+                    if(!TextUtils.isEmpty(actionLabel)) {
+                        actionTextView.setText(actionLabel);
+                    } else {
+                        actionTextView.setText("not set");
+                    }
                 } catch(PackageManager.NameNotFoundException e) {
                     Log.d(TAG, "xxxxxxxxxxxc 1" + e);
-
                 }
-
-                // catch(ClassNotFoundException e) {
-                //     Log.d(TAG, "xxxxxxxxxxxc 2" + e);
-
-                // }
             }
         }
 

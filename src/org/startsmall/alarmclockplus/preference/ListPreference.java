@@ -7,15 +7,13 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.alarmclockplus.preference;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.PackageManager;
+//import android.content.pm.ActivityInfo;
+//import android.content.pm.ResolveInfo;
+//import android.content.pm.PackageManager;
 import android.util.AttributeSet;
 import android.util.Log;
 

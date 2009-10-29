@@ -1,5 +1,15 @@
-package org.startsmall.alarmclockplus;
+/**
+ * @file   AlarmRepeatOnPreference.java
+ * @author josh <yenliangl at gmail dot com>
+ * @date   Thu Oct 29 11:18:32 2009
+ *
+ * @brief
+ *
+ *
+ */
+package org.startsmall.alarmclockplus.preference;
 
+import org.startsmall.alarmclockplus.*;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.Context;

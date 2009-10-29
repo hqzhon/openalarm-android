@@ -54,6 +54,7 @@
      />
 
   <TextView
+     style="?android:attr/textAppearanceSmallInverse"
      android:id="@+id/action"
      android:layout_width="wrap_content"
      android:layout_height="wrap_content"
@@ -65,7 +66,7 @@
      android:gravity="center_vertical"
      android:singleLine="true"
      android:ellipsize="marquee"
-     android:text="hahaha" />
+     android:text="not set" />
 
   <TextView
      android:id="@+id/repeat_days"

@@ -1,5 +1,18 @@
-package org.startsmall.alarmclockplus;
+/**
+ * @file   WifiActionHandler.java
+ * @author josh <yenliangl at gmail dot com>
+ * @date   Thu Oct 29 11:23:05 2009
+ *
+ * @brief
+ *
+ *
+ */
 
+package org.startsmall.alarmclockplus.receiver;
+
+import org.startsmall.alarmclockplus.preference.ListPreference;
+import org.startsmall.alarmclockplus.Alarms;
+import org.startsmall.alarmclockplus.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;

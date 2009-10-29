@@ -7,7 +7,9 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.alarmclockplus.preference;
+
+import org.startsmall.alarmclockplus.*;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -24,7 +26,6 @@ import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 //import java.util.*;
 import java.lang.reflect.Method;
 

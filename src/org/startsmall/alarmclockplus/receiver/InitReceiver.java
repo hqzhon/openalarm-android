@@ -1,6 +1,6 @@
-package org.startsmall.alarmclockplus;
+package org.startsmall.alarmclockplus.receiver;
 
-import org.startsmall.alarmclockplus.*;
+// import org.startsmall.alarmclockplus.*;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;

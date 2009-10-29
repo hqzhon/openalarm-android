@@ -1,5 +1,16 @@
-package org.startsmall.alarmclockplus;
+/**
+ * @file   AlarmActionHandler.java
+ * @author josh <yenliangl at gmail dot com>
+ * @date   Thu Oct 29 11:22:32 2009
+ *
+ * @brief
+ *
+ *
+ */
+package org.startsmall.alarmclockplus.receiver;
 
+import org.startsmall.alarmclockplus.Alarms;
+import org.startsmall.alarmclockplus.R;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
