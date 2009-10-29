@@ -17,8 +17,10 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,7 @@ public class AlarmActionPreference extends ListPreference {
                     mOnSelectActionListener.onSelectAction(
                         (String)AlarmActionPreference.this.getPreferenceValue());
                 }
+                setSummary(null);
                 dialog.dismiss();
             }
         };
@@ -47,6 +50,14 @@ public class AlarmActionPreference extends ListPreference {
 
     public void setOnSelectActionListener(OnSelectActionListener listener) {
         mOnSelectActionListener = listener;
+    }
+
+    @Override
+    protected void onBindView(View view) {
+        if(TextUtils.isEmpty((String)getPreferenceValue())) {
+            setSummary("What do you want me to do?");
+        }
+        super.onBindView(view);
     }
 
     @Override
@@ -76,13 +87,6 @@ public class AlarmActionPreference extends ListPreference {
             entryValues.ensureCapacity(numberOfHandlers);
             for(int i = 0; i < numberOfHandlers; i++) {
                 ActivityInfo info = actions.get(i).activityInfo;
-
-                Log.d(getTag(), "=======> wawa " + info.toString()
-                      + ", package=" + info.packageName
-                      + ", name=" + info.name
-                    );
-
-
                 entries.add(info.loadLabel(pm));
                 entryValues.add(info.name);
             }

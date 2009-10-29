@@ -13,7 +13,6 @@ import org.startsmall.alarmclockplus.*;
 
 import android.app.Dialog;
 import android.os.Bundle;
-//import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,7 +21,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-//import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -88,7 +86,6 @@ public class AlarmSettings extends PreferenceActivity {
 
             // int savedAlarmId = bundle.getInt(Alarms.AlarmColumns._ID, -1);
             // if(alarmId == savedAlarmId) {
-            Log.d(TAG, "====> Using persisted preferences for this alarm");
 
             // mLabelPreference.setPreferenceValue(
             //     bundle.getString(Alarms.AlarmColumns.LABEL));
@@ -134,20 +131,15 @@ public class AlarmSettings extends PreferenceActivity {
                             hour * 100 + minutes);
                         mRepeatOnPreference.setPreferenceValue(repeatDays);
 
-                        String newAction = action;
-                        if(TextUtils.isEmpty(action)) {
+                        if(!TextUtils.isEmpty(action)) {
                             // This happens when this is the
                             // first time the user uses this
                             // application and no any action
                             // string has stored in the SQL db.
-                            mActionPreference.setPreferenceValueIndex(0);
-                            newAction =
-                                (String)mActionPreference.getPreferenceValue();
-                        } else {
                             mActionPreference.setPreferenceValue(action);
+                            AlarmSettings.this.inflateExtraSettings(
+                                action, extra);
                         }
-                        AlarmSettings.this.inflateExtraSettings(newAction,
-                                                                extra);
                     }
                 });
         }
@@ -155,9 +147,6 @@ public class AlarmSettings extends PreferenceActivity {
 
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
                                          Preference preference) {
-
-        Log.d(TAG, "====> onPreferenceTreeClick()");
-
         int id = -1;
         if(preference == mLabelPreference) {
             id = LABEL_INPUT_DIALOG;
@@ -264,8 +253,6 @@ public class AlarmSettings extends PreferenceActivity {
 
         case REPEAT_DAYS_PICK_DIALOG:
             dialog = mRepeatOnPreference.getDialog();
-            Log.d(TAG, "============> getSUmmary()=" +
-                  mRepeatOnPreference.getSummary());
             break;
 
         default:
@@ -306,6 +293,7 @@ public class AlarmSettings extends PreferenceActivity {
             Log.d(TAG, "===> instantiation  - " + e);
         } catch(java.lang.reflect.InvocationTargetException e) {
             Log.d(TAG, "===> invocation target - " + e);
+            e.printStackTrace();
         }
     }
 
@@ -357,8 +345,6 @@ public class AlarmSettings extends PreferenceActivity {
                 }
             }
         }
-
-        Log.d(TAG, "=======> value of extra settings=" + result);
 
         return result;
     }

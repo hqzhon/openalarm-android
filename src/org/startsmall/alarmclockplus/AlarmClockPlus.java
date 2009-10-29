@@ -47,6 +47,7 @@ public class AlarmClockPlus extends ListActivity {
 
     private static final String TAG = "AlarmClockPlus";
     private static final int MENU_ITEM_DELETE_ID = 0;
+    private Cursor mAlarmsCursor;
 
     private class AlarmAdapter extends CursorAdapter {
         private LayoutInflater mInflater;
@@ -141,13 +142,6 @@ public class AlarmClockPlus extends ListActivity {
             final CheckBox enabledCheckBox =
                 (CheckBox)view.findViewById(R.id.enabled);
 
-            // Log.d(TAG, "===> bindView(): view=" + view
-            //       + ", position=" + cursor.getPosition()
-            //       + ", id=" + id
-            //       + ", attachment=" + Integer.toHexString(attachment.hashCode())
-            //       + ", isChecked(" + enabledCheckBox + ", " + enabledCheckBox.isChecked() + ")"
-            //       + ", enabled=" + enabled);
-
             // Set checkbox's listener to null. If set, the
             // listener defined will try to update the database
             // and make bindView() called which enters an
@@ -183,7 +177,7 @@ public class AlarmClockPlus extends ListActivity {
                     TextView actionTextView =
                         (TextView)view.findViewById(R.id.action);
                     if(!TextUtils.isEmpty(actionLabel)) {
-                        actionTextView.setText(actionLabel);
+                        actionTextView.setText(actionLabel.toLowerCase());
                     } else {
                         actionTextView.setText("not set");
                     }
@@ -191,6 +185,15 @@ public class AlarmClockPlus extends ListActivity {
                     Log.d(TAG, "xxxxxxxxxxxc 1" + e);
                 }
             }
+
+            final String extra = cursor.getString(Alarms.AlarmColumns.PROJECTION_EXTRA_INDEX);
+            Log.d(TAG, "===> Bind these alarm settigs to view: id=" + id
+                  + ", label=" + label
+                  + ", time=" + hourOfDay + ":" + minutes
+                  + ", enabled=" + enabledCheckBox.isChecked()
+                  + ", repeat on=" + Alarms.RepeatWeekdays.toString(daysCode)
+                  + ", action=" + action
+                  + ", extra=" + extra);
         }
 
         @Override
@@ -201,12 +204,6 @@ public class AlarmClockPlus extends ListActivity {
 
             Bundle attachment = new Bundle();
             view.setTag(attachment);
-
-            // final int id = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ID_INDEX);
-            // Log.d(TAG, "=====> newView(): view=" + view
-            //       + ", position=" + cursor.getPosition()
-            //       + ", id=" + id
-            //       + ", attachment=" + Integer.toHexString(attachment.hashCode()));
 
             /**
              * Should follow Android's design. Click to go to
@@ -226,11 +223,9 @@ public class AlarmClockPlus extends ListActivity {
              * by getContextMenuInfo() overriden by
              * clients. Here, it is null.
              */
-            view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
+            view.setOnCreateContextMenuListener(
+                mOnCreateContextMenuListener);
 
-            //
-            // final CheckBox enabledCheckBox =
-            //     (CheckBox)view.findViewById(R.id.enabled);
             return view;
         }
     }
@@ -240,14 +235,16 @@ public class AlarmClockPlus extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        Cursor alarmsCursor =
+        // Cursor alarmsCursor =
+        //     Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
+        mAlarmsCursor =
             Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
 
         // FIXME: Still don't know why enabling this line will prevent
         // deleted row from removing from ListView. Need to
         // figure out.
         // startManagingCursor(cursor);
-        setListAdapter(new AlarmAdapter(this, alarmsCursor));
+        setListAdapter(new AlarmAdapter(this, mAlarmsCursor));
     }
 
     @Override
@@ -255,6 +252,14 @@ public class AlarmClockPlus extends ListActivity {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu, menu);
         return true;
+    }
+
+    @Override
+    public void onDestroy() {
+        // Closing the cached cursor;
+        mAlarmsCursor.close();
+
+        super.onDestroy();
     }
 
     @Override
@@ -319,12 +324,6 @@ public class AlarmClockPlus extends ListActivity {
             final String newAction = data.getStringExtra(Alarms.AlarmColumns.ACTION);
             final String newExtra = data.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
-            // Log.d(TAG, "===> Get alarm settings back: alarmId=" + alarmId
-            //       + ", label=" + newLabel
-            //       + ", time=" + newHourOfDay + ":" + newMinutes
-            //       + ", action=" + newAction
-            //       + ", extra=" + newExtra);
-
             // Get old values from database
             class GetAlarmSettings implements Alarms.OnVisitListener {
                 public String mLabel;
@@ -357,9 +356,11 @@ public class AlarmClockPlus extends ListActivity {
             GetAlarmSettings settings = new GetAlarmSettings();
             Alarms.forEachAlarm(this, alarmUri, settings);
 
-            Log.d(TAG, "===> Old values: alarmId=" + alarmId
+            Log.d(TAG, "===> Alarm settings in SQL: id=" + alarmId
                   + ", label=" + settings.mLabel
+                  + ", enabled=" + settings.mEnabled
                   + ", time=" + settings.mHour + ":" + settings.mMinutes
+                  + ", repeat_on=" + Alarms.RepeatWeekdays.toString(settings.mRepeatOnDaysCode)
                   + ", action=" + settings.mAction
                   + ", extra=" + settings.mExtra);
 
@@ -437,7 +438,6 @@ public class AlarmClockPlus extends ListActivity {
     }
 
     private void editAlarmSettings(int alarmId) {
-        Log.d(TAG, "Edit alarm settings for " + Alarms.getAlarmUri(alarmId));
         Intent intent = new Intent(this, AlarmSettings.class);
         intent.putExtra(Alarms.AlarmColumns._ID, alarmId);
         startActivityForResult(intent, OPEN_ALARM_SETTINGS_CODE);
