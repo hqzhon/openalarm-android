@@ -25,6 +25,8 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.DateFormat;
+import java.util.List;
+import java.util.LinkedList;
 import java.text.SimpleDateFormat;
 
 /**
@@ -210,6 +212,27 @@ public class Alarms {
                 }
             } else {
                 result = "No days";
+            }
+            return result;
+        }
+
+        public static List<String> toStringList(int code) {
+            List<String> result = new LinkedList<String>();
+            if(code > 0) {
+                if(code == 0x7F) { // b1111111
+                    result.add("On Everyday");
+                } else {
+                    for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
+                        if(isSet(code, i)) {
+                            result.add(
+                                DateUtils.getDayOfWeekString(
+                                    i,
+                                    DateUtils.LENGTH_MEDIUM));
+                        }
+                    }
+                }
+            } else {
+                result.add("No days");
             }
             return result;
         }

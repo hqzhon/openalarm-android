@@ -28,6 +28,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.widget.LinearLayout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
@@ -150,15 +151,38 @@ public class AlarmClockPlus extends ListActivity {
             enabledCheckBox.setOnCheckedChangeListener(null);
             enabledCheckBox.setChecked(enabled);
             enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
+            final LinearLayout repeatDaysView =
+                (LinearLayout)view.findViewById(R.id.repeat_days);
+            repeatDaysView.removeAllViews();
+            Iterator<String> days =
+                Alarms.RepeatWeekdays.toStringList(daysCode).iterator();
 
-            // Repeat days
-            final TextView repeatDays =
-                (TextView)view.findViewById(R.id.repeat_days);
-            repeatDays.setText(Alarms.RepeatWeekdays.toString(daysCode));
+            LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(2, 2, 2, 2);
+
+            while(days.hasNext()) {
+                TextView dayLabel = new TextView(context);
+                dayLabel.setClickable(false);
+                dayLabel.setBackgroundResource(R.drawable.rounded_background);
+                dayLabel.setTextAppearance(context, android.R.attr.textAppearanceSmall);
+                dayLabel.setText(days.next());
+                repeatDaysView.addView(dayLabel, params);
+                // LayoutInflater inflater =
+                //     (LayoutInflater)context.getSystemService(
+                //         Context.LAYOUT_INFLATER_SERVICE);
+                // View dayView =
+                //     inflater.inflate(
+                //         R.layout.repeat_day_label_widget,
+                //         repeatDaysView);
+            }
+
             if(daysCode == 0) {
-                repeatDays.setVisibility(View.GONE);
+                repeatDaysView.setVisibility(View.GONE);
             } else {
-                repeatDays.setVisibility(View.VISIBLE);
+                repeatDaysView.setVisibility(View.VISIBLE);
             }
 
             // Action
@@ -175,13 +199,18 @@ public class AlarmClockPlus extends ListActivity {
                         (ImageView)view.findViewById(R.id.icon);
                     actionIconView.setImageDrawable(actionIcon);
 
-                    TextView actionTextView =
-                        (TextView)view.findViewById(R.id.action);
-                    if(!TextUtils.isEmpty(actionLabel)) {
-                        actionTextView.setText(actionLabel.toLowerCase());
-                    } else {
-                        actionTextView.setText("not set");
-                    }
+                    // TODO: Should load the default icon with
+                    // question mark to indicate that this action
+                    // handler has problems so that it can't not
+                    // be loaded.
+
+                    // TextView actionTextView =
+                    //     (TextView)view.findViewById(R.id.action);
+                    // if(!TextUtils.isEmpty(actionLabel)) {
+                    //     actionTextView.setText(actionLabel.toLowerCase());
+                    // } else {
+                    //     actionTextView.setText("not set");
+                    // }
                 } catch(PackageManager.NameNotFoundException e) {
                     Log.d(TAG, "xxxxxxxxxxxc 1" + e);
                 }
