@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -201,6 +202,13 @@ public class AlarmClockPlus extends ListActivity {
             View view = mInflater.inflate(R.layout.alarm_list_item,
                                           parent,
                                           false);
+
+            // TextView actionTextView =
+            //     (TextView)view.findViewById(R.id.action);
+            // PaintDrawable actionBackground =
+            //     new PaintDrawable(R.drawable.blue);
+            // actionBackground.setCornerRadius(0.5f);
+            // actionTextView.setBackgroundDrawable(actionBackground);
 
             Bundle attachment = new Bundle();
             view.setTag(attachment);
