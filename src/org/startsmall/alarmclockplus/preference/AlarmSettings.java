@@ -216,8 +216,8 @@ public class AlarmSettings extends PreferenceActivity {
                            (String)mLabelPreference.getPreferenceValue());
         outState.putInt(Alarms.AlarmColumns.REPEAT_DAYS,
                         (Integer)mRepeatOnPreference.getPreferenceValue());
-        outState.putString(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
-                           (String)mTimePreference.getPreferenceValue());
+        outState.putInt(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
+                        (Integer)mTimePreference.getPreferenceValue());
         outState.putString(Alarms.AlarmColumns.ACTION,
                            (String)mActionPreference.getPreferenceValue());
 
@@ -305,9 +305,8 @@ public class AlarmSettings extends PreferenceActivity {
         for(int i = 0; i < numberOfPreferences; i++) {
             Preference preference = category.getPreference(i);
 
-            String key = preference.getKey();
-            if(!TextUtils.isEmpty(key) &&
-               sharedPreferences.contains(key)) {
+            if(preference.hasKey()) {
+                String key = preference.getKey();
 
                 try {
                     String value = sharedPreferences.getString(key, "");

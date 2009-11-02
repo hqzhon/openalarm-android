@@ -14,8 +14,10 @@ import org.startsmall.alarmclockplus.R;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.media.RingtoneManager;
 import android.preference.CheckBoxPreference;
 import android.preference.PreferenceCategory;
+import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -24,7 +26,8 @@ import java.util.regex.Pattern;
 
 public class AlarmActionHandler extends ActionHandler {
     private static final String TAG = "AlarmActionHandler";
-    private static final String KEY = "vibrate";
+    private static final String VIBRATE_KEY = "vibrate";
+    private static final String RINGTONE_KEY = "ringtone";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -43,7 +46,7 @@ public class AlarmActionHandler extends ActionHandler {
                     continue;
                 }
 
-                String value = parseExtra(values[i], KEY);
+                String value = parseExtra(values[i], VIBRATE_KEY);
                 if(!TextUtils.isEmpty(value)) {
                     vibrate = Boolean.parseBoolean(value);
                 }
@@ -59,10 +62,21 @@ public class AlarmActionHandler extends ActionHandler {
     public void addMyPreferences(final Context context,
                                  final PreferenceCategory category,
                                  final String defaultValue) {
+        // Should this alarm vibrates.
         CheckBoxPreference vibratePref = new CheckBoxPreference(context);
-        vibratePref.setKey(KEY);
+        vibratePref.setKey(VIBRATE_KEY);
         vibratePref.setPersistent(true);
         vibratePref.setTitle(R.string.alarm_extra_settings_vibrate_title);
+
+        // Ringtone;
+        RingtonePreference ringtonePref = new RingtonePreference(context);
+        ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALARM);
+        ringtonePref.setShowDefault(false);
+        ringtonePref.setShowSilent(false);
+        ringtonePref.setTitle("Set Ringtone");
+        ringtonePref.setKey(RINGTONE_KEY);
+
+        category.addPreference(ringtonePref);
 
         if(!TextUtils.isEmpty(defaultValue)) {
             String[] values = TextUtils.split(defaultValue, ";");
@@ -71,7 +85,7 @@ public class AlarmActionHandler extends ActionHandler {
                     continue;
                 }
 
-                String value = parseExtra(values[i], KEY);
+                String value = parseExtra(values[i], VIBRATE_KEY);
                 if(!TextUtils.isEmpty(value)) {
                     vibratePref.setChecked(Boolean.parseBoolean(value));
                 }

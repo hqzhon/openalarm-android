@@ -9,7 +9,7 @@
  */
 package org.startsmall.alarmclockplus;
 
-import org.startsmall.alarmclockplus.preference.*;
+import org.startsmall.alarmclockplus.preference.AlarmSettings;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ComponentName;
