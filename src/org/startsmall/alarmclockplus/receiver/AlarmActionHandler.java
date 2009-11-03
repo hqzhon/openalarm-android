@@ -90,20 +90,8 @@ public class AlarmActionHandler extends ActionHandler {
             }
         }
 
-        // @todo: Fire up another Activity to play ringtone and
-        // vibrate.  if no ringtone and vibrate set in the
-        // Intent, play default ringtone and no vibration.
-
-
-
-
-
-
-
-
-
-
-
+        intent.setClass(context, FireAlarm.class);
+        startActivity(intent);
     }
 
     @Override
