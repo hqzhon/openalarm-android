@@ -26,11 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlarmActionPreference extends ListPreference {
-    public interface OnSelectActionListener {
+    public interface IOnSelectActionListener {
         void onSelectAction(String handlerClassName);
     }
 
-    private OnSelectActionListener mOnSelectActionListener;
+    private IOnSelectActionListener mOnSelectActionListener;
     private DialogInterface.OnClickListener mOnClickListener =
         new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -48,7 +48,7 @@ public class AlarmActionPreference extends ListPreference {
         super(context, attrs);
     }
 
-    public void setOnSelectActionListener(OnSelectActionListener listener) {
+    public void setOnSelectActionListener(IOnSelectActionListener listener) {
         mOnSelectActionListener = listener;
     }
 

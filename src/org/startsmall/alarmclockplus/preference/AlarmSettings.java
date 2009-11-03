@@ -59,7 +59,7 @@ public class AlarmSettings extends PreferenceActivity {
             (AlarmActionPreference)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_action_key));
         mActionPreference.setOnSelectActionListener(
-            new AlarmActionPreference.OnSelectActionListener() {
+            new AlarmActionPreference.IOnSelectActionListener() {
                 public void onSelectAction(String handlerClassName) {
                     inflateExtraSettings(handlerClassName, null);
                 }
@@ -221,9 +221,12 @@ public class AlarmSettings extends PreferenceActivity {
         outState.putString(Alarms.AlarmColumns.ACTION,
                            (String)mActionPreference.getPreferenceValue());
 
+        String extra = generateValueOfExtraSettings(mExtraSettingsCategory);
+        Log.d(TAG, "================> this extra settings='" +
+              extra + "'");
         outState.putString(
             getString(R.string.alarm_settings_extra_category_key),
-            generateValueOfExtraSettings(mExtraSettingsCategory));
+            extra);
     }
 
     protected void onRestoreInstanceState(Bundle outState) {

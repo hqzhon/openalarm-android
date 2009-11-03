@@ -15,16 +15,56 @@ import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.media.RingtoneManager;
+import android.media.Ringtone;
+import android.net.Uri;
+import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.PreferenceCategory;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.AttributeSet;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AlarmActionHandler extends ActionHandler {
+
+    interface IRingtoneChangedListener {
+        public void onRingtoneChanged(Uri uri);
+    }
+
+    private class MyRingtonePreference extends RingtonePreference {
+        IRingtoneChangedListener mRingtoneChangedListener;
+
+        public MyRingtonePreference(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
+            mRingtoneChangedListener = listener;
+        }
+
+        public Uri getRingtoneUri() {
+            return Uri.parse(getPersistedString(""));
+        }
+
+        public void setRingtoneUri(Uri ringtoneUri) {
+            persistString(ringtoneUri.toString());
+        }
+
+        protected void onSaveRingtone(Uri ringtoneUri) {
+            setRingtoneUri(ringtoneUri);
+            if(mRingtoneChangedListener != null) {
+                mRingtoneChangedListener.onRingtoneChanged(ringtoneUri);
+            }
+        }
+
+        protected Uri onRestoreRingtone() {
+            return getRingtoneUri();
+        }
+    }
+
     private static final String TAG = "AlarmActionHandler";
     private static final String VIBRATE_KEY = "vibrate";
     private static final String RINGTONE_KEY = "ringtone";
@@ -38,38 +78,48 @@ public class AlarmActionHandler extends ActionHandler {
         // Parse extra settings out of combined value.
         final String extra =
             intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        boolean vibrate = false;
         if(!TextUtils.isEmpty(extra)) {
-            String[] values = TextUtils.split(extra, ";");
-            for(int i = 0; i < values.length; i++) {
-                if(TextUtils.isEmpty(values[i])) {
-                    continue;
-                }
+            Bundle values = parsePreferenceValuesFromExtra(extra);
 
-                String value = parseExtra(values[i], VIBRATE_KEY);
-                if(!TextUtils.isEmpty(value)) {
-                    vibrate = Boolean.parseBoolean(value);
-                }
+            Boolean vibrate = values.getBoolean(VIBRATE_KEY, false);
+            intent.putExtra(VIBRATE_KEY, vibrate);
+
+            String rtString = values.getString(RINGTONE_KEY);
+            if(rtString != null) {
+                intent.putExtra(RINGTONE_KEY, rtString);
             }
         }
 
-        Log.v(TAG, "=========> AlarmActionHandler.onReceive(): "
-              + "vibrate=" + vibrate);
+        // @todo: Fire up another Activity to play ringtone and
+        // vibrate.  if no ringtone and vibrate set in the
+        // Intent, play default ringtone and no vibration.
+
+
+
+
+
+
+
+
+
+
 
     }
 
     @Override
     public void addMyPreferences(final Context context,
                                  final PreferenceCategory category,
-                                 final String defaultValue) {
-        // Should this alarm vibrates.
+                                 final String extra) {
+        // Vibrate
         CheckBoxPreference vibratePref = new CheckBoxPreference(context);
         vibratePref.setKey(VIBRATE_KEY);
         vibratePref.setPersistent(true);
         vibratePref.setTitle(R.string.alarm_extra_settings_vibrate_title);
+        category.addPreference(vibratePref);
 
         // Ringtone;
-        RingtonePreference ringtonePref = new RingtonePreference(context);
+        MyRingtonePreference ringtonePref = new MyRingtonePreference(context,
+            null);
         ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALARM);
         ringtonePref.setShowDefault(false);
         ringtonePref.setShowSilent(false);
@@ -78,29 +128,45 @@ public class AlarmActionHandler extends ActionHandler {
 
         category.addPreference(ringtonePref);
 
-        if(!TextUtils.isEmpty(defaultValue)) {
-            String[] values = TextUtils.split(defaultValue, ";");
-            for(int i = 0; i < values.length; i++) {
-                if(TextUtils.isEmpty(values[i])) {
-                    continue;
-                }
+        if(!TextUtils.isEmpty(extra)) {
+            Bundle result = parsePreferenceValuesFromExtra(extra);
 
-                String value = parseExtra(values[i], VIBRATE_KEY);
-                if(!TextUtils.isEmpty(value)) {
-                    vibratePref.setChecked(Boolean.parseBoolean(value));
-                }
+            boolean vibrate = result.getBoolean(VIBRATE_KEY, false);
+            vibratePref.setChecked(vibrate);
+
+            String rtString = result.getString(RINGTONE_KEY);
+            if(rtString != null) {
+                Uri rtUri = Uri.parse(rtString);
+                ringtonePref.setRingtoneUri(rtUri);
+                Ringtone ringtone =
+                    RingtoneManager.getRingtone(context, rtUri);
+                ringtonePref.setSummary(ringtone.getTitle(context));
             }
         }
-        category.addPreference(vibratePref);
     }
 
-    // Generate patten: vibrate={true|false}
-    private String parseExtra(String value, String key) {
-        String result = "";
-        Pattern p = Pattern.compile(key + "\\s*=(\\w)+$");
-        Matcher m = p.matcher(value);
-        if(m.matches()) {
-            result = m.group(0);
+    // Generate patten: key=value
+    private Bundle parsePreferenceValuesFromExtra(String extra) {
+        Bundle result = new Bundle();
+        String[] values = TextUtils.split(extra, ";");
+        for(String value : values) {
+            if(TextUtils.isEmpty(value) ||
+               !value.matches("(\\w+)=.*")) {
+                continue;
+            }
+
+            String[] elems = value.split("=");
+            if(elems[0].equals(VIBRATE_KEY)) {
+                boolean vibrate = false;
+                if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                    vibrate = Boolean.parseBoolean(elems[1]);
+                }
+                result.putBoolean(VIBRATE_KEY, vibrate);
+            } else if(elems[0].equals(RINGTONE_KEY)) {
+                if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                    result.putString(RINGTONE_KEY, elems[1]);
+                }
+            }
         }
         return result;
     }

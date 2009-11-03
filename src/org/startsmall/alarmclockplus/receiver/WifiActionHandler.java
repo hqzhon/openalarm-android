@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.preference.PreferenceCategory;
 import android.text.TextUtils;
 import android.util.Log;
@@ -42,12 +43,10 @@ public class WifiActionHandler extends ActionHandler {
         // Parse extra settings out of combined value.
         final String extra = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
         if(!TextUtils.isEmpty(extra)) {
-            String state = parseStateFromExtra(extra, KEY);
-            if(state.equals("On")) {
-                setWifiEnabled(context, true);
-            } else if(state.equals("Off")) {
-                setWifiEnabled(context, false);
-            }
+            Bundle result = parsePreferenceValuesFromExtra(extra);
+
+            boolean state = result.getBoolean(KEY, false);
+            setWifiEnabled(context, state);
         }
     }
 
@@ -112,10 +111,12 @@ public class WifiActionHandler extends ActionHandler {
         onOffPref.setTitle(R.string.alarm_extra_settings_wifi_title);
 
         if(!TextUtils.isEmpty(defaultValue)) {
-            String state = parseStateFromExtra(defaultValue, KEY);
-            if(state.equals("On")) {
+            Bundle result = parsePreferenceValuesFromExtra(defaultValue);
+
+            boolean state = result.getBoolean(KEY, false);
+            if(state) {
                 onOffPref.setPreferenceValueIndex(0);
-            } else if(state.equals("Off")) {
+            } else {
                 onOffPref.setPreferenceValueIndex(1);
             }
         }
@@ -137,22 +138,26 @@ public class WifiActionHandler extends ActionHandler {
         }
     }
 
-    // Generate patten: key=value
-    private String parseStateFromExtra(String appData, String key) {
-        String[] values = TextUtils.split(appData, ";");
-        for(int i = 0; i < values.length; i++) {
-            String value = values[i];
+    private Bundle parsePreferenceValuesFromExtra(String extra) {
+        Bundle result = new Bundle();
+        String[] values = TextUtils.split(extra, ";");
+        for(String value : values) {
             if(TextUtils.isEmpty(value) ||
-               !value.matches(key + "=(\\w+)")) {
+               !value.matches("(\\w+)=.*")) {
                 continue;
             }
 
-            Pattern p = Pattern.compile("=\\w+");
-            Matcher m = p.matcher(value);
-            if(m.find()) {
-                return m.group().substring(1);
+            String[] elems = value.split("=");
+            if(elems[0].equals(KEY)) {
+                boolean state = false;
+                if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                    state = Boolean.parseBoolean(elems[1]);
+                }
+                result.putBoolean(KEY, state);
             }
         }
-        return "";
+        return result;
     }
+
+
 }
