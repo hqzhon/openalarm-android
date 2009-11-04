@@ -46,7 +46,6 @@
 
     <string name="alarm_settings_extra_category_key">extra_settings</string>
 
-
     <!-- Alarm activation toast format -->
     <string name="alarm_activated_toast_text">Alarm is set for %s</string>
 
@@ -60,7 +59,14 @@
     <string name="alarm_extra_settings_vibrate_off_summary">Vibrate Off</string>
     <string name="alarm_extra_settings_vibrate_key">vibrate</string>
 
-    <string name="alarm_extra_settings_wifi_title">Set Wi-Fi </string>
+    <string name="alarm_extra_settings_wifi_title">Set Wi-Fi</string>
     <string name="alarm_extra_settings_wifi_summary">On</string>
     <string name="alarm_extra_settings_wifi_key">wifi</string>
+
+    <!-- AlarmWakeup -->
+    <string name="fire_alarm_snooze_text">Snooze</string>
+    <string name="fire_alarm_dismiss_text">Dismiss</string>
+
+
+
 </resources>

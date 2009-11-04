@@ -170,13 +170,6 @@ public class AlarmClockPlus extends ListActivity {
                 dayLabel.setTextAppearance(context, android.R.attr.textAppearanceSmall);
                 dayLabel.setText(days.next());
                 repeatDaysView.addView(dayLabel, params);
-                // LayoutInflater inflater =
-                //     (LayoutInflater)context.getSystemService(
-                //         Context.LAYOUT_INFLATER_SERVICE);
-                // View dayView =
-                //     inflater.inflate(
-                //         R.layout.repeat_day_label_widget,
-                //         repeatDaysView);
             }
 
             if(daysCode == 0) {

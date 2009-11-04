@@ -20,14 +20,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
-// interface Persistable {
-//     Object parsePreferenceValue(String value);
-//     String toPreferenceValue(Object obj);
-// }
-
-// interface Dialogable {
-// }
-
 public abstract class MyPreference extends Preference {
     private String mTag;
     private String mValue;
