@@ -51,6 +51,9 @@ public class AlarmActionHandler extends ActionHandler {
 
         public void setRingtoneUri(Uri ringtoneUri) {
             persistString(ringtoneUri.toString());
+            Ringtone ringtone =
+                RingtoneManager.getRingtone(getContext(), ringtoneUri);
+            setSummary(ringtone.getTitle(getContext()));
         }
 
         protected void onSaveRingtone(Uri ringtoneUri) {
@@ -90,8 +93,9 @@ public class AlarmActionHandler extends ActionHandler {
             }
         }
 
-        intent.setClass(context, FireAlarm.class);
-        startActivity(intent);
+        intent.setClass(context, FireAlarm.class)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     @Override
