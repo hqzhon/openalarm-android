@@ -47,11 +47,10 @@ public class FireAlarm extends Activity {
                 public void onClick(View v) {
                     // Save info to the SharedPreference to
                     // indicate that this alarm is snoozed.
-                    snoozeAlarm(alarmId, atTimeInMillis);
+                    Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 7);
 
 
                     // Stop the playback of ringtone.
-
 
 
                     finish();
@@ -68,37 +67,6 @@ public class FireAlarm extends Activity {
                     // stop the playback of ringtone;
                 }
             });
-    }
-
-    private void snoozeAlarm(final int alarmId,
-                             final long atTimeInMillis) {
-        Log.d(TAG, "=============> Snooze alarm with id=" + alarmId);
-
-        SharedPreferences preferences =
-            getSharedPreferences("SnoozedAlarm", 0);
-        SharedPreferences.Editor preferenceEditor = preferences.edit();
-
-        // Snooze this alarm
-        preferenceEditor.putInt("id", alarmId);
-
-
-        // // Start with current date and time.
-        // Calendar calendar = getCalendarInstance();
-
-        // // Snooze with default snooze period
-        // calendar.add(Calendar.MINUTE, 7);
-
-        // long time = calendar.getTimeInMillis();
-
-
-
-
-
-
-
-
-        preferenceEditor.commit();
-
     }
 
     private void dismissAlarm(final int alarmId) {

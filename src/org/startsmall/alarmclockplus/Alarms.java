@@ -16,6 +16,7 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
@@ -401,10 +402,42 @@ public class Alarms {
 
         setNotification(context, alarmIntent, enabled);
 
-        Log.d(TAG, "===> setAlarm(): " + (enabled ? "Activate" : "Deactivate") + " alarm - " + alarmUri);
+        Log.d(TAG, "===> setAlarm(): "
+              + (enabled ? "Activate" : "Deactivate")
+              + " alarm - " + alarmUri);
     }
 
-    public static void scheduleAlarm(Context context, Intent intent) {
+    public static void snoozeAlarm(final Context context,
+                                   final Intent intent,
+                                   final int moreMinutes) {
+        // Cancel the old alarm.
+        intent.removeExtra(AlarmColumns.AT_TIME_IN_MILLIS);
+        scheduleAlarm(context, intent);
+
+        // Arrange new time for snoozed alarm
+        Calendar calendar = getCalendarInstance();
+        calendar.add(Calendar.MINUTE, 7);
+
+        long newAtTimeInMillis = calendar.getTimeInMillis();
+        intent.putExtra(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
+        scheduleAlarm(context, intent);
+
+        // Put info into SharedPreferences for the snoozed alarm.
+        final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
+        Log.d(TAG, "=============> Snooze alarm " + alarmId
+              + " to " + calendar);
+
+        SharedPreferences preferences =
+            context.getSharedPreferences("SnoozedAlarm", 0);
+        SharedPreferences.Editor preferenceEditor = preferences.edit();
+
+        preferenceEditor.putInt(AlarmColumns._ID, alarmId);
+        preferenceEditor.putLong(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
+
+        preferenceEditor.commit();
+    }
+
+    private static void scheduleAlarm(Context context, Intent intent) {
         AlarmManager alarmManager =
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         if(intent.hasExtra(AlarmColumns.AT_TIME_IN_MILLIS)) {
