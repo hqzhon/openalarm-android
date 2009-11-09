@@ -21,6 +21,7 @@ import android.provider.BaseColumns;
 import android.net.Uri;
 import android.util.Log;
 import android.text.format.DateUtils;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import java.util.Calendar;
@@ -331,11 +332,11 @@ public class Alarms {
     }
 
     /**
+     * Insert a new alarm record into database.
      *
+     * @param context Context this is calling from.
      *
-     * @param context
-     *
-     * @return
+     * @return Uri of the newly inserted alarm.
      */
     public synchronized static Uri newAlarm(Context context) {
         return context.getContentResolver().insert(
@@ -385,55 +386,57 @@ public class Alarms {
     public static void setAlarm(final Context context,
                                 final Uri alarmUri,
                                 final boolean enabled) {
-        Context appContext = context.getApplicationContext();
-        int alarmId = Integer.parseInt(alarmUri.getLastPathSegment());
-        NotificationManager nm =
-            (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
-
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled ? 1 : 0);
+
+        Intent alarmIntent = prepareIntent(context, alarmUri, enabled);
+        scheduleAlarm(context, alarmIntent);
+
         if(enabled) {
-            long newAtTimeInMillis = activateAlarm(context, alarmUri);
+            long newAtTimeInMillis =
+                alarmIntent.getLongExtra(AlarmColumns.AT_TIME_IN_MILLIS, 0);
             newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
-
-
-            Intent alarmChanged = new Intent(Intent.ACTION_ALARM_CHANGED);
-            alarmChanged.putExtra("alarmSet", enabled);
-            context.sendBroadcast(alarmChanged);
-
-
-            // Class<?> handler;
-            // try {
-            //     handler = Class.forName(context.getPackageName() + ".AlarmClockPlus");
-            // } catch(ClassNotFoundException e) {
-            //     return;
-            // }
-
-            // Intent notificationIntent = new Intent(context, handler);
-            // PendingIntent pendingIntent = PendingIntent.getActivity(
-            //     context, 0, notificationIntent, 0);
-            // Notification notification = new Notification(
-            //     R.drawable.stat_notify_alarm,
-            //     "Hello",
-            //     System.currentTimeMillis());
-            // notification.flags = Notification.FLAG_AUTO_CANCEL|Notification.FLAG_ONGOING_EVENT ;
-            // notification.setLatestEventInfo(appContext,
-            //                                 "My notification title",
-            //                                 "Hello World!",
-            //                                 pendingIntent);
-            // nm.notify(alarmId, notification);
-        } else {
-            Log.d(TAG, "===> setAlarm(): deactivate alarm '" + alarmUri);
-            deactivateAlarm(context, alarmUri);
-            // nm.cancel(alarmId);
         }
         updateAlarm(context, alarmUri, newValues);
+
+        setNotification(context, alarmIntent, enabled);
+
+        Log.d(TAG, "===> setAlarm(): " + (enabled ? "Activate" : "Deactivate") + " alarm - " + alarmUri);
     }
 
-    private synchronized static long activateAlarm(final Context context,
-                                                   final Uri alarmUri) {
-        class ActivateAlarm implements OnVisitListener {
-            public long mAtTimeInMillis;
+    public static void scheduleAlarm(Context context, Intent intent) {
+        AlarmManager alarmManager =
+            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        if(intent.hasExtra(AlarmColumns.AT_TIME_IN_MILLIS)) {
+            long atTimeInMillis =
+                intent.getLongExtra(AlarmColumns.AT_TIME_IN_MILLIS, 0);
+
+            alarmManager.set(AlarmManager.RTC_WAKEUP,
+                             atTimeInMillis,
+                             PendingIntent.getBroadcast(
+                                 context, 0, intent,
+                                 PendingIntent.FLAG_CANCEL_CURRENT));
+        } else {
+            alarmManager.cancel(PendingIntent.getBroadcast(
+                                    context, 0, intent,
+                                    PendingIntent.FLAG_CANCEL_CURRENT));
+        }
+    }
+
+    public static String formatDate(String pattern, Calendar calendar) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
+        return dateFormatter.format(calendar.getTime());
+    }
+
+    private static synchronized Intent prepareIntent(final Context context,
+                                                     final Uri alarmUri,
+                                                     final boolean state) {
+        class FillIntent implements OnVisitListener {
+            private Intent mIntent;
+
+            FillIntent(Intent i) {
+                mIntent = i;
+            }
 
             public void onVisit(final Context context,
                                 final int id,
@@ -445,85 +448,30 @@ public class Alarms {
                                 final boolean enabled,
                                 final String action,
                                 final String extra) {
-                Intent intent = new Intent(DISPATCH_ACTION);
-                intent.putExtra(Alarms.AlarmColumns._ID, id);
-                intent.putExtra(Alarms.AlarmColumns.LABEL, label);
-                intent.putExtra(Alarms.AlarmColumns.ACTION, action);
+                mIntent.setData(getAlarmUri(id));
+                if(!TextUtils.isEmpty(action)) {
+                    mIntent.setClassName(context, action);
+                }
 
-                intent.setClassName(context, action);
-                intent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
-
-                AlarmManager alarmManager =
-                    (AlarmManager)context.getSystemService(
-                        Context.ALARM_SERVICE);
-
-                mAtTimeInMillis =
-                    calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
-
-                intent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, mAtTimeInMillis);
-
-                // NotificationManager notificationManager =
-                //     (NotificationManager)context.getSystemService(
-                //                   Context.NOTIFICATION_SERVICE);
-
-                alarmManager.set(AlarmManager.RTC_WAKEUP,
-                                 mAtTimeInMillis,
-                                 PendingIntent.getBroadcast(
-                                     context, 0, intent,
-                                     PendingIntent.FLAG_CANCEL_CURRENT));
-
-                // Prepare for notification and toast message
-                // Date date = new Date(mAtTimeInMillis);
-                DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-                                                                       DateFormat.MEDIUM);
-                String text =
-                    String.format(context.getString(R.string.alarm_activated_toast_text),
-                                  dateFormat.format(new Date(mAtTimeInMillis)));
-                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+                if(state) {
+                    mIntent.putExtra(Alarms.AlarmColumns._ID, id);
+                    mIntent.putExtra(Alarms.AlarmColumns.LABEL, label);
+                    mIntent.putExtra(Alarms.AlarmColumns.ACTION, action);
+                    mIntent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
+                    long atTimeInMillis =
+                        calculateAlarmAtTimeInMillis(hour, minutes,
+                                                     repeatOnDaysCode);
+                    mIntent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
+                                     atTimeInMillis);
+                }
             }
         }
 
-        ActivateAlarm alarmSettings = new ActivateAlarm();
-        forEachAlarm(context, alarmUri, alarmSettings);
-        return alarmSettings.mAtTimeInMillis;
-    }
+        Intent intent = new Intent(DISPATCH_ACTION);
+        FillIntent fillIntent = new FillIntent(intent);
+        forEachAlarm(context, alarmUri, fillIntent);
 
-    private static void deactivateAlarm(final Context context,
-                                        final Uri alarmUri) {
-        forEachAlarm(
-            context, alarmUri,
-            new OnVisitListener() {
-                public void onVisit(Context context,
-                                    final int id,
-                                    final String label,
-                                    final int hour,
-                                    final int minutes,
-                                    final int atTimeInMillis,
-                                    final int repeatOnDaysCode,
-                                    final boolean enabled,
-                                    final String action,
-                                    final String extra) {
-                    Intent intent = new Intent(DISPATCH_ACTION);
-                    intent.putExtra(Alarms.AlarmColumns._ID, id);
-                    intent.putExtra(Alarms.AlarmColumns.LABEL, label);
-                    intent.putExtra(Alarms.AlarmColumns.ACTION, action);
-                    intent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
-
-                    AlarmManager alarmManager =
-                        (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.cancel(
-                        PendingIntent.getBroadcast(
-                            context, 0, intent,
-                            PendingIntent.FLAG_CANCEL_CURRENT));
-                }
-            });
-
-        // TODO: Cancel notification
-    }
-
-    public static String formatDate(String pattern, Calendar calendar) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
-        return dateFormatter.format(calendar.getTime());
+        return intent;
     }
 
     private static long calculateAlarmAtTimeInMillis(final int hourOfDay,
@@ -535,10 +483,11 @@ public class Alarms {
         int nowHourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int nowMinutes = calendar.get(Calendar.MINUTE);
 
+        // If alarm is set at the past, move calendar to the same
+        // time tomorrow and then calculate the next time of
+        // alarm's going off.
         if((hourOfDay < nowHourOfDay) ||
            ((hourOfDay == nowHourOfDay) && (minutes < nowMinutes))) {
-            // If this alarm is behind current time. Move
-            // calendar to tomorrow.
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
@@ -561,4 +510,57 @@ public class Alarms {
         Log.d(TAG, "===> next alarm " + calendar.getTimeInMillis());
         return calendar.getTimeInMillis();
     }
+
+    private static void setNotification(final Context context, final Intent alarmIntent, final boolean enabled) {
+
+        // Context appContext = context.getApplicationContext();
+        // int alarmId = Integer.parseInt(alarmUri.getLastPathSegment());
+        // NotificationManager nm =
+        //     (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // FIXME: It's strange that I can see this action
+        // called in source code but I can't call it myself.
+        // Intent alarmChanged = new Intent(Intent.ACTION_ALARM_CHANGED);
+        // alarmChanged.putExtra("alarmSet", enabled);
+        // context.sendBroadcast(alarmChanged);
+
+        // TODO: Do notification by myself.
+        // Class<?> handler;
+        // try {
+        //     handler = Class.forName(context.getPackageName() + ".AlarmClockPlus");
+        // } catch(ClassNotFoundException e) {
+        //     return;
+        // }
+
+        // Intent notificationIntent = new Intent(context, handler);
+        // PendingIntent pendingIntent = PendingIntent.getActivity(
+        //     context, 0, notificationIntent, 0);
+        // Notification notification = new Notification(
+        //     R.drawable.stat_notify_alarm,
+        //     "Hello",
+        //     System.currentTimeMillis());
+        // notification.flags = Notification.FLAG_AUTO_CANCEL|Notification.FLAG_ONGOING_EVENT ;
+        // notification.setLatestEventInfo(appContext,
+        //                                 "My notification title",
+        //                                 "Hello World!",
+        //                                 pendingIntent);
+        // nm.notify(alarmId, notification);
+
+        // nm.cancel(alarmId);
+
+        // Display a toast
+        if(enabled) {
+            long newAtTimeInMillis =
+                alarmIntent.getLongExtra(AlarmColumns.AT_TIME_IN_MILLIS, 0);
+
+            DateFormat dateFormat =
+                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+            String text =
+                String.format(
+                    context.getString(R.string.alarm_activated_toast_text),
+                    dateFormat.format(new Date(newAtTimeInMillis)));
+            Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+        }
+    }
+
 }

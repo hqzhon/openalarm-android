@@ -84,21 +84,31 @@ public class AlarmActionHandler extends ActionHandler {
         if(!TextUtils.isEmpty(extra)) {
             Bundle values = parsePreferenceValuesFromExtra(extra);
 
+            // Vibrate or not?
             Boolean vibrate = values.getBoolean(VIBRATE_KEY, false);
             intent.putExtra(VIBRATE_KEY, vibrate);
 
+            // Get ringtone URI.
             String rtString = values.getString(RINGTONE_KEY);
             if(rtString != null) {
                 intent.putExtra(RINGTONE_KEY, rtString);
             }
         }
 
+        // Start a parent activity that has a brand new stack.
         intent.setClass(context, FireAlarm.class)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         context.startActivity(intent);
     }
 
+    /**
+     * Add preferences of this handler into Extra Settings.
+     *
+     * @param context
+     * @param category
+     * @param extra
+     */
     @Override
     public void addMyPreferences(final Context context,
                                  final PreferenceCategory category,
