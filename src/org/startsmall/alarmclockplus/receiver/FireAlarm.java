@@ -25,13 +25,15 @@ public class FireAlarm extends Activity {
 
         Log.d(TAG, "=================> FireAlarm.onCreate()");
 
+        // Extras in the intent.
+        // final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        // final String label = intent.getStringExtra(Alarms.AlarmColumns.LABEL);
+
         // TODO:
 
 
-
-
-
-
+        // Snooze this alarm makes the alarm to be postponded and
+        // saved as a SharedPreferences.
 
 
 

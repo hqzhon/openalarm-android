@@ -95,6 +95,7 @@ public class AlarmActionHandler extends ActionHandler {
 
         intent.setClass(context, FireAlarm.class)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         context.startActivity(intent);
     }
 

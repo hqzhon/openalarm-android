@@ -10,8 +10,9 @@
 package org.startsmall.alarmclockplus;
 
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
-//import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -384,14 +385,47 @@ public class Alarms {
     public static void setAlarm(final Context context,
                                 final Uri alarmUri,
                                 final boolean enabled) {
+        Context appContext = context.getApplicationContext();
+        int alarmId = Integer.parseInt(alarmUri.getLastPathSegment());
+        NotificationManager nm =
+            (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled ? 1 : 0);
         if(enabled) {
             long newAtTimeInMillis = activateAlarm(context, alarmUri);
             newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
+
+
+            Intent alarmChanged = new Intent(Intent.ACTION_ALARM_CHANGED);
+            alarmChanged.putExtra("alarmSet", enabled);
+            context.sendBroadcast(alarmChanged);
+
+
+            // Class<?> handler;
+            // try {
+            //     handler = Class.forName(context.getPackageName() + ".AlarmClockPlus");
+            // } catch(ClassNotFoundException e) {
+            //     return;
+            // }
+
+            // Intent notificationIntent = new Intent(context, handler);
+            // PendingIntent pendingIntent = PendingIntent.getActivity(
+            //     context, 0, notificationIntent, 0);
+            // Notification notification = new Notification(
+            //     R.drawable.stat_notify_alarm,
+            //     "Hello",
+            //     System.currentTimeMillis());
+            // notification.flags = Notification.FLAG_AUTO_CANCEL|Notification.FLAG_ONGOING_EVENT ;
+            // notification.setLatestEventInfo(appContext,
+            //                                 "My notification title",
+            //                                 "Hello World!",
+            //                                 pendingIntent);
+            // nm.notify(alarmId, notification);
         } else {
             Log.d(TAG, "===> setAlarm(): deactivate alarm '" + alarmUri);
             deactivateAlarm(context, alarmUri);
+            // nm.cancel(alarmId);
         }
         updateAlarm(context, alarmUri, newValues);
     }

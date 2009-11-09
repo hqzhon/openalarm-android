@@ -33,5 +33,8 @@
       <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
+    <style name="Theme.Dialog.NoTitle" parent="@android:style/Theme.Dialog">
+        <item name="android:windowNoTitle">false</item>
+    </style>
 </resources>
 

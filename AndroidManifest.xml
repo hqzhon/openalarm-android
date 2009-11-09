@@ -29,7 +29,7 @@
       </activity>
 
       <activity android:name=".receiver.FireAlarm"
-                android:theme="@android:style/Theme.NoTitleBar">
+                android:theme="@style/Theme.Dialog.NoTitle">
       </activity>
 
       <receiver android:name=".receiver.InitReceiver"
