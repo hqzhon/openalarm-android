@@ -446,6 +446,9 @@ public class Alarms {
             if(mEnabled) {
                 mIntent.putExtra(Alarms.AlarmColumns._ID, id);
                 mIntent.putExtra(Alarms.AlarmColumns.LABEL, label);
+                mIntent.putExtra(Alarms.AlarmColumns.HOUR, hour);
+                mIntent.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
+                mIntent.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnDaysCode);
                 mIntent.putExtra(Alarms.AlarmColumns.HANDLER, handler);
                 mIntent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
                 long atTimeInMillis =
@@ -580,8 +583,8 @@ public class Alarms {
     }
 
     public static long calculateAlarmAtTimeInMillis(final int hourOfDay,
-                                                     final int minutes,
-                                                     final int repeatOnCode) {
+                                                    final int minutes,
+                                                    final int repeatOnCode) {
         // Start with current date and time.
         Calendar calendar = getCalendarInstance();
 

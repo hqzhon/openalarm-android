@@ -16,10 +16,11 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
 import android.util.Log;
-import android.widget.Button;
 import android.view.View;
+import android.widget.Button;
+
+import java.util.Calendar;
 
 public class FireAlarm extends Activity {
     private static final String TAG = "FireAlarm";
@@ -79,17 +80,32 @@ public class FireAlarm extends Activity {
                             getPackageName() + ".receiver.ActionDispatcher");
 
         final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
-        final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
+        // If user clicks dimiss button in this minute, the
+        // calculateAlarmAtTimeInMillis() will return the same
+        // hour and minutes which causes this Activity to show up
+        // continuously.
+        final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1) - 1;
         final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
+
+        Log.d(TAG, "===> hourOfDay=" + hourOfDay
+              + ", minutes=" + minutes
+              + ", repeat=" + Alarms.RepeatWeekdays.toString(repeatOnDaysCode));
+
         long atTimeInMillis =
             Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes,
                                                 repeatOnDaysCode);
         intent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
         Alarms.setAlarm(this, intent, true);
+        Calendar calendar = Alarms.getCalendarInstance();
+        calendar.setTimeInMillis(atTimeInMillis);
+        Log.d(TAG, "===> dismissAlarm(): new alarm at " +
+              Alarms.formatDate("HH:mm", calendar));
+
 
         ContentValues newValues = new ContentValues();
         newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
         Alarms.updateAlarm(this, Alarms.getAlarmUri(alarmId), newValues);
         Alarms.setNotification(this, intent, true);
+
     }
 }
