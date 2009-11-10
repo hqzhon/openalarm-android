@@ -28,7 +28,7 @@ import android.util.AttributeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AlarmActionHandler extends ActionHandler {
+public class AlarmActionHandler extends AbsActionHandler {
 
     interface IRingtoneChangedListener {
         public void onRingtoneChanged(Uri uri);

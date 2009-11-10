@@ -74,8 +74,7 @@ public class AlarmActionPreference extends ListPreference {
     @Override
     protected void generateListItems(ArrayList<CharSequence> entries,
                                      ArrayList<CharSequence> entryValues) {
-        Intent queryIntent = new Intent(Alarms.ALARM_ACTION);
-        queryIntent.addCategory(Intent.CATEGORY_ALTERNATIVE);
+        Intent queryIntent = prepareQueryHandlerIntent();
 
         PackageManager pm = getContext().getPackageManager();
         List<ResolveInfo> actions =
@@ -91,5 +90,11 @@ public class AlarmActionPreference extends ListPreference {
                 entryValues.add(info.name);
             }
         }
+    }
+
+    protected Intent prepareQueryHandlerIntent() {
+        Intent intent = new Intent(Alarms.HANDLE_ALARM);
+        intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
+        return intent;
     }
 }

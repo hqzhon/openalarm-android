@@ -31,7 +31,7 @@ public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
     private static final int LABEL_INPUT_DIALOG = 1;
     private static final int TIME_PICK_DIALOG = 2;
-    private static final int ACTION_PICK_DIALOG = 3;
+    private static final int HANDLER_PICK_DIALOG = 3;
     private static final int REPEAT_DAYS_PICK_DIALOG = 4;
 
     AlarmLabelPreference mLabelPreference;
@@ -96,7 +96,7 @@ public class AlarmSettings extends PreferenceActivity {
             // The extra settings under Extra Settings category
             // were destroyed, need to inflate them again.
             String handlerClassName =
-                bundle.getString(Alarms.AlarmColumns.ACTION);
+                bundle.getString(Alarms.AlarmColumns.HANDLER);
             // mActionPreference.setPreferenceValue(handlerClassName);
             String extra = bundle.getString(
                 getString(R.string.alarm_settings_extra_category_key));
@@ -123,7 +123,7 @@ public class AlarmSettings extends PreferenceActivity {
                                         final int atTimeInMillis,
                                         final int repeatDays,
                                         final boolean enabled,
-                                        final String action,
+                                        final String handler,
                                         final String extra) {
                         mLabelPreference.setPreferenceValue(label);
 
@@ -131,14 +131,14 @@ public class AlarmSettings extends PreferenceActivity {
                             hour * 100 + minutes);
                         mRepeatOnPreference.setPreferenceValue(repeatDays);
 
-                        if(!TextUtils.isEmpty(action)) {
+                        if(!TextUtils.isEmpty(handler)) {
                             // This happens when this is the
                             // first time the user uses this
-                            // application and no any action
+                            // application and no any handler
                             // string has stored in the SQL db.
-                            mActionPreference.setPreferenceValue(action);
+                            mActionPreference.setPreferenceValue(handler);
                             AlarmSettings.this.inflateExtraSettings(
-                                action, extra);
+                                handler, extra);
                         }
                     }
                 });
@@ -153,7 +153,7 @@ public class AlarmSettings extends PreferenceActivity {
         } else if(preference == mTimePreference) {
             id = TIME_PICK_DIALOG;
         } else if(preference == mActionPreference) {
-            id = ACTION_PICK_DIALOG;
+            id = HANDLER_PICK_DIALOG;
         } else if(preference == mRepeatOnPreference) {
             id = REPEAT_DAYS_PICK_DIALOG;
         }
@@ -186,7 +186,7 @@ public class AlarmSettings extends PreferenceActivity {
                 final int minutes = time % 100;
                 final int repeatOnCode =
                     (Integer)mRepeatOnPreference.getPreferenceValue();
-                final String action =
+                final String handler =
                     (String)mActionPreference.getPreferenceValue();
                 final String extra =
                     generateValueOfExtraSettings(mExtraSettingsCategory);
@@ -197,7 +197,7 @@ public class AlarmSettings extends PreferenceActivity {
                 result.putExtra(Alarms.AlarmColumns.HOUR, hourOfDay);
                 result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
                 result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
-                result.putExtra(Alarms.AlarmColumns.ACTION, action);
+                result.putExtra(Alarms.AlarmColumns.HANDLER, handler);
                 if(!TextUtils.isEmpty(extra)) {
                     result.putExtra(Alarms.AlarmColumns.EXTRA, extra);
                 }
@@ -218,7 +218,7 @@ public class AlarmSettings extends PreferenceActivity {
                         (Integer)mRepeatOnPreference.getPreferenceValue());
         outState.putInt(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
                         (Integer)mTimePreference.getPreferenceValue());
-        outState.putString(Alarms.AlarmColumns.ACTION,
+        outState.putString(Alarms.AlarmColumns.HANDLER,
                            (String)mActionPreference.getPreferenceValue());
 
         String extra = generateValueOfExtraSettings(mExtraSettingsCategory);
@@ -250,7 +250,7 @@ public class AlarmSettings extends PreferenceActivity {
             dialog = mTimePreference.getDialog();
             break;
 
-        case ACTION_PICK_DIALOG:
+        case HANDLER_PICK_DIALOG:
             dialog = mActionPreference.getDialog();
             break;
 

@@ -98,9 +98,9 @@ public class AlarmClockPlus extends ListActivity {
                         //       + ", isChecked=" + isChecked
                         //       + ", alarmId=" + alarmId);
 
-                        Alarms.setAlarm(AlarmClockPlus.this,
-                                        Alarms.getAlarmUri(alarmId),
-                                        isChecked);
+                        Alarms.setAlarmEnabled(AlarmClockPlus.this,
+                                               Alarms.getAlarmUri(alarmId),
+                                               isChecked);
                     }
                 };
 
@@ -122,7 +122,7 @@ public class AlarmClockPlus extends ListActivity {
             final int minutes = cursor.getInt(Alarms.AlarmColumns.PROJECTION_MINUTES_INDEX);
             final int daysCode = cursor.getInt(Alarms.AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
             final boolean enabled = cursor.getInt(Alarms.AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
-            final String action = cursor.getString(Alarms.AlarmColumns.PROJECTION_ACTION_INDEX);
+            final String handler = cursor.getString(Alarms.AlarmColumns.PROJECTION_HANDLER_INDEX);
 
             Bundle attachment = (Bundle)view.getTag();
             attachment.putInt(Alarms.AlarmColumns._ID, id);
@@ -179,30 +179,30 @@ public class AlarmClockPlus extends ListActivity {
             }
 
             // Action
-            if(!TextUtils.isEmpty(action)) {
+            if(!TextUtils.isEmpty(handler)) {
                 PackageManager pm = context.getPackageManager();
                 try {
                     ActivityInfo info =
                         pm.getReceiverInfo(
-                            new ComponentName(context, action), 0);
-                    Drawable actionIcon = info.loadIcon(pm);
-                    String actionLabel = info.loadLabel(pm).toString();
+                            new ComponentName(context, handler), 0);
+                    Drawable handlerIcon = info.loadIcon(pm);
+                    String handlerLabel = info.loadLabel(pm).toString();
 
-                    ImageView actionIconView =
+                    ImageView handlerIconView =
                         (ImageView)view.findViewById(R.id.icon);
-                    actionIconView.setImageDrawable(actionIcon);
+                    handlerIconView.setImageDrawable(handlerIcon);
 
                     // TODO: Should load the default icon with
-                    // question mark to indicate that this action
+                    // question mark to indicate that this handler
                     // handler has problems so that it can't not
                     // be loaded.
 
-                    // TextView actionTextView =
-                    //     (TextView)view.findViewById(R.id.action);
-                    // if(!TextUtils.isEmpty(actionLabel)) {
-                    //     actionTextView.setText(actionLabel.toLowerCase());
+                    // TextView handlerTextView =
+                    //     (TextView)view.findViewById(R.id.handler);
+                    // if(!TextUtils.isEmpty(handlerLabel)) {
+                    //     handlerTextView.setText(handlerLabel.toLowerCase());
                     // } else {
-                    //     actionTextView.setText("not set");
+                    //     handlerTextView.setText("not set");
                     // }
                 } catch(PackageManager.NameNotFoundException e) {
                     Log.d(TAG, "xxxxxxxxxxxc 1" + e);
@@ -215,7 +215,7 @@ public class AlarmClockPlus extends ListActivity {
                   + ", time=" + hourOfDay + ":" + minutes
                   + ", enabled=" + enabledCheckBox.isChecked()
                   + ", repeat on=" + Alarms.RepeatWeekdays.toString(daysCode)
-                  + ", action=" + action
+                  + ", handler=" + handler
                   + ", extra=" + extra);
         }
 
@@ -225,12 +225,12 @@ public class AlarmClockPlus extends ListActivity {
                                           parent,
                                           false);
 
-            // TextView actionTextView =
-            //     (TextView)view.findViewById(R.id.action);
-            // PaintDrawable actionBackground =
+            // TextView handlerTextView =
+            //     (TextView)view.findViewById(R.id.handler);
+            // PaintDrawable handlerBackground =
             //     new PaintDrawable(R.drawable.blue);
-            // actionBackground.setCornerRadius(0.5f);
-            // actionTextView.setBackgroundDrawable(actionBackground);
+            // handlerBackground.setCornerRadius(0.5f);
+            // handlerTextView.setBackgroundDrawable(handlerBackground);
 
             Bundle attachment = new Bundle();
             view.setTag(attachment);
@@ -351,94 +351,74 @@ public class AlarmClockPlus extends ListActivity {
             final int newHourOfDay = data.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
             final int newMinutes = data.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
             final int newRepeatOnDaysCode = data.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
-            final String newAction = data.getStringExtra(Alarms.AlarmColumns.ACTION);
+            final String newHandler = data.getStringExtra(Alarms.AlarmColumns.HANDLER);
             final String newExtra = data.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
-            // Get old values from database
-            class GetAlarmSettings implements Alarms.OnVisitListener {
-                public String mLabel;
-                public int mHour;
-                public int mMinutes;
-                public int mRepeatOnDaysCode;
-                public boolean mEnabled;
-                public String mAction;
-                public String mExtra;
-                public void onVisit(final Context context,
-                                    final int id,
-                                    final String label,
-                                    final int hour,
-                                    final int minutes,
-                                    final int atTimeInMillis,
-                                    final int repeatOnDaysCode,
-                                    final boolean enabled,
-                                    final String action,
-                                    final String extra) {
-                    mLabel = label;
-                    mHour = hour;
-                    mMinutes = minutes;
-                    mRepeatOnDaysCode = repeatOnDaysCode;
-                    mEnabled = enabled;
-                    mAction = action;
-                    mExtra = extra;
-                }
-            }
             Uri alarmUri = Alarms.getAlarmUri(alarmId);
-            GetAlarmSettings settings = new GetAlarmSettings();
+            Alarms.GetAlarmSettings settings = new Alarms.GetAlarmSettings();
             Alarms.forEachAlarm(this, alarmUri, settings);
 
             Log.d(TAG, "===> Alarm settings in SQL: id=" + alarmId
-                  + ", label=" + settings.mLabel
-                  + ", enabled=" + settings.mEnabled
-                  + ", time=" + settings.mHour + ":" + settings.mMinutes
-                  + ", repeat_on=" + Alarms.RepeatWeekdays.toString(settings.mRepeatOnDaysCode)
-                  + ", action=" + settings.mAction
-                  + ", extra=" + settings.mExtra);
+                  + ", label=" + settings.label
+                  + ", enabled=" + settings.enabled
+                  + ", time=" + settings.hour + ":" + settings.minutes
+                  + ", repeat_on=" + Alarms.RepeatWeekdays.toString(settings.repeatOnDaysCode)
+                  + ", handler=" + settings.handler
+                  + ", extra=" + settings.extra);
 
             ContentValues newValues = new ContentValues();
-            if(!newLabel.equals(settings.mLabel)) {
+            if(!newLabel.equals(settings.label)) {
                 newValues.put(Alarms.AlarmColumns.LABEL, newLabel);
             }
 
-            if(newHourOfDay != settings.mHour) {
+            if(newHourOfDay != settings.hour) {
                 newValues.put(Alarms.AlarmColumns.HOUR, newHourOfDay);
             }
 
-            if(newMinutes != settings.mMinutes) {
+            if(newMinutes != settings.minutes) {
                 newValues.put(Alarms.AlarmColumns.MINUTES, newMinutes);
             }
 
-            if(newRepeatOnDaysCode != settings.mRepeatOnDaysCode) {
+            if(newRepeatOnDaysCode != settings.repeatOnDaysCode) {
                 newValues.put(Alarms.AlarmColumns.REPEAT_DAYS,
                               newRepeatOnDaysCode);
             }
 
-            if(!TextUtils.isEmpty(newAction) &&
-               !newAction.equals(settings.mAction)) {
-                newValues.put(Alarms.AlarmColumns.ACTION, newAction);
+            if(!TextUtils.isEmpty(newHandler) &&
+               !newHandler.equals(settings.handler)) {
+                newValues.put(Alarms.AlarmColumns.HANDLER, newHandler);
             }
 
             if(!TextUtils.isEmpty(newExtra) &&
-               !newExtra.equals(settings.mExtra)) {
+               !newExtra.equals(settings.extra)) {
                 newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
             }
 
-            if(settings.mEnabled) {
+            // If this alarm is enabled, re-schedule it.
+            if(settings.enabled) {
                 // If these values were updated, we need to
                 // re-schedule the alarm with these new values.
                 if(newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
                    newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
                    newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
-                   newValues.containsKey(Alarms.AlarmColumns.ACTION) ||
+                   newValues.containsKey(Alarms.AlarmColumns.HANDLER) ||
                    newValues.containsKey(Alarms.AlarmColumns.EXTRA)) {
 
-                    // Deactivate the old alarm.
-                    Alarms.setAlarm(this, alarmUri, false);
+                    // Deactivate the old alarm when the following
+                    // situation happens,
+                    //
+                    //  ---+------+--------+------->
+                    //   now     old      new
+                    //
 
-                    // Update the alarm with new settings.
+                    // Tweak for performance. No need to do many
+                    // database operations.
+                    Intent i = new Intent(Alarms.DISPATCH_ACTION);
+                    i.setData(Alarms.getAlarmUri(alarmId));
+                    Alarms.setAlarm(this, i, false);
+
                     Alarms.updateAlarm(this, alarmUri, newValues);
-
-                    // Activate the alarm now.
-                    Alarms.setAlarm(this, alarmUri, true);
+                    Alarms.setAlarmEnabled(this, alarmUri, true);
                 }
             } else {
                 if(newValues.size() > 0) {
@@ -476,4 +456,10 @@ public class AlarmClockPlus extends ListActivity {
     private int deleteAlarm(int alarmId) {
         return Alarms.deleteAlarm(this, alarmId);
     }
+
+
+
+
+
+
 }

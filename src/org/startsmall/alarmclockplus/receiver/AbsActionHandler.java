@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.preference.PreferenceCategory;
 
-abstract class ActionHandler extends BroadcastReceiver {
+abstract class AbsActionHandler extends BroadcastReceiver {
     @Override
     public abstract void onReceive(Context context, Intent intent);
     public abstract void addMyPreferences(final Context context,

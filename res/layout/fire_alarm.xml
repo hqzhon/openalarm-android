@@ -14,7 +14,7 @@
      />
 
   <LinearLayout android:orientation="horizontal"
-                android:layout_width="fill_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
     <Button android:id="@+id/snooze"
             android:text="@string/fire_alarm_snooze_text"

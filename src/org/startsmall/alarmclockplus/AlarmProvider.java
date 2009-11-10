@@ -63,7 +63,7 @@ public class AlarmProvider extends ContentProvider {
             Alarms.AlarmColumns.AT_TIME_IN_MILLIS  + " INTEGER, " +
             Alarms.AlarmColumns.REPEAT_DAYS + " INTEGER, " +
             Alarms.AlarmColumns.ENABLED + " INTEGER, " +
-            Alarms.AlarmColumns.ACTION + " TEXT, " +
+            Alarms.AlarmColumns.HANDLER + " TEXT, " +
             Alarms.AlarmColumns.EXTRA + " TEXT);";
 
         private static final String DATABASE_DROP_CMD =
@@ -97,7 +97,7 @@ public class AlarmProvider extends ContentProvider {
                          Alarms.AlarmColumns.AT_TIME_IN_MILLIS + ", " +
                          Alarms.AlarmColumns.REPEAT_DAYS + ", " +
                          Alarms.AlarmColumns.ENABLED + ", " +
-                         Alarms.AlarmColumns.ACTION + ", " +
+                         Alarms.AlarmColumns.HANDLER + ", " +
                          Alarms.AlarmColumns.EXTRA + ") VALUES ";
             db.execSQL(cmd + "('default1', 7, 00, 0, 1, 0, '', '');");
             db.execSQL(cmd + "('default2', 8, 30, 0, 5, 0, '', '');");
@@ -185,8 +185,8 @@ public class AlarmProvider extends ContentProvider {
             values.put(Alarms.AlarmColumns.LABEL, "My Alarm");
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.ACTION)) {
-            values.put(Alarms.AlarmColumns.ACTION, "");
+        if(!values.containsKey(Alarms.AlarmColumns.HANDLER)) {
+            values.put(Alarms.AlarmColumns.HANDLER, "");
         }
 
         if(!values.containsKey(Alarms.AlarmColumns.EXTRA)) {
