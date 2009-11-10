@@ -12,6 +12,7 @@ package org.startsmall.alarmclockplus.receiver;
 import org.startsmall.alarmclockplus.R;
 import org.startsmall.alarmclockplus.Alarms;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -28,14 +29,6 @@ public class FireAlarm extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fire_alarm);
 
-        Log.d(TAG, "=================> FireAlarm.onCreate()");
-
-        // Parse extras in the intent.
-        Intent intent = getIntent();
-        final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        final String label = intent.getStringExtra(Alarms.AlarmColumns.LABEL);
-        final long atTimeInMillis = intent.getLongExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, 0);
-
         // Snooze this alarm makes the alarm to be postponded and
         // saved as a SharedPreferences.
         Button snoozeButton = (Button)findViewById(R.id.snooze);
@@ -43,10 +36,9 @@ public class FireAlarm extends Activity {
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 7);
+                    Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
 
                     // Stop the playback of ringtone.
-
 
                     finish();
                 }
@@ -57,21 +49,47 @@ public class FireAlarm extends Activity {
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    dismissAlarm(alarmId);
+                    dismissAlarm();
 
                     // stop the playback of ringtone;
+
+                    finish();
                 }
             });
     }
 
-    private void dismissAlarm(final int alarmId) {
+    private void dismissAlarm() {
+        final Intent intent = getIntent();
+        final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
+
         Log.d(TAG, "===> dismissAlarm(): alarm id=" + alarmId);
 
-        // Clear any record about snoozing this alarm.
-        getSharedPreferences(Alarms.PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0)
-            .edit().clear().commit();
+        // The snoozing alarm is enabled during this lifetime of
+        // this activity. Its settings remain the same. Dimiss
+        // this alarm means we should try to calculate the new
+        // time of the alarm again.
 
-        // Rearrange the next alarm.
-        // Alarms.setAlarm(this, Alarms.getAlarmUri(alarmId), true);
+        // Deactivate the old alarm. The explicit class field of
+        // the Intent was set to this activity when setting alarm
+        // in AlarmManager..
+        Alarms.setAlarm(this, intent, false);
+
+        // Activate the alarm according to the new time.
+        intent.setClassName(this,
+                            getPackageName() + ".receiver.ActionDispatcher");
+
+        final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
+        final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
+        final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
+        long atTimeInMillis =
+            Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes,
+                                                repeatOnDaysCode);
+        intent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
+        Alarms.setAlarm(this, intent, true);
+
+        ContentValues newValues = new ContentValues();
+        newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
+        Alarms.updateAlarm(this, Alarms.getAlarmUri(alarmId), newValues);
+        Alarms.setNotification(this, intent, true);
     }
 }

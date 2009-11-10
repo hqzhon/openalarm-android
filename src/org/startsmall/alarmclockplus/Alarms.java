@@ -519,47 +519,20 @@ public class Alarms {
         intent.putExtra(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
         setAlarm(context, intent, true);
 
-        // QUESTION?
-        // Do I need to save the snoozed alarm into SQL ?
-
         // Put info into SharedPreferences for the snoozed alarm.
         SharedPreferences preferences =
             context.getSharedPreferences(PREFERENCE_FILE_FOR_SNOOZED_ALARM,
                                          0);
         SharedPreferences.Editor preferenceEditor = preferences.edit();
-        preferenceEditor.putLong(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
+        preferenceEditor.putLong(AlarmColumns.AT_TIME_IN_MILLIS,
+                                 newAtTimeInMillis);
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
         preferenceEditor.putInt(AlarmColumns._ID, alarmId);
-        Log.d(TAG, "=============> snoozeAlarm(): alarm id = " + alarmId
+
+        Log.d(TAG, "=============> snoozeAlarm(): alarm id= " + alarmId
               + ", until " + formatDate("HH:mm", calendar));
 
-        final String handler = intent.getStringExtra(AlarmColumns.HANDLER);
-        if(!TextUtils.isEmpty(handler)) {
-            preferenceEditor.putString(AlarmColumns.HANDLER, handler);
-        }
-
         preferenceEditor.commit();
-    }
-
-    public static void cancelSnoozedAlarm(final Context context) {
-        SharedPreferences preferences =
-            context.getSharedPreferences(
-                Alarms.PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
-
-        final int id = preferences.getInt(Alarms.AlarmColumns._ID, -1);
-        if(id != -1) {
-            final String handler =
-                preferences.getString(AlarmColumns.HANDLER, null);
-
-            // Prepare the intent to cancel alarm
-            Intent cancelIntent = new Intent(Alarms.DISPATCH_ACTION);
-            cancelIntent.setData(getAlarmUri(id));
-            cancelIntent.removeExtra(AlarmColumns.AT_TIME_IN_MILLIS);
-            setAlarm(context, cancelIntent, false);
-        }
-
-        // preferences.edit().clear().commit();
-
     }
 
     /**
@@ -570,7 +543,9 @@ public class Alarms {
      * @param intent
      * @param set
      */
-    public static void setAlarm(Context context, Intent intent, boolean set) {
+    public static void setAlarm(final Context context,
+                                final Intent intent,
+                                final boolean set) {
         if(!DISPATCH_ACTION.equals(intent.getAction())) {
             Log.d(TAG, "===> setAlarm(): intent's action != "
                   + DISPATCH_ACTION);
