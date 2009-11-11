@@ -84,6 +84,7 @@ public class AlarmClockPlus extends ListActivity {
                         menu.add(alarmId, MENU_ITEM_DELETE_ID, 0, R.string.menu_item_delete_alarm);
                     }
                 };
+
             mOnCheckedChangeListener =
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged(CompoundButton buttonView,
@@ -98,6 +99,11 @@ public class AlarmClockPlus extends ListActivity {
                         //       + ", isChecked=" + isChecked
                         //       + ", alarmId=" + alarmId);
 
+                        // If it was snoozed before checked/unchecked,
+                        // disable the snoozed alarm first.
+                        Alarms.cancelSnoozedAlarm(AlarmClockPlus.this, alarmId);
+
+                        // Enable this alarm again.
                         Alarms.setAlarmEnabled(AlarmClockPlus.this,
                                                Alarms.getAlarmUri(alarmId),
                                                isChecked);

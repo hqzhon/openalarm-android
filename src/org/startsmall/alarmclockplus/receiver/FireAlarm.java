@@ -15,33 +15,57 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 public class FireAlarm extends Activity {
+    // MediaPlayer enters Prepared state and now a
+    // Handler should be setup to stop playback of
+    // ringtone after some period of time.
+    private class StopPlayback implements Handler.Callback {
+        @Override
+        public boolean handleMessage(Message msg) {
+            // Stop playing and release the MediaPlayer.
+            switch (msg.what) {
+            case STOP_PLAYBACK:
+                // This callback is executed because user doesn't
+                // tell me what to do, dimiss or snooze. I decide
+                // to snooze it.
+                FireAlarm.this.snoozeAlarm();
+                return true;
+            default:
+                break;
+            }
+            return true;
+        }
+    }
+
     private static final String TAG = "FireAlarm";
+    private static final int STOP_PLAYBACK = 1;
+    private MediaPlayer mMediaPlayer;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fire_alarm);
 
-        // Snooze this alarm makes the alarm to be postponded and
-        // saved as a SharedPreferences.
+        // Snooze this alarm makes the alarm postponded and saved
+        // as a SharedPreferences.
         Button snoozeButton = (Button)findViewById(R.id.snooze);
         snoozeButton.setOnClickListener(
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
-
-                    // Stop the playback of ringtone.
-
-                    finish();
+                    FireAlarm.this.snoozeAlarm();
                 }
             });
 
@@ -50,13 +74,69 @@ public class FireAlarm extends Activity {
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    dismissAlarm();
-
-                    // stop the playback of ringtone;
-
-                    finish();
+                    FireAlarm.this.dismissAlarm();
                 }
             });
+
+        // Start loop-playing ringtone.
+        Intent intent = getIntent();
+        if(intent.hasExtra("ringtone")) {
+            String rtUri = intent.getStringExtra("ringtone");
+            Log.d(TAG, "============> Before playing ringtone....." + rtUri);
+
+            // Prepares the MediaPlayer
+            mMediaPlayer = new MediaPlayer();
+            if (mMediaPlayer == null) {
+                return;
+            }
+
+            mMediaPlayer.setLooping(true);
+            mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        Log.d(TAG, "===> ERROR: Unable to play");
+                        return true;
+                    }
+                });
+
+            try {
+                mMediaPlayer.setDataSource(this, Uri.parse(rtUri));
+                mMediaPlayer.prepare();
+            } catch (IllegalArgumentException e) {
+                return;
+            } catch (IOException e) {
+                return;
+            } catch (IllegalStateException e) {
+                return;
+            }
+
+            // Set a 3-minutes one-shot timer to stop the
+            // playback of ringtone.
+            Handler handler = new Handler(new StopPlayback());
+            Message stopPlaybackMessage =
+                handler.obtainMessage(STOP_PLAYBACK, mMediaPlayer);
+            if (handler.sendMessageDelayed(stopPlaybackMessage,
+                                           180000)) {
+                // Play ringtone now.
+                mMediaPlayer.start();
+            } else {
+                Log.d(TAG, "===> Unable to enqueue message");
+            }
+        }
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+            Log.d(TAG, "===> MediaPlayer stopped and released");
+        }
+    }
+
+    private void snoozeAlarm() {
+        Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
+        finish();
     }
 
     private void dismissAlarm() {
@@ -107,5 +187,6 @@ public class FireAlarm extends Activity {
         Alarms.updateAlarm(this, Alarms.getAlarmUri(alarmId), newValues);
         Alarms.setNotification(this, intent, true);
 
+        finish();
     }
 }

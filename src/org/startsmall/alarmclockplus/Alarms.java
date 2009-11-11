@@ -531,11 +531,32 @@ public class Alarms {
                                  newAtTimeInMillis);
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
         preferenceEditor.putInt(AlarmColumns._ID, alarmId);
+        final String handler = intent.getStringExtra(AlarmColumns.HANDLER);
+        preferenceEditor.putString(AlarmColumns.HANDLER, handler);
 
         Log.d(TAG, "=============> snoozeAlarm(): alarm id= " + alarmId
               + ", until " + formatDate("HH:mm", calendar));
 
         preferenceEditor.commit();
+    }
+
+    public static void cancelSnoozedAlarm(final Context context,
+                                          final int alarmId) {
+        SharedPreferences preferences =
+            context.getSharedPreferences(PREFERENCE_FILE_FOR_SNOOZED_ALARM,
+                                         0);
+        final int snoozedAlarmId = preferences.getInt(AlarmColumns._ID, -1);
+        if (snoozedAlarmId != alarmId) {
+            return;
+        }
+
+        final String handler =
+            preferences.getString(AlarmColumns.HANDLER, null);
+        if (!TextUtils.isEmpty(handler)) {
+            Intent cancelIntent = new Intent(handler);
+            cancelIntent.setData(Alarms.getAlarmUri(alarmId));
+            setAlarm(context, cancelIntent, false);
+        }
     }
 
     /**
