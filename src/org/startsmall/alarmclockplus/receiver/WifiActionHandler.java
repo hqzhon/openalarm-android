@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class WifiActionHandler extends ActionHandler {
+public class WifiActionHandler extends AbsActionHandler {
     private static final String TAG = "WifiActionHandler";
     private static final String KEY = "wifi_state";
 
@@ -158,6 +158,4 @@ public class WifiActionHandler extends ActionHandler {
         }
         return result;
     }
-
-
 }
