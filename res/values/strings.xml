@@ -2,12 +2,9 @@
 <resources>
     <string name="app_name">Alarm Clock+</string>
 
-    <string name="ok">Okay</string>
-    <string name="cancel">Cancel</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="isee">I see</string>
 
     <!-- Time unit -->
     <string name="day">day</string>
@@ -63,10 +60,13 @@
     <string name="alarm_extra_settings_wifi_summary">On</string>
     <string name="alarm_extra_settings_wifi_key">wifi</string>
 
-    <!-- AlarmWakeup -->
+    <!-- FireAlarm -->
     <string name="fire_alarm_snooze_text">Snooze</string>
     <string name="fire_alarm_dismiss_text">Dismiss</string>
 
+    <!-- MediaPlayer -->
+    <string name="media_player_error_dialog_title">Unable to play ringtone</string>
+    <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 
 
 </resources>
