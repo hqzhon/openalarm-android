@@ -66,7 +66,7 @@ public class InitReceiver extends BroadcastReceiver {
                                 Alarms.getCalendarInstance()));
 
         // Cancel any snoozed alarm.
-        Alarms.cancelSnoozedAlarm(context);
+        Alarms.cancelSnoozedAlarm(context, -1);
 
         // Iterate all alarms and re-schedule all enabled alarms.
         Intent i = new Intent(Alarms.DISPATCH_ACTION);

@@ -325,13 +325,13 @@ public class AlarmClockPlus extends ListActivity {
                 .setMessage(R.string.delete_alarm_message)
                 .setTitle(R.string.confirm_alarm_deletion_title)
                 .setPositiveButton(
-                    R.string.ok,
+                    android.R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             AlarmClockPlus.this.deleteAlarm(alarmId);
                         }
                     })
-                .setNegativeButton(R.string.cancel, null)
+                .setNegativeButton(android.R.string.cancel, null)
                 .create()
                 .show();
             break;

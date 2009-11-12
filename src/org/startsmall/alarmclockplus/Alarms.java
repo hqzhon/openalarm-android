@@ -543,10 +543,12 @@ public class Alarms {
     public static void cancelSnoozedAlarm(final Context context,
                                           final int alarmId) {
         SharedPreferences preferences =
-            context.getSharedPreferences(PREFERENCE_FILE_FOR_SNOOZED_ALARM,
-                                         0);
-        final int snoozedAlarmId = preferences.getInt(AlarmColumns._ID, -1);
-        if (snoozedAlarmId != alarmId) {
+            context.getSharedPreferences(
+                PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
+        final int snoozedAlarmId =
+            preferences.getInt(AlarmColumns._ID, -1);
+        if(alarmId != -1 &&     // no checking on alarmId
+           snoozedAlarmId != alarmId) {
             return;
         }
 

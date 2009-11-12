@@ -12,7 +12,9 @@ package org.startsmall.alarmclockplus.receiver;
 import org.startsmall.alarmclockplus.R;
 import org.startsmall.alarmclockplus.Alarms;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
@@ -49,8 +51,40 @@ public class FireAlarm extends Activity {
         }
     }
 
+    private class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            // The FireAlarm should prompt user when
+            // MediaPlay encountered problems on
+            // playing ringtone.
+            AlertDialog.Builder builder =
+                new AlertDialog.Builder(FireAlarm.this);
+            builder.setCancelable(false)
+                .setTitle(R.string.media_player_error_dialog_title)
+                .setMessage(
+                    String.format(
+                        FireAlarm.this.getString(R.string.media_player_error_dialog_message), what))
+                .setPositiveButton(
+                    R.string.isee,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,
+                                            int which) {
+                            // QUESTION? What do you gonna do when this happens????
+                            Log.d(TAG, "======> I see!");
+                        }
+                    })
+                .show();
+            return true;
+        }
+    }
+
     private static final String TAG = "FireAlarm";
+
+    /// An ID used to identify the Message sent to stop the playback of ringtone in the Handler.Callback.
     private static final int STOP_PLAYBACK = 1;
+
+    /// MediaPlayer object used to play ringtone.
     private MediaPlayer mMediaPlayer;
 
     @Override
@@ -69,6 +103,8 @@ public class FireAlarm extends Activity {
                 }
             });
 
+        // Dismiss the alarm causes the ringtone playback of this
+        // alarm stopped and reschudiling of this alarm happens.
         Button dismissButton = (Button)findViewById(R.id.dismiss);
         dismissButton.setOnClickListener(
             new View.OnClickListener() {
@@ -78,7 +114,7 @@ public class FireAlarm extends Activity {
                 }
             });
 
-        // Start loop-playing ringtone.
+        // Start playing ringtone loop.
         Intent intent = getIntent();
         if(intent.hasExtra("ringtone")) {
             String rtUri = intent.getStringExtra("ringtone");
@@ -91,12 +127,7 @@ public class FireAlarm extends Activity {
             }
 
             mMediaPlayer.setLooping(true);
-            mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                    public boolean onError(MediaPlayer mp, int what, int extra) {
-                        Log.d(TAG, "===> ERROR: Unable to play");
-                        return true;
-                    }
-                });
+            mMediaPlayer.setOnErrorListener(new OnPlaybackErrorListener());
 
             try {
                 mMediaPlayer.setDataSource(this, Uri.parse(rtUri));
@@ -137,6 +168,7 @@ public class FireAlarm extends Activity {
     private void snoozeAlarm() {
         Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
         finish();
+
     }
 
     private void dismissAlarm() {
