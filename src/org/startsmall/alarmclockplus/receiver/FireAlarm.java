@@ -13,6 +13,7 @@ import org.startsmall.alarmclockplus.R;
 import org.startsmall.alarmclockplus.Alarms;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,11 +23,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.net.Uri;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import java.io.IOException;
+import java.io.FileDescriptor;
 import java.util.Calendar;
 
 public class FireAlarm extends Activity {
@@ -84,6 +87,11 @@ public class FireAlarm extends Activity {
     /// An ID used to identify the Message sent to stop the playback of ringtone in the Handler.Callback.
     private static final int STOP_PLAYBACK = 1;
 
+    /// Copied from Android's source code which is claimed recommended values by media team.
+    private static final float IN_CALL_VOLUME = 0.125f;
+
+    private static final int PLAYBACK_TIMEOUT = 18000; // 3 minutes
+
     /// MediaPlayer object used to play ringtone.
     private MediaPlayer mMediaPlayer;
 
@@ -117,26 +125,47 @@ public class FireAlarm extends Activity {
         // Start playing ringtone loop.
         Intent intent = getIntent();
         if(intent.hasExtra("ringtone")) {
-            String rtUri = intent.getStringExtra("ringtone");
-            Log.d(TAG, "============> Before playing ringtone....." + rtUri);
 
-            // Prepares the MediaPlayer
             mMediaPlayer = new MediaPlayer();
-            if (mMediaPlayer == null) {
-                return;
-            }
-
-            mMediaPlayer.setLooping(true);
             mMediaPlayer.setOnErrorListener(new OnPlaybackErrorListener());
 
             try {
-                mMediaPlayer.setDataSource(this, Uri.parse(rtUri));
+                // Detects if we are in a call.
+                TelephonyManager tm = (TelephonyManager)getSystemService(
+                    Context.TELEPHONY_SERVICE);
+                if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
+                    String rtUri = intent.getStringExtra("ringtone");
+                    mMediaPlayer.setDataSource(this, Uri.parse(rtUri));
+                } else {
+                    Log.d(TAG, "===> We're in a call. lower volume and use fallback ringtone!");
+                    // This raw media must be supported by
+                    // Android and no errors thrown from it.
+                    FileDescriptor fd =
+                        getResources().openRawResourceFd(R.raw.in_call_ringtone).getFileDescriptor();
+                    mMediaPlayer.setDataSource(fd);
+                    mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+                }
+            } catch (Exception e1) {
+                // mMediaPlayer had entered Error state and
+                // OnErrorListener was called asynchronously.
+
+                //
+                mMediaPlayer.reset();
+                FileDescriptor fd =
+                    getResources().openRawResourceFd(R.raw.in_call_ringtone).getFileDescriptor();
+                try {
+                    mMediaPlayer.setDataSource(fd);
+                } catch (Exception e2) {
+                    return;
+                }
+            }
+
+            mMediaPlayer.setLooping(true);
+
+            try {
                 mMediaPlayer.prepare();
-            } catch (IllegalArgumentException e) {
-                return;
-            } catch (IOException e) {
-                return;
-            } catch (IllegalStateException e) {
+            } catch (Exception e) {
+                Log.d(TAG, "=========> mMediaPlayer.prepare(): " + e);
                 return;
             }
 
@@ -146,7 +175,7 @@ public class FireAlarm extends Activity {
             Message stopPlaybackMessage =
                 handler.obtainMessage(STOP_PLAYBACK, mMediaPlayer);
             if (handler.sendMessageDelayed(stopPlaybackMessage,
-                                           180000)) {
+                                           PLAYBACK_TIMEOUT)) {
                 // Play ringtone now.
                 mMediaPlayer.start();
             } else {
