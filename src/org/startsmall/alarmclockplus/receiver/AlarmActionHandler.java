@@ -39,6 +39,9 @@ public class AlarmActionHandler extends AbsActionHandler {
 
         public MyRingtonePreference(Context context, AttributeSet attrs) {
             super(context, attrs);
+
+            setShowDefault(true);
+            setShowSilent(true);
         }
 
         public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
