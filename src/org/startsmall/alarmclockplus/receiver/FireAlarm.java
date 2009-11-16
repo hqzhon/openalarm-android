@@ -22,6 +22,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.net.Uri;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -58,7 +59,7 @@ public class FireAlarm extends Activity {
         @Override
         public boolean onError(MediaPlayer mp, int what, int extra) {
             // The FireAlarm should prompt user when
-            // MediaPlay encountered problems on
+            // MediaPlayer encountered problems on
             // playing ringtone.
             AlertDialog.Builder builder =
                 new AlertDialog.Builder(FireAlarm.this);
@@ -94,6 +95,8 @@ public class FireAlarm extends Activity {
 
     /// MediaPlayer object used to play ringtone.
     private MediaPlayer mMediaPlayer;
+
+    private Vibrator mVibrator;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -178,6 +181,8 @@ public class FireAlarm extends Activity {
                                            PLAYBACK_TIMEOUT)) {
                 // Play ringtone now.
                 mMediaPlayer.start();
+
+                vibrate();
             } else {
                 Log.d(TAG, "===> Unable to enqueue message");
             }
@@ -197,7 +202,6 @@ public class FireAlarm extends Activity {
     private void snoozeAlarm() {
         Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
         finish();
-
     }
 
     private void dismissAlarm() {
@@ -249,5 +253,19 @@ public class FireAlarm extends Activity {
         Alarms.setNotification(this, intent, true);
 
         finish();
+    }
+
+    private void vibrate() {
+        final long[] vibratePattern = new long[] {500, 500};
+
+        Intent intent = getIntent();
+        if (intent.hasExtra("vibrate") &&
+            intent.getBooleanExtra("vibrate", false)) {
+            if (mVibrator == null) {
+                mVibrator =
+                    (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+            }
+            mVibrator.vibrate(vibratePattern, 0);
+        }
     }
 }
