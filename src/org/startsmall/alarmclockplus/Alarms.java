@@ -557,6 +557,29 @@ public class Alarms {
         if (!TextUtils.isEmpty(handler)) {
             Intent cancelIntent = new Intent(handler);
             cancelIntent.setData(Alarms.getAlarmUri(alarmId));
+
+
+
+
+
+
+            // TODO: //////////////////////////////////////
+
+
+
+
+
+
+            cancelIntent.setClass(context, "org.startsmall.alarmclockplus.receiver.FireAlarm");
+
+
+
+
+
+
+
+
+
             setAlarm(context, cancelIntent, false);
         }
     }
