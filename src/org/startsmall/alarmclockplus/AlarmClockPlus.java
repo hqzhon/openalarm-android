@@ -99,9 +99,11 @@ public class AlarmClockPlus extends ListActivity {
                         //       + ", isChecked=" + isChecked
                         //       + ", alarmId=" + alarmId);
 
-                        // If it was snoozed before checked/unchecked,
-                        // disable the snoozed alarm first.
-                        Alarms.cancelSnoozedAlarm(AlarmClockPlus.this, alarmId);
+                        // If it was snoozed before,
+                        // check/uncheck this button should
+                        // disable this snoozed alert first.
+                        Alarms.cancelSnoozedAlarm(AlarmClockPlus.this,
+                                                  alarmId);
 
                         // Enable this alarm again.
                         Alarms.setAlarmEnabled(AlarmClockPlus.this,
@@ -417,10 +419,14 @@ public class AlarmClockPlus extends ListActivity {
                     //   now     old      new
                     //
 
-                    // Tweak for performance. No need to do many
-                    // database operations.
-                    Intent i = new Intent(Alarms.DISPATCH_ACTION);
+                    // If the alert was snoozed and then
+                    // re-scheduled, no need to go through
+                    // Alarms.cancelSnoozedAlarm() because I can
+                    // cancel all alarm triggered by this kind of
+                    // Intent, same as snoozed alert.
+                    Intent i = new Intent(Alarms.HANDLE_ALARM);
                     i.setData(Alarms.getAlarmUri(alarmId));
+                    i.setClassName(this, settings.handler);
                     Alarms.setAlarm(this, i, false);
 
                     Alarms.updateAlarm(this, alarmUri, newValues);
