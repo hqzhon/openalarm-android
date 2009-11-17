@@ -3,28 +3,94 @@
               android:orientation="vertical"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
+              android:padding="5dip"
               >
-  <ImageView
-     android:id="@+id/icon"
+  <LinearLayout
+     android:orientation="horizontal"
      android:layout_width="wrap_content"
      android:layout_height="wrap_content"
-     android:layout_gravity="center"
+     >
+
+    <LinearLayout
+       android:layout_weight="0.25"
+       android:layout_width="10dip"
+       android:layout_height="wrap_content"
+       android:orientation="horizontal"
+       android:visibility="gone"/>
+
+    <ImageView
+       android:id="@+id/icon"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_weight="0.25"
+       android:scaleType="fitXY"
+       android:src="@drawable/icon_default_black_bg"
+       />
+
+    <TextView
+       style="?android:attr/textAppearanceLarge"
+       android:id="@+id/label"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_marginLeft="2dp"
+       android:layout_marginRight="2dp"
+       android:singleLine="true"
+       android:ellipsize="marquee"
+       android:gravity="center_vertical"
+       android:text="hahahahahahahaha"
+       android:maxLength="10"
+       />
+
+    <LinearLayout android:layout_weight="0.25"
+                  android:layout_width="10dip"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:visibility="gone"/>
+
+  </LinearLayout>
+
+  <ImageView
+     android:layout_width="fill_parent"
+     android:layout_height="1dip"
+     android:layout_marginLeft="10dip"
+     android:layout_marginRight="10dip"
      android:scaleType="fitXY"
-     android:src="@drawable/icon_default_black_bg"
+     android:gravity="fill_horizontal"
+     android:src="@android:drawable/divider_horizontal_bright"
+     android:paddingTop="4dip"
+     android:paddingBottom="4dip"
      />
 
   <LinearLayout android:orientation="horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                >
+
+    <LinearLayout android:layout_weight="0.25"
+                  android:layout_width="0dip"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:visibility="gone"/>
+
     <Button android:id="@+id/snooze"
             android:text="@string/fire_alarm_snooze_text"
+            android:layout_weight="1"
+            android:layout_gravity="left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
     <Button android:id="@+id/dismiss"
             android:text="@string/fire_alarm_dismiss_text"
+            android:layout_weight="1"
+            android:layout_gravity="right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
+
+    <LinearLayout android:layout_width="0dip"
+                  android:layout_weight="0.25"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:visibility="gone"/>
   </LinearLayout>
 </LinearLayout>
 

@@ -9,6 +9,8 @@
  */
 package org.startsmall.alarmclockplus;
 
+import org.startsmall.alarmclockplus.receiver.AlarmActionHandler;
+
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -524,13 +526,30 @@ public class Alarms {
     public static void snoozeAlarm(final Context context,
                                    final Intent intent,
                                    final int minutesLater) {
-
-        Log.d(TAG, "===> snoozeAlarm(): Intent data=" + intent.getData()
-              + ", action=" + intent.getAction()
-              + ", class name=" + intent.getComponent().getClassName());
+        // The intent object is associating with FireAlarm.class
+        // but the component that triggered the alarm was
+        // AlarmActionHandler which stored in the intent as well.
+        final String handler =
+            intent.getStringExtra(AlarmColumns.HANDLER);
+        // if (!TextUtils.isEmpty(handler)) {
+        //     Class<?> handlerClass;
+        //     try {
+        //         handlerClass = Class.forName(handler);
+        //         intent.setClass(context, handlerClass);
+        //     } catch (ClassNotFoundException e) {
+        //         Log.d(TAG, "=================> Class not found - " + e);
+        //         return;
+        //     }
+        // }
+        intent.setClass(context, AlarmActionHandler.class);
 
         // Cancel the old alert
         setAlarm(context, intent, false);
+
+        Log.d(TAG, "===> snoozeAlarm(): Cancel old alert with Intent data="
+              + intent.getData()
+              + ", action=" + intent.getAction()
+              + ", class name=" + intent.getComponent().getClassName());
 
         // Arrange new time for snoozed alarm from current date
         // and time.
@@ -549,11 +568,11 @@ public class Alarms {
                                  newAtTimeInMillis);
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
         preferenceEditor.putInt(AlarmColumns._ID, alarmId);
-        final String handler = intent.getStringExtra(AlarmColumns.HANDLER);
         preferenceEditor.putString(AlarmColumns.HANDLER, handler);
 
-        Log.d(TAG, "=============> snoozeAlarm(): alarm id= " + alarmId
-              + ", until " + formatDate("HH:mm", calendar));
+        Log.d(TAG, "===> snoozeAlarm(): Save to preference (alarm id= "
+              + alarmId
+              + ", until " + formatDate("HH:mm", calendar) + ")");
 
         preferenceEditor.commit();
     }
@@ -596,12 +615,6 @@ public class Alarms {
     public static void setAlarm(final Context context,
                                 final Intent intent,
                                 final boolean set) {
-        if(!HANDLE_ALARM.equals(intent.getAction())) {
-            Log.d(TAG, "===> setAlarm(): intent's action != "
-                  + HANDLE_ALARM);
-            return;
-        }
-
         AlarmManager alarmManager =
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 

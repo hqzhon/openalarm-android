@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 
 import java.io.IOException;
@@ -40,7 +41,6 @@ public class FireAlarm extends Activity {
     private class StopPlayback implements Handler.Callback {
         @Override
         public boolean handleMessage(Message msg) {
-            // Stop playing and release the MediaPlayer.
             switch (msg.what) {
             case STOP_PLAYBACK:
                 // This callback is executed because user doesn't
@@ -98,9 +98,13 @@ public class FireAlarm extends Activity {
 
     private Vibrator mVibrator;
 
+    private Handler mHandler;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.fire_alarm);
 
         // Snooze this alarm makes the alarm postponded and saved
@@ -174,11 +178,13 @@ public class FireAlarm extends Activity {
 
             // Set a 3-minutes one-shot timer to stop the
             // playback of ringtone.
-            Handler handler = new Handler(new StopPlayback());
+            if (mHandler == null) {
+                mHandler = new Handler(new StopPlayback());
+            }
             Message stopPlaybackMessage =
-                handler.obtainMessage(STOP_PLAYBACK, mMediaPlayer);
-            if (handler.sendMessageDelayed(stopPlaybackMessage,
-                                           PLAYBACK_TIMEOUT)) {
+                mHandler.obtainMessage(STOP_PLAYBACK, mMediaPlayer);
+            if (mHandler.sendMessageDelayed(stopPlaybackMessage,
+                                            PLAYBACK_TIMEOUT)) {
                 // Play ringtone now.
                 mMediaPlayer.start();
 
@@ -191,15 +197,28 @@ public class FireAlarm extends Activity {
 
     public void onDestroy() {
         super.onDestroy();
+
+        // In case the FireAlarm is finished before the shot-time
+        // of Handler. Without this, any message in the queue
+        // will be processed before message queue is destroyed
+        // along with the destruction of FireAlarm.
+        if (mHandler != null) {
+            mHandler.removeMessages(STOP_PLAYBACK, mMediaPlayer);
+            mHandler = null;
+        }
+
         if (mMediaPlayer != null) {
             mMediaPlayer.stop();
             mMediaPlayer.release();
             mMediaPlayer = null;
             Log.d(TAG, "===> MediaPlayer stopped and released");
         }
+
     }
 
     private void snoozeAlarm() {
+        Log.d(TAG, "===> FireAlarm.snoozeAlarm()");
+
         Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
         finish();
     }
