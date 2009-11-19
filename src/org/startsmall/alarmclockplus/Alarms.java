@@ -677,42 +677,6 @@ public class Alarms {
     }
 
     public static void setNotification(final Context context, final Intent alarmIntent, final boolean enabled) {
-
-        // Context appContext = context.getApplicationContext();
-        // int alarmId = Integer.parseInt(alarmUri.getLastPathSegment());
-        // NotificationManager nm =
-        //     (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // FIXME: It's strange that I can see this handler
-        // called in source code but I can't call it myself.
-        // Intent alarmChanged = new Intent(Intent.ACTION_ALARM_CHANGED);
-        // alarmChanged.putExtra("alarmSet", enabled);
-        // context.sendBroadcast(alarmChanged);
-
-        // TODO: Do notification by myself.
-        // Class<?> handler;
-        // try {
-        //     handler = Class.forName(context.getPackageName() + ".AlarmClockPlus");
-        // } catch(ClassNotFoundException e) {
-        //     return;
-        // }
-
-        // Intent notificationIntent = new Intent(context, handler);
-        // PendingIntent pendingIntent = PendingIntent.getActivity(
-        //     context, 0, notificationIntent, 0);
-        // Notification notification = new Notification(
-        //     R.drawable.stat_notify_alarm,
-        //     "Hello",
-        //     System.currentTimeMillis());
-        // notification.flags = Notification.FLAG_AUTO_CANCEL|Notification.FLAG_ONGOING_EVENT ;
-        // notification.setLatestEventInfo(appContext,
-        //                                 "My notification title",
-        //                                 "Hello World!",
-        //                                 pendingIntent);
-        // nm.notify(alarmId, notification);
-
-        // nm.cancel(alarmId);
-
         // Display a toast
         if(enabled) {
             long newAtTimeInMillis =
@@ -726,6 +690,11 @@ public class Alarms {
                     dateFormat.format(new Date(newAtTimeInMillis)));
             Toast.makeText(context, text, Toast.LENGTH_LONG).show();
         }
-    }
 
+        // Set notification on status bar
+        final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
+        Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
+        alarmChanged.putExtra("alarmSet", enabled);
+        context.sendBroadcast(alarmChanged);
+    }
 }
