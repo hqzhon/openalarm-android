@@ -193,12 +193,15 @@ public class AlarmClockPlus extends ListActivity {
                     ActivityInfo info =
                         pm.getReceiverInfo(
                             new ComponentName(context, handler), 0);
-                    Drawable handlerIcon = info.loadIcon(pm);
+                    // Drawable handlerIcon = info.loadIcon(pm);
                     String handlerLabel = info.loadLabel(pm).toString();
 
-                    ImageView handlerIconView =
-                        (ImageView)view.findViewById(R.id.icon);
-                    handlerIconView.setImageDrawable(handlerIcon);
+                    // ImageView handlerIconView =
+                    //     (ImageView)view.findViewById(R.id.icon);
+                    // handlerIconView.setImageDrawable(handlerIcon);
+                    TextView actionTextView =
+                        (TextView)view.findViewById(R.id.action);
+                    actionTextView.setText(handlerLabel);
 
                     // TODO: Should load the default icon with
                     // question mark to indicate that this handler

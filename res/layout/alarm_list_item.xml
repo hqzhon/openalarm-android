@@ -1,69 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="fill_parent"
-                android:layout_height="?android:attr/listPreferredItemHeight"
-                android:padding="3dip"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content">
+
+  <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1"
                 >
-  <ImageView
-     android:id="@+id/icon"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:scaleType="fitXY"
-     android:src="@drawable/icon_default_black_bg"
-     android:layout_alignParentLeft="true"
-     android:layout_alignParentTop="true"
-     android:layout_alignParentBottom="true" />
+
+    <LinearLayout android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal">
+      <TextView
+         style="?android:attr/textAppearanceLarge"
+         android:id="@+id/label"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:layout_weight="1"
+         android:singleLine="true"
+         android:ellipsize="marquee"
+         android:gravity="center_vertical" />
+
+      <TextView
+         style="?android:attr/textAppearanceLarge"
+         android:id="@+id/time"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:gravity="center_vertical"
+         android:maxLength="5" />
+    </LinearLayout>
+
+    <TextView
+       style="?android:attr/textAppearanceSmall"
+       android:id="@+id/action"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:layout_alignLeft="@id/label"
+       android:layout_alignRight="@id/time"
+       android:layout_below="@id/label"
+       android:gravity="center_vertical"
+       android:text="no action specified" />
+
+    <!-- Dynamic container for days alarm is activated -->
+    <LinearLayout
+       android:id="@+id/repeat_days"
+       android:orientation="horizontal"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:layout_weight="0"
+       android:layout_marginTop="2dp"/>
+  </LinearLayout>
 
   <CheckBox
      android:id="@+id/enabled"
      android:layout_width="wrap_content"
-     android:layout_height="fill_parent"
-     android:layout_alignParentTop="true"
-     android:layout_alignParentRight="true"
-     android:layout_alignParentBottom="true"
-     android:layout_gravity="center_vertical"
-     />
+     android:layout_height="fill_parent">
+  </CheckBox>
 
-  <TextView
-     style="?android:attr/textAppearanceLarge"
-     android:id="@+id/time"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:layout_alignParentTop="true"
-     android:layout_toLeftOf="@id/enabled"
-     android:layout_marginLeft="2dp"
-     android:layout_marginRight="2dp"
-     android:gravity="center_vertical"
-     android:maxLength="5"
-     />
-
-  <TextView
-     style="?android:attr/textAppearanceLarge"
-     android:id="@+id/label"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:layout_toLeftOf="@id/time"
-     android:layout_toRightOf="@id/icon"
-     android:layout_alignParentTop="true"
-     android:layout_alignBottom="@id/time"
-     android:layout_marginLeft="2dp"
-     android:singleLine="true"
-     android:ellipsize="marquee"
-     android:gravity="center_vertical"
-     />
-
-  <LinearLayout
-     android:id="@+id/repeat_days"
-     android:orientation="horizontal"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:layout_toLeftOf="@id/enabled"
-     android:layout_alignLeft="@id/label"
-     android:layout_alignRight="@id/time"
-     android:layout_alignBottom="@id/icon"
-     android:layout_alignParentBottom="true"
-     android:layout_marginTop="2dp"
-     android:layout_below="@id/label"
-     android:layout_alignWithParentIfMissing="true"/>
-</RelativeLayout>
+</LinearLayout>
 
