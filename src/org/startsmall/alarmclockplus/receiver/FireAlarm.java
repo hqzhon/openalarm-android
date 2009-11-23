@@ -217,8 +217,6 @@ public class FireAlarm extends Activity {
     }
 
     private void snoozeAlarm() {
-        Log.d(TAG, "===> FireAlarm.snoozeAlarm()");
-
         Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
         finish();
     }
@@ -226,24 +224,22 @@ public class FireAlarm extends Activity {
     private void dismissAlarm() {
         final Intent intent = getIntent();
         final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        final Uri alarmUri = Alarms.getAlarmUri(alarmId);
 
         Log.d(TAG, "===> dismissAlarm(): alarm id=" + alarmId);
-
-        // The snoozing alarm is enabled during this lifetime of
-        // this activity. Its settings remain the same. Dimiss
-        // this alarm means we should try to calculate the new
-        // time of the alarm again.
 
         // Deactivate the old alarm. The explicit class field of
         // the Intent was set to this activity when setting alarm
         // in AlarmManager..
-        Alarms.setAlarm(this, intent, false);
+        final String handlerClassName =
+            intent.getStringExtra(Alarms.AlarmColumns.HANDLER);
+
+
+        Alarms.disableAlarm(this, alarmUri, handlerClassName);
 
         // Activate the alarm according to the new time.
-        intent.setClassName(this,
-                            getPackageName() + ".receiver.ActionDispatcher");
-
         final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
+
         // If user clicks dimiss button in this minute, the
         // calculateAlarmAtTimeInMillis() will return the same
         // hour and minutes which causes this Activity to show up
@@ -258,18 +254,18 @@ public class FireAlarm extends Activity {
         long atTimeInMillis =
             Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes,
                                                 repeatOnDaysCode);
-        intent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-        Alarms.setAlarm(this, intent, true);
-        Calendar calendar = Alarms.getCalendarInstance();
-        calendar.setTimeInMillis(atTimeInMillis);
-        Log.d(TAG, "===> dismissAlarm(): new alarm at " +
-              Alarms.formatDate("HH:mm", calendar));
+        Alarms.enableAlarm(this, alarmUri, handlerClassName, atTimeInMillis);
+
+        // Calendar calendar = Alarms.getCalendarInstance();
+        // calendar.setTimeInMillis(atTimeInMillis);
+        // Log.d(TAG, "===> dismissAlarm(): new alarm at " +
+        //       Alarms.formatDate("HH:mm", calendar));
 
 
         ContentValues newValues = new ContentValues();
         newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-        Alarms.updateAlarm(this, Alarms.getAlarmUri(alarmId), newValues);
-        Alarms.setNotification(this, intent, true);
+        Alarms.updateAlarm(this, alarmUri, newValues);
+        Alarms.setNotification(this, true);
 
         finish();
     }

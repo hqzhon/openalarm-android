@@ -17,13 +17,10 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-//import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -38,7 +35,6 @@ import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.text.TextUtils;
 
@@ -93,11 +89,6 @@ public class AlarmClockPlus extends ListActivity {
                         Bundle attachment = (Bundle)parent.getTag();
                         int alarmId =
                             attachment.getInt(Alarms.AlarmColumns._ID);
-
-                        // Log.d(TAG, "=====> onCheckedChanged("
-                        //       + buttonView + "): parent=" + parent
-                        //       + ", isChecked=" + isChecked
-                        //       + ", alarmId=" + alarmId);
 
                         // If it was snoozed before,
                         // check/uncheck this button should
@@ -186,35 +177,17 @@ public class AlarmClockPlus extends ListActivity {
                 repeatDaysView.setVisibility(View.VISIBLE);
             }
 
-            // Action
+            // Alarm's handler
             if(!TextUtils.isEmpty(handler)) {
                 PackageManager pm = context.getPackageManager();
                 try {
                     ActivityInfo info =
                         pm.getReceiverInfo(
                             new ComponentName(context, handler), 0);
-                    // Drawable handlerIcon = info.loadIcon(pm);
                     String handlerLabel = info.loadLabel(pm).toString();
-
-                    // ImageView handlerIconView =
-                    //     (ImageView)view.findViewById(R.id.icon);
-                    // handlerIconView.setImageDrawable(handlerIcon);
                     TextView actionTextView =
                         (TextView)view.findViewById(R.id.action);
                     actionTextView.setText(handlerLabel);
-
-                    // TODO: Should load the default icon with
-                    // question mark to indicate that this handler
-                    // handler has problems so that it can't not
-                    // be loaded.
-
-                    // TextView handlerTextView =
-                    //     (TextView)view.findViewById(R.id.handler);
-                    // if(!TextUtils.isEmpty(handlerLabel)) {
-                    //     handlerTextView.setText(handlerLabel.toLowerCase());
-                    // } else {
-                    //     handlerTextView.setText("not set");
-                    // }
                 } catch(PackageManager.NameNotFoundException e) {
                     Log.d(TAG, "xxxxxxxxxxxc 1" + e);
                 }
@@ -235,14 +208,6 @@ public class AlarmClockPlus extends ListActivity {
             View view = mInflater.inflate(R.layout.alarm_list_item,
                                           parent,
                                           false);
-
-            // TextView handlerTextView =
-            //     (TextView)view.findViewById(R.id.handler);
-            // PaintDrawable handlerBackground =
-            //     new PaintDrawable(R.drawable.blue);
-            // handlerBackground.setCornerRadius(0.5f);
-            // handlerTextView.setBackgroundDrawable(handlerBackground);
-
             Bundle attachment = new Bundle();
             view.setTag(attachment);
 
@@ -276,14 +241,9 @@ public class AlarmClockPlus extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        // Cursor alarmsCursor =
-        //     Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
         mAlarmsCursor =
             Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
 
-        // FIXME: Still don't know why enabling this line will prevent
-        // deleted row from removing from ListView. Need to
-        // figure out.
         // startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, mAlarmsCursor));
     }
@@ -378,42 +338,42 @@ public class AlarmClockPlus extends ListActivity {
                   + ", extra=" + settings.extra);
 
             ContentValues newValues = new ContentValues();
-            if(!newLabel.equals(settings.label)) {
+            if (!newLabel.equals(settings.label)) {
                 newValues.put(Alarms.AlarmColumns.LABEL, newLabel);
             }
 
-            if(newHourOfDay != settings.hour) {
+            if (newHourOfDay != settings.hour) {
                 newValues.put(Alarms.AlarmColumns.HOUR, newHourOfDay);
             }
 
-            if(newMinutes != settings.minutes) {
+            if (newMinutes != settings.minutes) {
                 newValues.put(Alarms.AlarmColumns.MINUTES, newMinutes);
             }
 
-            if(newRepeatOnDaysCode != settings.repeatOnDaysCode) {
+            if (newRepeatOnDaysCode != settings.repeatOnDaysCode) {
                 newValues.put(Alarms.AlarmColumns.REPEAT_DAYS,
                               newRepeatOnDaysCode);
             }
 
-            if(!TextUtils.isEmpty(newHandler) &&
+            if (!TextUtils.isEmpty(newHandler) &&
                !newHandler.equals(settings.handler)) {
                 newValues.put(Alarms.AlarmColumns.HANDLER, newHandler);
             }
 
-            if(!TextUtils.isEmpty(newExtra) &&
+            if (!TextUtils.isEmpty(newExtra) &&
                !newExtra.equals(settings.extra)) {
                 newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
             }
 
             // If this alarm is enabled, re-schedule it.
-            if(settings.enabled) {
+            if (settings.enabled) {
                 // If these values were updated, we need to
                 // re-schedule the alarm with these new values.
-                if(newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
-                   newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
-                   newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
-                   newValues.containsKey(Alarms.AlarmColumns.HANDLER) ||
-                   newValues.containsKey(Alarms.AlarmColumns.EXTRA)) {
+                if (newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
+                    newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
+                    newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
+                    newValues.containsKey(Alarms.AlarmColumns.HANDLER) ||
+                    newValues.containsKey(Alarms.AlarmColumns.EXTRA)) {
 
                     // Deactivate the old alarm when the following
                     // situation happens,
@@ -427,16 +387,15 @@ public class AlarmClockPlus extends ListActivity {
                     // Alarms.cancelSnoozedAlarm() because I can
                     // cancel all alarm triggered by this kind of
                     // Intent, same as snoozed alert.
-                    Intent i = new Intent(Alarms.HANDLE_ALARM);
-                    i.setData(Alarms.getAlarmUri(alarmId));
-                    i.setClassName(this, settings.handler);
-                    Alarms.setAlarm(this, i, false);
+                    Alarms.disableAlarm(this,
+                                        Alarms.getAlarmUri(alarmId),
+                                        settings.handler);
 
                     Alarms.updateAlarm(this, alarmUri, newValues);
                     Alarms.setAlarmEnabled(this, alarmUri, true);
                 }
             } else {
-                if(newValues.size() > 0) {
+                if (newValues.size() > 0) {
                     Alarms.updateAlarm(this, alarmUri, newValues);
                 }
             }

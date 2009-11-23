@@ -9,8 +9,6 @@
  */
 package org.startsmall.alarmclockplus;
 
-import org.startsmall.alarmclockplus.receiver.AlarmActionHandler;
-
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -279,7 +277,6 @@ public class Alarms {
                 AlarmColumns.DEFAULT_SORT_ORDER);
     }
 
-
     /**
      * Listener interface that is used to report settings for every alarm
      * existed on the database.
@@ -420,18 +417,11 @@ public class Alarms {
     }
 
     private static class EnableAlarm implements OnVisitListener {
-        private final Intent mIntent;
         private final boolean mEnabled;
-
-        public EnableAlarm(Intent i, boolean enabled) {
-            mIntent = i;
-            mIntent.setAction(HANDLE_ALARM);
-
-            mEnabled = enabled;
-        }
+        public long mAtTimeInMillis;
 
         public EnableAlarm(boolean enabled) {
-            this(new Intent(), enabled);
+            mEnabled = enabled;
         }
 
         @Override
@@ -445,12 +435,11 @@ public class Alarms {
                             final boolean enabled,
                             final String handler,
                             final String extra) {
-            mIntent.setData(getAlarmUri(id));
+            Uri alarmUri = getAlarmUri(id);
             if (!TextUtils.isEmpty(handler)) {
                 Class<?> handlerClass;
                 try {
                     handlerClass = Class.forName(handler);
-                    mIntent.setClass(context, handlerClass);
                 } catch (ClassNotFoundException e) {
                     Log.d(TAG, "=================> Class not found - " + e);
                     return;
@@ -458,23 +447,13 @@ public class Alarms {
             }
 
             if (mEnabled) {
-                mIntent.putExtra(Alarms.AlarmColumns._ID, id);
-                mIntent.putExtra(Alarms.AlarmColumns.LABEL, label);
-                mIntent.putExtra(Alarms.AlarmColumns.HOUR, hour);
-                mIntent.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
-                mIntent.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnDaysCode);
-                mIntent.putExtra(Alarms.AlarmColumns.HANDLER, handler);
-                mIntent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
-                long atTimeInMillis =
+                mAtTimeInMillis =
                     calculateAlarmAtTimeInMillis(hour, minutes,
                                                  repeatOnDaysCode);
-                mIntent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
-                                 atTimeInMillis);
+                enableAlarm(context, alarmUri, handler, mAtTimeInMillis);
+            } else {
+                disableAlarm(context, alarmUri, handler);
             }
-
-            // Tell alarm manager to set/cancel this alarm via
-            // mIntent.
-            setAlarm(context, mIntent, mEnabled);
         }
     }
 
@@ -503,17 +482,20 @@ public class Alarms {
         newValues.put(AlarmColumns.ENABLED, enabled ? 1 : 0);
 
         // Activate or deactivate this alarm.
-        Intent alarmIntent = new Intent();
-        EnableAlarm enabler = new EnableAlarm(alarmIntent, enabled);
+        EnableAlarm enabler = new EnableAlarm(enabled);
         forEachAlarm(context, alarmUri, enabler);
 
-        if(enabled) {
-            long newAtTimeInMillis =
-                alarmIntent.getLongExtra(AlarmColumns.AT_TIME_IN_MILLIS, 0);
-            newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
+        if (enabled) {
+            newValues.put(AlarmColumns.AT_TIME_IN_MILLIS,
+                          enabler.mAtTimeInMillis);
         }
         updateAlarm(context, alarmUri, newValues);
-        setNotification(context, alarmIntent, enabled);
+
+        if (enabled) {
+            showToast(context, enabler.mAtTimeInMillis);
+        }
+
+        setNotification(context, enabled);
     }
 
     /**
@@ -526,25 +508,11 @@ public class Alarms {
     public static void snoozeAlarm(final Context context,
                                    final Intent intent,
                                    final int minutesLater) {
-        // The intent object is associating with FireAlarm.class
-        // but the component that triggered the alarm was
-        // AlarmActionHandler which stored in the intent as well.
-        final String handler =
+        // Cancel the old alert.
+        final Uri alarmUri = intent.getData();
+        final String handlerClassName =
             intent.getStringExtra(AlarmColumns.HANDLER);
-        // if (!TextUtils.isEmpty(handler)) {
-        //     Class<?> handlerClass;
-        //     try {
-        //         handlerClass = Class.forName(handler);
-        //         intent.setClass(context, handlerClass);
-        //     } catch (ClassNotFoundException e) {
-        //         Log.d(TAG, "=================> Class not found - " + e);
-        //         return;
-        //     }
-        // }
-        intent.setClass(context, AlarmActionHandler.class);
-
-        // Cancel the old alert
-        setAlarm(context, intent, false);
+        disableAlarm(context, alarmUri, handlerClassName);
 
         Log.d(TAG, "===> snoozeAlarm(): Cancel old alert with Intent data="
               + intent.getData()
@@ -556,8 +524,7 @@ public class Alarms {
         Calendar calendar = getCalendarInstance();
         calendar.add(Calendar.MINUTE, minutesLater);
         long newAtTimeInMillis = calendar.getTimeInMillis();
-        intent.putExtra(AlarmColumns.AT_TIME_IN_MILLIS, newAtTimeInMillis);
-        setAlarm(context, intent, true);
+        enableAlarm(context, alarmUri, handlerClassName, newAtTimeInMillis);
 
         // Put info into SharedPreferences for the snoozed alarm.
         SharedPreferences preferences =
@@ -568,12 +535,9 @@ public class Alarms {
                                  newAtTimeInMillis);
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
         preferenceEditor.putInt(AlarmColumns._ID, alarmId);
-        preferenceEditor.putString(AlarmColumns.HANDLER, handler);
-
-        Log.d(TAG, "===> snoozeAlarm(): Save to preference (alarm id= "
-              + alarmId
-              + ", until " + formatDate("HH:mm", calendar) + ")");
-
+        // The handler is required to persist and it will be used
+        // to cancel the snoozed alarm.
+        preferenceEditor.putString(AlarmColumns.HANDLER, handlerClassName);
         preferenceEditor.commit();
     }
 
@@ -584,54 +548,51 @@ public class Alarms {
         SharedPreferences preferences =
             context.getSharedPreferences(
                 PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
-        final int snoozedAlarmId =
+        final int persistedAlarmId =
             preferences.getInt(AlarmColumns._ID, -1);
         if(alarmId != -1 &&     // no checking on alarmId
-           snoozedAlarmId != alarmId) {
+           persistedAlarmId != alarmId) {
             return;
         }
 
         final String handler =
             preferences.getString(AlarmColumns.HANDLER, null);
         if (!TextUtils.isEmpty(handler)) {
-            Intent cancelIntent = new Intent(HANDLE_ALARM);
-            cancelIntent.setData(Alarms.getAlarmUri(alarmId));
-            cancelIntent.setClassName(context, handler);
-            setAlarm(context, cancelIntent, false);
-
+            disableAlarm(context, getAlarmUri(alarmId), handler);
             // Remove _ID to indicate that the snoozed alert is cancelled.
             preferences.edit().remove(AlarmColumns._ID).commit();
         }
     }
 
-    /**
-     * Tell alarm manager to set or cancel alarm via passed
-     * intent.
-     *
-     * @param context
-     * @param intent
-     * @param set
-     */
-    public static void setAlarm(final Context context,
-                                final Intent intent,
-                                final boolean set) {
+    public static void enableAlarm(final Context context,
+                                   final Uri alarmUri,
+                                   final String handlerClassName,
+                                   final long atTimeInMillis) {
+        Intent i = new Intent(HANDLE_ALARM, alarmUri);
+        i.setClassName(context, handlerClassName);
+
         AlarmManager alarmManager =
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 
-        if(set) {
-            long atTimeInMillis =
-                intent.getLongExtra(AlarmColumns.AT_TIME_IN_MILLIS, 0);
+        alarmManager.set(AlarmManager.RTC_WAKEUP,
+                         atTimeInMillis,
+                         PendingIntent.getBroadcast(
+                             context, 0, i,
+                             PendingIntent.FLAG_CANCEL_CURRENT));
+    }
 
-            alarmManager.set(AlarmManager.RTC_WAKEUP,
-                             atTimeInMillis,
-                             PendingIntent.getBroadcast(
-                                 context, 0, intent,
-                                 PendingIntent.FLAG_CANCEL_CURRENT));
-        } else {
-            alarmManager.cancel(PendingIntent.getBroadcast(
-                                    context, 0, intent,
+    public static void disableAlarm(final Context context,
+                                    final Uri alarmUri,
+                                    final String handlerClassName) {
+        Intent i = new Intent(HANDLE_ALARM, alarmUri);
+        i.setClassName(context, handlerClassName);
+
+        AlarmManager alarmManager =
+            (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
+        alarmManager.cancel(PendingIntent.getBroadcast(
+                                    context, 0, i,
                                     PendingIntent.FLAG_CANCEL_CURRENT));
-        }
     }
 
     public static String formatDate(String pattern, Calendar calendar) {
@@ -672,25 +633,22 @@ public class Alarms {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
-        Log.d(TAG, "===> next alarm " + calendar.getTimeInMillis());
         return calendar.getTimeInMillis();
     }
 
-    public static void setNotification(final Context context, final Intent alarmIntent, final boolean enabled) {
-        // Display a toast
-        if(enabled) {
-            long newAtTimeInMillis =
-                alarmIntent.getLongExtra(AlarmColumns.AT_TIME_IN_MILLIS, 0);
+    public static void showToast(final Context context,
+                                 final long atTimeInMillis) {
+        DateFormat dateFormat =
+            DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+        String text =
+            String.format(
+                context.getString(R.string.alarm_activated_toast_text),
+                dateFormat.format(new Date(atTimeInMillis)));
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+    }
 
-            DateFormat dateFormat =
-                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
-            String text =
-                String.format(
-                    context.getString(R.string.alarm_activated_toast_text),
-                    dateFormat.format(new Date(newAtTimeInMillis)));
-            Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-        }
-
+    public static void setNotification(final Context context,
+                                       final boolean enabled) {
         // Set notification on status bar
         final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
         Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
