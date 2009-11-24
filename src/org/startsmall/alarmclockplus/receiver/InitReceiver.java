@@ -44,20 +44,11 @@ public class InitReceiver extends BroadcastReceiver {
 
             // Cancel old alarm because it might be incorrect due
             // to the change of system time.
-            mIntent.setData(Alarms.getAlarmUri(id));
-            if (!TextUtils.isEmpty(handler)) {
-                mIntent.setClassName(context, handler);
-            }
-            Alarms.setAlarm(context, mIntent, false);
+            Alarms.disableAlarm(context, id, handler);
 
             // Re-schedule new time.
-            mIntent.putExtra(Alarms.AlarmColumns._ID, id);
-            mIntent.putExtra(Alarms.AlarmColumns.LABEL, label);
-            mIntent.putExtra(Alarms.AlarmColumns.HANDLER, handler);
-            mIntent.putExtra(Alarms.AlarmColumns.EXTRA, extra);
             long atTimeInMillis = Alarms.calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
-            mIntent.putExtra(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-            Alarms.setAlarm(context, mIntent, true);
+            Alarms.enableAlarm(context, id, handler, atTimeInMillis, extra);
         }
     }
 

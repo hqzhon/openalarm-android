@@ -44,7 +44,7 @@ public class FireAlarm extends Activity {
             switch (msg.what) {
             case STOP_PLAYBACK:
                 // This callback is executed because user doesn't
-                // tell me what to do, dimiss or snooze. I decide
+                // tell me what to do, i.e., dimiss or snooze. I decide
                 // to snooze it.
                 FireAlarm.this.snoozeAlarm();
                 return true;
@@ -142,6 +142,9 @@ public class FireAlarm extends Activity {
                     Context.TELEPHONY_SERVICE);
                 if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
                     String rtUri = intent.getStringExtra("ringtone");
+
+                    Log.d(TAG, "===> Play ringtone: " + rtUri);
+
                     mMediaPlayer.setDataSource(this, Uri.parse(rtUri));
                 } else {
                     Log.d(TAG, "===> We're in a call. lower volume and use fallback ringtone!");
@@ -213,11 +216,15 @@ public class FireAlarm extends Activity {
             mMediaPlayer = null;
             Log.d(TAG, "===> MediaPlayer stopped and released");
         }
-
     }
 
     private void snoozeAlarm() {
-        Alarms.snoozeAlarm(FireAlarm.this, getIntent(), 2);
+        Intent i = getIntent();
+        final int alarmId = i.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
+        final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
+
+        Alarms.snoozeAlarm(FireAlarm.this, alarmId, handlerClassName, extraData, 2);
         finish();
     }
 
@@ -226,18 +233,16 @@ public class FireAlarm extends Activity {
         final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         final Uri alarmUri = Alarms.getAlarmUri(alarmId);
 
-        Log.d(TAG, "===> dismissAlarm(): alarm id=" + alarmId);
+        Log.d(TAG, "===> dismissAlarm(): alarm uri=" + alarmUri);
 
-        // Deactivate the old alarm. The explicit class field of
+        // Disable the old alert. The explicit class field of
         // the Intent was set to this activity when setting alarm
         // in AlarmManager..
         final String handlerClassName =
             intent.getStringExtra(Alarms.AlarmColumns.HANDLER);
+        Alarms.disableAlarm(this, alarmId, handlerClassName);
 
-
-        Alarms.disableAlarm(this, alarmUri, handlerClassName);
-
-        // Activate the alarm according to the new time.
+        // Recalculate the new time of the alarm.
         final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
 
         // If user clicks dimiss button in this minute, the
@@ -247,24 +252,18 @@ public class FireAlarm extends Activity {
         final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1) - 1;
         final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
 
-        Log.d(TAG, "===> hourOfDay=" + hourOfDay
-              + ", minutes=" + minutes
-              + ", repeat=" + Alarms.RepeatWeekdays.toString(repeatOnDaysCode));
-
-        long atTimeInMillis =
+        final long atTimeInMillis =
             Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes,
                                                 repeatOnDaysCode);
-        Alarms.enableAlarm(this, alarmUri, handlerClassName, atTimeInMillis);
+        final String extraData = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
+        Alarms.enableAlarm(this, alarmId, handlerClassName, atTimeInMillis, extraData);
 
-        // Calendar calendar = Alarms.getCalendarInstance();
-        // calendar.setTimeInMillis(atTimeInMillis);
-        // Log.d(TAG, "===> dismissAlarm(): new alarm at " +
-        //       Alarms.formatDate("HH:mm", calendar));
-
-
+        // Update the new time into database.
         ContentValues newValues = new ContentValues();
         newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
         Alarms.updateAlarm(this, alarmUri, newValues);
+
+        // Notify the system that this alarm is changed.
         Alarms.setNotification(this, true);
 
         finish();
