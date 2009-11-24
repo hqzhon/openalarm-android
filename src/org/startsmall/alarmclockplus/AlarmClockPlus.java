@@ -178,7 +178,7 @@ public class AlarmClockPlus extends ListActivity {
             }
 
             // Alarm's handler
-            if(!TextUtils.isEmpty(handler)) {
+            if (!TextUtils.isEmpty(handler)) {
                 PackageManager pm = context.getPackageManager();
                 try {
                     ActivityInfo info =

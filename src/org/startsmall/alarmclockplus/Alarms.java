@@ -18,6 +18,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.net.Uri;
@@ -29,6 +32,7 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.DateFormat;
+import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 import java.text.SimpleDateFormat;
@@ -450,9 +454,15 @@ public class Alarms {
                     calculateAlarmAtTimeInMillis(hour, minutes,
                                                  repeatOnDaysCode);
                 enableAlarm(context, id, handler, mAtTimeInMillis, extra);
+
+                showToast(context, mAtTimeInMillis);
+
             } else {
                 disableAlarm(context, id, handler);
             }
+
+            // setNotification(context, id, handler, mEnabled);
+            setNotification(context, mEnabled);
         }
     }
 
@@ -466,17 +476,6 @@ public class Alarms {
     public static synchronized void setAlarmEnabled(final Context context,
                                                     final Uri alarmUri,
                                                     final boolean enabled) {
-        // Check to see whether or not alarmUri points to a
-        // single alarm or alarms.
-        try {
-            ContentUris.parseId(alarmUri);
-        } catch(NumberFormatException e) {
-            Log.d(TAG, "===============> " + e);
-            return;
-        }
-
-        Log.d(TAG, "===> setAlarmEnabled(): Set alarm " + alarmUri + ", " + enabled);
-
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled ? 1 : 0);
 
@@ -489,12 +488,6 @@ public class Alarms {
                           enabler.mAtTimeInMillis);
         }
         updateAlarm(context, alarmUri, newValues);
-
-        if (enabled) {
-            showToast(context, enabler.mAtTimeInMillis);
-        }
-
-        setNotification(context, enabled);
     }
 
     /**
@@ -655,7 +648,7 @@ public class Alarms {
             DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
         String text =
             String.format(
-                context.getString(R.string.alarm_activated_toast_text),
+                context.getString(R.string.alarm_notification_toast_text),
                 dateFormat.format(new Date(atTimeInMillis)));
         Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
@@ -667,5 +660,69 @@ public class Alarms {
         Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
         alarmChanged.putExtra("alarmSet", enabled);
         context.sendBroadcast(alarmChanged);
+    }
+
+    public static void setNotification(final Context context,
+                                       final int alarmId,
+                                       final String handlerClassName,
+                                       boolean enabled) {
+        Context appContext = context.getApplicationContext();
+        NotificationManager nm =
+            (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (enabled) {
+            String tickerText = appContext.getString(R.string.alarm_notification_ticker_text);
+            Notification notification =
+                new Notification(
+                    R.drawable.stat_notify_alarm,
+                    tickerText,
+                    System.currentTimeMillis());
+            notification.flags = Notification.FLAG_NO_CLEAR;
+
+            Intent notificationIntent = new Intent(appContext,
+                                                   AlarmClockPlus.class);
+            PendingIntent contentIntent =
+                PendingIntent.getActivity(appContext, 0, notificationIntent, 0);
+
+            PackageManager pm = appContext.getPackageManager();
+            ActivityInfo handlerInfo = getReceiverInfo(pm, handlerClassName);
+            String handlerLabel = handlerInfo.loadLabel(pm).toString();
+
+            String contentText =
+                String.format(appContext.getString(R.string.alarm_notification_content_text), handlerLabel + "(" + handlerClassName + ")");
+            notification.setLatestEventInfo(appContext,
+                                            tickerText,
+                                            contentText,
+                                            contentIntent);
+            nm.notify(alarmId, notification);
+        } else {
+            nm.cancel(alarmId);
+        }
+    }
+
+    public static ActivityInfo getReceiverInfo(final PackageManager pm,
+                                               final String handlerClassName)
+        throws IllegalArgumentException {
+        Class<?> handlerClass;
+        try {
+            handlerClass = Class.forName(handlerClassName);
+        } catch(ClassNotFoundException e) {
+            throw new IllegalArgumentException("Handler " + handlerClassName + " not found");
+        }
+
+        Intent i = new Intent(HANDLE_ALARM);
+        i.addCategory(Intent.CATEGORY_ALTERNATIVE);
+
+        // Search all receivers that can handle my alarms.
+        Iterator<ResolveInfo> infoObjs =
+            pm.queryBroadcastReceivers(i, 0).iterator();
+        while (infoObjs.hasNext()) {
+            ActivityInfo activityInfo = infoObjs.next().activityInfo;
+            if (activityInfo.name.equals(handlerClassName)) {
+                return activityInfo;
+            }
+        }
+
+        throw new IllegalArgumentException();
     }
 }
