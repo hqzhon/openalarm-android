@@ -77,7 +77,7 @@ public class AlarmSettings extends PreferenceActivity {
             throw new IllegalArgumentException("invalid alarm id");
         }
 
-        if(bundle != null) {
+        if (bundle != null) {
             // If this activity is destroyed and recreated due to
             // some reasons, for instance, orientation change,
             // the bundle is non-null, we should try to load
@@ -198,7 +198,7 @@ public class AlarmSettings extends PreferenceActivity {
                 result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
                 result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
                 result.putExtra(Alarms.AlarmColumns.HANDLER, handler);
-                if(!TextUtils.isEmpty(extra)) {
+                if (!TextUtils.isEmpty(extra)) {
                     result.putExtra(Alarms.AlarmColumns.EXTRA, extra);
                 }
                 setResult(RESULT_OK, result);
@@ -276,27 +276,17 @@ public class AlarmSettings extends PreferenceActivity {
             return;
         }
         mExtraSettingsCategory.removeAll();
+
         try {
-            Class<?> handler = Class.forName(handlerClassName);
+            Class<?> handler = Alarms.getHandlerClass(handlerClassName);
             Method m = handler.getDeclaredMethod(
                 "addMyPreferences",
                 Class.forName("android.content.Context"),
                 Class.forName("android.preference.PreferenceCategory"),
                 Class.forName("java.lang.String"));
             m.invoke(handler.newInstance(), this, mExtraSettingsCategory, defaultValue);
-        } catch(ClassNotFoundException e) {
-            Log.d(TAG, "===> class not found - " + e);
-        } catch(NoSuchMethodException e) {
-            Log.d(TAG, "===> not such method - " + e);
-        } catch(IllegalAccessException e) {
-            Log.d(TAG, "===> illegal access - " + e);
-        } catch(IllegalArgumentException e) {
-            Log.d(TAG, "===> illegal argument - " + e);
-        } catch(InstantiationException e) {
-            Log.d(TAG, "===> instantiation  - " + e);
-        } catch(java.lang.reflect.InvocationTargetException e) {
-            Log.d(TAG, "===> invocation target - " + e);
-            e.printStackTrace();
+        } catch(Exception e) {
+            Log.d(TAG, e.getMessage());
         }
     }
 

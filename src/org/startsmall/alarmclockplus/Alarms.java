@@ -98,6 +98,8 @@ public class Alarms {
 
     public static final String PREFERENCE_FILE_FOR_SNOOZED_ALARM = "snoozed_alarm";
 
+    private static final String USER_APK_DIR = "/data/app";
+
     /*****************************************************************
      * Constants used in content provider and SQLiteDatabase.    *
      *****************************************************************/
@@ -685,8 +687,15 @@ public class Alarms {
                 PendingIntent.getActivity(appContext, 0, notificationIntent, 0);
 
             PackageManager pm = appContext.getPackageManager();
-            ActivityInfo handlerInfo = getReceiverInfo(pm, handlerClassName);
-            String handlerLabel = handlerInfo.loadLabel(pm).toString();
+            String handlerLabel;
+            try {
+                ActivityInfo handlerInfo =
+                    getHandlerInfo(pm, handlerClassName);
+                handlerLabel = handlerInfo.loadLabel(pm).toString();
+            } catch(PackageManager.NameNotFoundException e) {
+                Log.d(TAG, e.getMessage());
+                return;
+            }
 
             String contentText =
                 String.format(appContext.getString(R.string.alarm_notification_content_text), handlerLabel + "(" + handlerClassName + ")");
@@ -700,15 +709,27 @@ public class Alarms {
         }
     }
 
-    public static ActivityInfo getReceiverInfo(final PackageManager pm,
-                                               final String handlerClassName)
-        throws IllegalArgumentException {
-        Class<?> handlerClass;
-        try {
-            handlerClass = Class.forName(handlerClassName);
-        } catch(ClassNotFoundException e) {
-            throw new IllegalArgumentException("Handler " + handlerClassName + " not found");
-        }
+    public static Class<?> getHandlerClass(final String handlerClassName)
+        throws ClassNotFoundException {
+        final int lastDotPos = handlerClassName.lastIndexOf('.');
+        final String apkPaths =
+            USER_APK_DIR + "/" + "org.startsmall.alarmclockplus.apk:" + // myself
+            // handlers defined by other developers
+            USER_APK_DIR + "/" + handlerClassName.substring(0, lastDotPos) + ".apk";
+
+        dalvik.system.PathClassLoader classLoader =
+            new dalvik.system.PathClassLoader(
+                apkPaths,
+                ClassLoader.getSystemClassLoader());
+
+        return Class.forName(handlerClassName, true, classLoader);
+    }
+
+    public static ActivityInfo getHandlerInfo(final PackageManager pm,
+                                              final String handlerClassName)
+        throws PackageManager.NameNotFoundException {
+        // Make sure the handlerClass really exists
+        // Class<?> handlerClass = getHandlerClass(handlerClassName);
 
         Intent i = new Intent(HANDLE_ALARM);
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -722,7 +743,7 @@ public class Alarms {
                 return activityInfo;
             }
         }
-
-        throw new IllegalArgumentException();
+        throw new PackageManager.NameNotFoundException(
+            "BroadcastReceiver " + handlerClassName + " not found");
     }
 }

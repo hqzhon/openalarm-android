@@ -177,19 +177,17 @@ public class AlarmClockPlus extends ListActivity {
                 repeatDaysView.setVisibility(View.VISIBLE);
             }
 
-            // Alarm's handler
+            // Loads handler's label into R.id.action
             if (!TextUtils.isEmpty(handler)) {
                 PackageManager pm = context.getPackageManager();
                 try {
-                    ActivityInfo info =
-                        pm.getReceiverInfo(
-                            new ComponentName(context, handler), 0);
+                    ActivityInfo info = Alarms.getHandlerInfo(pm, handler);
                     String handlerLabel = info.loadLabel(pm).toString();
                     TextView actionTextView =
                         (TextView)view.findViewById(R.id.action);
                     actionTextView.setText(handlerLabel);
                 } catch(PackageManager.NameNotFoundException e) {
-                    Log.d(TAG, "xxxxxxxxxxxc 1" + e);
+                    Log.d(TAG, e.getMessage());
                 }
             }
 
