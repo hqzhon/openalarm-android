@@ -1,63 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
+              android:padding="3dip"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content">
 
-  <LinearLayout android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_weight="1"
-                >
-
-    <LinearLayout android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal">
-      <TextView
-         style="?android:attr/textAppearanceLarge"
-         android:id="@+id/label"
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         android:layout_weight="1"
-         android:singleLine="true"
-         android:ellipsize="marquee"
-         android:gravity="center_vertical" />
-
-      <TextView
-         style="?android:attr/textAppearanceLarge"
-         android:id="@+id/time"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:gravity="center_vertical"
-         android:maxLength="5" />
-    </LinearLayout>
-
-    <TextView
-       style="?android:attr/textAppearanceSmall"
-       android:id="@+id/action"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:layout_alignLeft="@id/label"
-       android:layout_alignRight="@id/time"
-       android:layout_below="@id/label"
-       android:gravity="center_vertical"
-       android:text="no action specified" />
-
-    <!-- Dynamic container for days alarm is activated -->
-    <LinearLayout
-       android:id="@+id/repeat_days"
-       android:orientation="horizontal"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:layout_weight="0"
-       android:layout_marginTop="2dp"/>
-  </LinearLayout>
-
-  <CheckBox
-     android:id="@+id/enabled"
-     android:layout_width="wrap_content"
-     android:layout_height="fill_parent">
+  <!-- Enabled -->
+  <CheckBox android:id="@+id/enabled"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent">
   </CheckBox>
 
+  <!-- Action Icon, Label, Repeat on -->
+  <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+    <!-- Action Icon, Label -->
+    <LinearLayout android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal">
+      <!-- Action Icon -->
+      <ImageView android:id="@+id/icon"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_vertical"
+                 android:scaleType="fitXY"
+                 android:maxWidth="36dp"
+                 android:maxHeight="36dp"
+                 android:src="@drawable/stat_notify_alarm"/>
+
+      <!-- Alarm Label -->
+      <TextView style="?android:attr/textAppearanceLarge"
+                android:id="@+id/label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:gravity="center_vertical" />
+    </LinearLayout>
+
+    <!-- Dynamic container for days alarm is activated -->
+    <LinearLayout android:id="@+id/repeat_days"
+                  android:orientation="horizontal"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="0"
+                  android:layout_marginTop="2dp"/>
+  </LinearLayout>
+
+  <!-- Time with AM/PM label -->
+  <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_vertical"
+                android:orientation="horizontal">
+    <TextView style="?android:attr/textAppearanceLarge"
+              android:id="@+id/time"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center_vertical"
+              android:gravity="center_vertical"
+              android:maxLength="5"/>
+
+    <!-- AM/PM -->
+    <LinearLayout android:layout_width="wrap_content"
+                  android:layout_height="fill_parent"
+                  android:orientation="vertical">
+
+      <TextView android:id="@+id/am"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="am" />
+
+      <LinearLayout android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
+
+      <TextView android:id="@+id/pm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="pm"/>
+    </LinearLayout>
+  </LinearLayout>
 </LinearLayout>
+
 

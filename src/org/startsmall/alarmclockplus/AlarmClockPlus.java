@@ -21,6 +21,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -35,6 +36,7 @@ import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.text.TextUtils;
 
@@ -182,10 +184,13 @@ public class AlarmClockPlus extends ListActivity {
                 PackageManager pm = context.getPackageManager();
                 try {
                     ActivityInfo info = Alarms.getHandlerInfo(pm, handler);
-                    String handlerLabel = info.loadLabel(pm).toString();
-                    TextView actionTextView =
-                        (TextView)view.findViewById(R.id.action);
-                    actionTextView.setText(handlerLabel);
+                    Drawable handlerIcon = info.loadIcon(pm);
+                    // String handlerLabel = info.loadLabel(pm).toString();
+                    // TextView actionTextView =
+                    //     (TextView)view.findViewById(R.id.action);
+                    // actionTextView.setText(handlerLabel);
+                    ImageView handlerIconView = (ImageView)view.findViewById(R.id.icon);
+                    handlerIconView.setImageDrawable(handlerIcon);
                 } catch(PackageManager.NameNotFoundException e) {
                     Log.d(TAG, e.getMessage());
                 }
