@@ -3,7 +3,7 @@
  * @author josh <yenliangl at gmail dot com>
  * @date   Tue Nov 10 17:47:36 2009
  *
- * @brief Receiver that gets executed when user changes time, time zone or machine rebooted.
+ * @brief Receiver that will be called when user changes time, time format (12-hour or 24-hour format) or device has been rebooted.
  *
  *
  */
@@ -63,7 +63,7 @@ public class InitReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "===> InitReceiver.onReceive() at " +
-              Alarms.formatDate("YYYY:HH:mm",
+              Alarms.formatDate("yyyy:HH:mm",
                                 Alarms.getCalendarInstance()));
 
         // Cancel any alert that was snoozed into preference.

@@ -612,6 +612,19 @@ public class Alarms {
         return dateFormatter.format(calendar.getTime());
     }
 
+    public static String formatDate(Context context, final int hourOfDay, final int minutes) {
+        Calendar calendar = getCalendarInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minutes);
+
+        final boolean is24HourFormat = android.text.format.DateFormat.is24HourFormat(context);
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm a");
+        if (is24HourFormat) {
+            dateFormatter.applyPattern("HH:mm");
+        }
+        return dateFormatter.format(calendar.getTime());
+    }
+
     public static long calculateAlarmAtTimeInMillis(final int hourOfDay,
                                                     final int minutes,
                                                     final int repeatOnCode) {
