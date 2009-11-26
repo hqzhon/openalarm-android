@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.FileDescriptor;
@@ -107,6 +108,12 @@ public class FireAlarm extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.fire_alarm);
 
+        Intent i = getIntent();
+        final String label =
+            i.getStringExtra(Alarms.AlarmColumns.LABEL);
+        TextView labelView = (TextView)findViewById(R.id.label);
+        labelView.setText(label);
+
         // Snooze this alarm makes the alarm postponded and saved
         // as a SharedPreferences.
         Button snoozeButton = (Button)findViewById(R.id.snooze);
@@ -132,7 +139,6 @@ public class FireAlarm extends Activity {
         // Start playing ringtone loop.
         Intent intent = getIntent();
         if(intent.hasExtra("ringtone")) {
-
             mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setOnErrorListener(new OnPlaybackErrorListener());
 
@@ -142,12 +148,10 @@ public class FireAlarm extends Activity {
                     Context.TELEPHONY_SERVICE);
                 if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
                     String rtUri = intent.getStringExtra("ringtone");
-
-                    Log.d(TAG, "===> Play ringtone: " + rtUri);
-
+                    Log.d(TAG, "Play ringtone: " + rtUri);
                     mMediaPlayer.setDataSource(this, Uri.parse(rtUri));
                 } else {
-                    Log.d(TAG, "===> We're in a call. lower volume and use fallback ringtone!");
+                    Log.d(TAG, "We're in a call. Lower volume and use fallback ringtone!");
                     // This raw media must be supported by
                     // Android and no errors thrown from it.
                     FileDescriptor fd =
@@ -159,7 +163,6 @@ public class FireAlarm extends Activity {
                 // mMediaPlayer had entered Error state and
                 // OnErrorListener was called asynchronously.
 
-                //
                 mMediaPlayer.reset();
                 FileDescriptor fd =
                     getResources().openRawResourceFd(R.raw.in_call_ringtone).getFileDescriptor();
@@ -221,10 +224,11 @@ public class FireAlarm extends Activity {
     private void snoozeAlarm() {
         Intent i = getIntent();
         final int alarmId = i.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        final String label = i.getStringExtra(Alarms.AlarmColumns.LABEL);
         final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
         final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
-        Alarms.snoozeAlarm(FireAlarm.this, alarmId, handlerClassName, extraData, 2);
+        Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, handlerClassName, extraData, 2);
         finish();
     }
 
@@ -255,8 +259,9 @@ public class FireAlarm extends Activity {
         final long atTimeInMillis =
             Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes,
                                                 repeatOnDaysCode);
+        final String label = intent.getStringExtra(Alarms.AlarmColumns.LABEL);
         final String extraData = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        Alarms.enableAlarm(this, alarmId, handlerClassName, atTimeInMillis, extraData);
+        Alarms.enableAlarm(this, alarmId, label, handlerClassName, atTimeInMillis, extraData);
 
         // Update the new time into database.
         ContentValues newValues = new ContentValues();

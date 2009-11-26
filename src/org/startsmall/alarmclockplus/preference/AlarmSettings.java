@@ -24,7 +24,6 @@ import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-//import java.util.*;
 import java.lang.reflect.Method;
 
 public class AlarmSettings extends PreferenceActivity {
@@ -84,15 +83,6 @@ public class AlarmSettings extends PreferenceActivity {
             // settings of this alarm from persisted preferences
             // (preferences can handle this by their own)
 
-            // int savedAlarmId = bundle.getInt(Alarms.AlarmColumns._ID, -1);
-            // if(alarmId == savedAlarmId) {
-
-            // mLabelPreference.setPreferenceValue(
-            //     bundle.getString(Alarms.AlarmColumns.LABEL));
-
-            // mRepeatOnPreference.setPreferenceValue(
-            //     bundle.getInt(Alarms.AlarmColumns.REPEAT_DAYS, -1));
-
             // The extra settings under Extra Settings category
             // were destroyed, need to inflate them again.
             String handlerClassName =
@@ -101,9 +91,6 @@ public class AlarmSettings extends PreferenceActivity {
             String extra = bundle.getString(
                 getString(R.string.alarm_settings_extra_category_key));
             inflateExtraSettings(handlerClassName, extra);
-
-            // mTimePreference.setPreferenceValue(
-            //     bundle.getString(Alarms.AlarmColumns.AT_TIME_IN_MILLIS));
         } else {
             // If this activity is launched at its first time and
             // fetch settings of this alarm and show them on the

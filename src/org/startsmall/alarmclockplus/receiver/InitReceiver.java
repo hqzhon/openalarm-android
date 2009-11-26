@@ -42,13 +42,19 @@ public class InitReceiver extends BroadcastReceiver {
                 return;
             }
 
+            Log.d(TAG, "Alarm " + label
+                  + ",id=" + id
+                  + ",hour=" + hour + ", minutes=" + minutes
+                  + ",handler=" + handler
+                  + ",extra=" + extra);
+
             // Cancel old alarm because it might be incorrect due
             // to the change of system time.
             Alarms.disableAlarm(context, id, handler);
 
             // Re-schedule new time.
             long atTimeInMillis = Alarms.calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
-            Alarms.enableAlarm(context, id, handler, atTimeInMillis, extra);
+            Alarms.enableAlarm(context, id, label, handler, atTimeInMillis, extra);
         }
     }
 

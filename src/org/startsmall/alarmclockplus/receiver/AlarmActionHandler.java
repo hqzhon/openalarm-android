@@ -78,9 +78,6 @@ public class AlarmActionHandler extends AbsActionHandler {
     @Override
     public void onReceive(Context context, Intent intent) {
         final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        final String label =
-            intent.getStringExtra(Alarms.AlarmColumns.LABEL);
-
         // Parse extra settings out of combined value.
         final String extra =
             intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
@@ -98,7 +95,7 @@ public class AlarmActionHandler extends AbsActionHandler {
             }
         }
 
-        // Start a parent activity that has a brand new stack.
+        // Start a parent activity with a brand new activity stack.
         intent.setClass(context, FireAlarm.class)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // Intent.FLAG_ACTIVITY_NO_USER_ACTION);

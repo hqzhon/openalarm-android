@@ -24,7 +24,7 @@
        android:layout_height="wrap_content"
        android:layout_weight="0.25"
        android:scaleType="fitXY"
-       android:src="@drawable/icon_default_black_bg"
+       android:src="@drawable/gray_alarm"
        />
 
     <TextView
@@ -34,10 +34,11 @@
        android:layout_height="wrap_content"
        android:layout_marginLeft="2dp"
        android:layout_marginRight="2dp"
+       android:layout_gravity="center_vertical"
        android:singleLine="true"
        android:ellipsize="marquee"
        android:gravity="center_vertical"
-       android:text="hahahahahahahaha"
+       android:text="ha"
        android:maxLength="10"
        />
 

@@ -208,7 +208,7 @@ public class Alarms {
             String result = "";
             if(code > 0) {
                 if(code == 0x7F) { // b1111111
-                    result = "On Everyday";
+                    result = "Everyday";
                 } else {
                     for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
                         if(isSet(code, i)) {
@@ -231,7 +231,7 @@ public class Alarms {
             List<String> result = new LinkedList<String>();
             if(code > 0) {
                 if(code == 0x7F) { // b1111111
-                    result.add("On Everyday");
+                    result.add("Everyday");
                 } else {
                     for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
                         if(isSet(code, i)) {
@@ -441,21 +441,19 @@ public class Alarms {
                             final boolean enabled,
                             final String handler,
                             final String extra) {
-            if (!TextUtils.isEmpty(handler)) {
-                Class<?> handlerClass;
-                try {
-                    handlerClass = Class.forName(handler);
-                } catch (ClassNotFoundException e) {
-                    Log.d(TAG, "=================> Class not found - " + e);
-                    return;
-                }
+            if (TextUtils.isEmpty(handler)) {
+                Log.d(TAG, "***** null alarm handler is not allowed");
+                return;
             }
+
+            Log.d(TAG, "Inside EnableAlarm, alarm " + label
+                  + " handler=" + handler);
 
             if (mEnabled) {
                 mAtTimeInMillis =
                     calculateAlarmAtTimeInMillis(hour, minutes,
                                                  repeatOnDaysCode);
-                enableAlarm(context, id, handler, mAtTimeInMillis, extra);
+                enableAlarm(context, id, label, handler, mAtTimeInMillis, extra);
 
                 showToast(context, mAtTimeInMillis);
 
@@ -478,6 +476,8 @@ public class Alarms {
     public static synchronized void setAlarmEnabled(final Context context,
                                                     final Uri alarmUri,
                                                     final boolean enabled) {
+        Log.d(TAG, "setAlarmEnabled(" + alarmUri + ", " + enabled + ")");
+
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled ? 1 : 0);
 
@@ -504,6 +504,7 @@ public class Alarms {
      */
     public static void snoozeAlarm(final Context context,
                                    final int alarmId,
+                                   final String label,
                                    final String handlerClassName,
                                    final String extraData,
                                    final int minutesLater) {
@@ -518,7 +519,7 @@ public class Alarms {
         Calendar calendar = getCalendarInstance();
         calendar.add(Calendar.MINUTE, minutesLater);
         long newAtTimeInMillis = calendar.getTimeInMillis();
-        enableAlarm(context, alarmId, handlerClassName, newAtTimeInMillis, extraData);
+        enableAlarm(context, alarmId, label, handlerClassName, newAtTimeInMillis, extraData);
 
         // Put info into SharedPreferences for the snoozed alarm.
         SharedPreferences preferences =
@@ -528,6 +529,7 @@ public class Alarms {
         preferenceEditor.putLong(AlarmColumns.AT_TIME_IN_MILLIS,
                                  newAtTimeInMillis);
         preferenceEditor.putInt(AlarmColumns._ID, alarmId);
+        preferenceEditor.putString(AlarmColumns.LABEL, label);
         // The handler is required to be persisted because it is
         // needed when we want to cancel the snoozed alarm.
         preferenceEditor.putString(AlarmColumns.HANDLER, handlerClassName);
@@ -559,6 +561,7 @@ public class Alarms {
 
     public static void enableAlarm(final Context context,
                                    final int alarmId,
+                                   final String label,
                                    final String handlerClassName,
                                    final long atTimeInMillis,
                                    final String extraData) {
@@ -567,6 +570,7 @@ public class Alarms {
 
         // Alarm ID is always necessary for its operations.
         i.putExtra(AlarmColumns._ID, alarmId);
+        i.putExtra(AlarmColumns.LABEL, label);
 
         // Intent might be provided different class to associate,
         // like FireAlarm. We need to cache the handlerClass in
