@@ -1,5 +1,5 @@
 /**
- * @file   TimeTextView.java
+ * @file   CompoundTimeTextView.java
  * @author josh <yenliangl at gmail dot com>
  * @date   Fri Nov 27 11:32:13 2009
  *
@@ -23,13 +23,13 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 
-public class TimeTextView extends LinearLayout {
+public class CompoundTimeTextView extends LinearLayout {
     private final boolean mIs24HourFormat;
     private final TextView mTimeTextView;
     private final TextView mAmTextView;
     private final TextView mPmTextView;
 
-    public TimeTextView(Context context, AttributeSet attrs) {
+    public CompoundTimeTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         // Time text view;

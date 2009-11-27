@@ -10,7 +10,7 @@
 package org.startsmall.alarmclockplus;
 
 import org.startsmall.alarmclockplus.preference.AlarmSettings;
-import org.startsmall.alarmclockplus.widget.TimeTextView;
+import org.startsmall.alarmclockplus.widget.CompoundTimeTextView;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -152,8 +152,8 @@ public class AlarmClockPlus extends ListActivity {
             //         pmTextView.setVisibility(View.INVISIBLE);
             //     }
             // }
-            final TimeTextView timeTextView =
-                (TimeTextView)view.findViewById(R.id.time);
+            final CompoundTimeTextView timeTextView =
+                (CompoundTimeTextView)view.findViewById(R.id.time);
             timeTextView.setTime(hourOfDay, minutes);
 
             // Label
