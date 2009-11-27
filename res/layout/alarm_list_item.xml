@@ -53,41 +53,12 @@
   </LinearLayout>
 
   <!-- Time with AM/PM label -->
-  <LinearLayout android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_gravity="center_vertical"
-                android:orientation="horizontal">
-    <TextView style="?android:attr/textAppearanceLarge"
-              android:id="@+id/time"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_gravity="center_vertical"
-              android:gravity="center_vertical|right"
-              android:maxLength="5"/>
-
-    <!-- AM/PM -->
-    <LinearLayout android:layout_width="wrap_content"
-                  android:layout_height="fill_parent"
-                  android:orientation="vertical">
-
-      <TextView android:id="@+id/am"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:text="AM" />
-
-      <LinearLayout android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="1dp"
-                    android:layout_weight="1"/>
-
-      <TextView android:id="@+id/pm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:text="PM"/>
-    </LinearLayout>
-  </LinearLayout>
+  <org.startsmall.alarmclockplus.widget.TimeTextView
+     android:id="@+id/time"
+     android:layout_width="wrap_content"
+     android:layout_height="fill_parent"
+     android:layout_gravity="center_vertical"
+     android:orientation="horizontal"/>
 </LinearLayout>
 
 
