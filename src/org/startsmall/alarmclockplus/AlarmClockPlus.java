@@ -132,26 +132,6 @@ public class AlarmClockPlus extends ListActivity {
             attachment.putString(Alarms.AlarmColumns.LABEL, label);
 
             // Time
-            // final TextView timeView = (TextView)view.findViewById(R.id.time);
-            // timeView.setText(Alarms.formatDate(AlarmClockPlus.this, hourOfDay, minutes));
-
-            // boolean is24HourFormat = android.text.format.DateFormat.is24HourFormat(AlarmClockPlus.this);
-            // final TextView amTextView = (TextView)view.findViewById(R.id.am);
-            // final TextView pmTextView = (TextView)view.findViewById(R.id.pm);
-            // if (is24HourFormat) {
-            //     amTextView.setVisibility(View.GONE);
-            //     pmTextView.setVisibility(View.GONE);
-            // } else {
-            //     final int time = hourOfDay * 100 + minutes;
-
-            //     if (time >= 1200) {
-            //         amTextView.setVisibility(View.INVISIBLE);
-            //         pmTextView.setVisibility(View.VISIBLE);
-            //     } else {
-            //         amTextView.setVisibility(View.VISIBLE);
-            //         pmTextView.setVisibility(View.INVISIBLE);
-            //     }
-            // }
             final CompoundTimeTextView timeTextView =
                 (CompoundTimeTextView)view.findViewById(R.id.time);
             timeTextView.setTime(hourOfDay, minutes);
