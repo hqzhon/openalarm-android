@@ -83,18 +83,18 @@ public class AlarmSettings extends PreferenceActivity {
             // settings of this alarm from persisted preferences
             // (preferences can handle this by their own)
 
-            // The extra settings under Extra Settings category
-            // were destroyed, need to inflate them again.
+            // The preferences of action handler under Extra
+            // Settings category were destroyed. They are
+            // inflated again here.
             String handlerClassName =
                 bundle.getString(Alarms.AlarmColumns.HANDLER);
-            // mActionPreference.setPreferenceValue(handlerClassName);
             String extra = bundle.getString(
                 getString(R.string.alarm_settings_extra_category_key));
             inflateExtraSettings(handlerClassName, extra);
         } else {
-            // If this activity is launched at its first time and
-            // fetch settings of this alarm and show them on the
-            // preferences.
+            // If this activity is launched at its first time,
+            // the settings of the alarm should be fetched from
+            // SQLite database.
             Log.d(TAG,
                   "========> Loading settings from SQL db for alarm"
                   + alarmId);
@@ -195,6 +195,8 @@ public class AlarmSettings extends PreferenceActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+    // Save the current state of this activity into Bundle. It
+    // will be restored in onCreate() with saved state passed in.
     protected void onSaveInstanceState(Bundle outState) {
         Intent intent = getIntent();
         int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
@@ -208,9 +210,8 @@ public class AlarmSettings extends PreferenceActivity {
         outState.putString(Alarms.AlarmColumns.HANDLER,
                            (String)mActionPreference.getPreferenceValue());
 
-        String extra = generateValueOfExtraSettings(mExtraSettingsCategory);
-        Log.d(TAG, "================> this extra settings='" +
-              extra + "'");
+        String extra =
+            generateValueOfExtraSettings(mExtraSettingsCategory);
         outState.putString(
             getString(R.string.alarm_settings_extra_category_key),
             extra);
@@ -282,45 +283,45 @@ public class AlarmSettings extends PreferenceActivity {
         String result = "";
         int numberOfPreferences =
             category.getPreferenceCount();
-        for(int i = 0; i < numberOfPreferences; i++) {
+        for (int i = 0; i < numberOfPreferences; i++) {
             Preference preference = category.getPreference(i);
 
-            if(preference.hasKey()) {
+            if (preference.hasKey()) {
                 String key = preference.getKey();
 
                 try {
                     String value = sharedPreferences.getString(key, "");
                     result += (key + "=" + value + ';');
                     continue;
-                } catch(ClassCastException e) {
+                } catch (ClassCastException e) {
                 }
 
                 try {
                     boolean value = sharedPreferences.getBoolean(key, false);
                     result += (key + "=" + value + ';');
                     continue;
-                } catch(ClassCastException e) {
+                } catch (ClassCastException e) {
                 }
 
                 try {
                     float value = sharedPreferences.getFloat(key, -1.0f);
                     result += (key + "=" + value + ';');
                     continue;
-                } catch(ClassCastException e) {
+                } catch (ClassCastException e) {
                 }
 
                 try {
                     int value = sharedPreferences.getInt(key, -1);
                     result += (key + "=" + value + ';');
                     continue;
-                } catch(ClassCastException e) {
+                } catch (ClassCastException e) {
                 }
 
                 try {
                     long value = sharedPreferences.getLong(key, -1);
                     result += (key + "=" + value + ';');
                     continue;
-                } catch(ClassCastException e) {
+                } catch (ClassCastException e) {
                 }
             }
         }

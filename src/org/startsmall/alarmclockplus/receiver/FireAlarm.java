@@ -13,6 +13,7 @@ import org.startsmall.alarmclockplus.R;
 import org.startsmall.alarmclockplus.Alarms;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -22,6 +23,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.net.Uri;
 import android.telephony.TelephonyManager;
@@ -101,9 +103,23 @@ public class FireAlarm extends Activity {
 
     private Handler mHandler;
 
+    //
+    private PowerManager mPowerManager;
+    private PowerManager.WakeLock mWakeLock;
+    private KeyguardManager mKeyguardManager;
+    private KeyguardManager.KeyguardLock mKeyguardLock;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d(TAG, "===> onCreate()");
+
+        // Wakeup the device and release keylock.
+        mPowerManager = (PowerManager)this.getSystemService(Context.POWER_SERVICE);
+        mKeyguardManager = (KeyguardManager)this.getSystemService(Context.KEYGUARD_SERVICE);
+
+        acquireWakeLock();
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.fire_alarm);
@@ -204,6 +220,9 @@ public class FireAlarm extends Activity {
     public void onDestroy() {
         super.onDestroy();
 
+        Log.d(TAG, "===> onDestroy()");
+
+
         // In case the FireAlarm is finished before the shot-time
         // of Handler. Without this, any message in the queue
         // will be processed before message queue is destroyed
@@ -219,6 +238,26 @@ public class FireAlarm extends Activity {
             mMediaPlayer = null;
             Log.d(TAG, "===> MediaPlayer stopped and released");
         }
+    }
+
+    // FireAlarm comes to the foreground
+    public void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "===> onResume()");
+
+        // FireAlarm goes back to interact to user. But, Keyguard
+        // may be in front.
+        disableKeyguard();
+    }
+
+    // FireAlarm is no longer visible.
+    public void onStop() {
+        super.onStop();
+
+        Log.d(TAG, "===> onStop()");
+
+        releaseWakeLock();
     }
 
     private void snoozeAlarm() {
@@ -286,5 +325,35 @@ public class FireAlarm extends Activity {
             }
             mVibrator.vibrate(vibratePattern, 0);
         }
+    }
+
+    private void acquireWakeLock() {
+        if (mWakeLock == null) {
+            mWakeLock =
+                mPowerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP|
+                                          PowerManager.FULL_WAKE_LOCK,
+                                          TAG);
+        }
+        mWakeLock.acquire();
+    }
+
+    private void releaseWakeLock() {
+        if (mWakeLock != null && mWakeLock.isHeld()) {
+            mWakeLock.release();
+        }
+    }
+
+    private void enableKeyguard() {
+        if (mKeyguardLock == null) {
+            mKeyguardLock = mKeyguardManager.newKeyguardLock(TAG);
+        }
+        mKeyguardLock.reenableKeyguard();
+    }
+
+    private void disableKeyguard() {
+        if (mKeyguardLock == null) {
+            mKeyguardLock = mKeyguardManager.newKeyguardLock(TAG);
+        }
+        mKeyguardLock.disableKeyguard();
     }
 }
