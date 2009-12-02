@@ -23,6 +23,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.provider.BaseColumns;
+import android.provider.Settings;
 import android.net.Uri;
 import android.util.Log;
 import android.text.format.DateUtils;
@@ -589,6 +590,21 @@ public class Alarms {
                          PendingIntent.getBroadcast(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
+
+        Calendar calendar = getCalendarInstance();
+        calendar.setTimeInMillis(atTimeInMillis);
+
+        String timeString =
+            formatDate(is24HourMode(context) ? "E k:mm" : "E K:mm aa",
+                       calendar);
+        setAlarmInSystemSettings(context, timeString);
+    }
+
+    /**
+     * @return true if clock is set to 24-hour mode
+     */
+    static boolean is24HourMode(final Context context) {
+        return android.text.format.DateFormat.is24HourFormat(context);
     }
 
     public static void disableAlarm(final Context context,
@@ -605,6 +621,17 @@ public class Alarms {
         alarmManager.cancel(PendingIntent.getBroadcast(
                                     context, 0, i,
                                     PendingIntent.FLAG_CANCEL_CURRENT));
+
+        setAlarmInSystemSettings(context, "");
+    }
+
+    private static void setAlarmInSystemSettings(final Context context,
+                                                 String timeString) {
+
+        // Make alarm alert shown on KeyguardManager
+        Settings.System.putString(context.getContentResolver(),
+                                  Settings.System.NEXT_ALARM_FORMATTED,
+                                  timeString);
     }
 
     public static String formatDate(String pattern, Calendar calendar) {
@@ -617,7 +644,7 @@ public class Alarms {
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
 
-        final boolean is24HourFormat = android.text.format.DateFormat.is24HourFormat(context);
+        final boolean is24HourFormat = is24HourMode(context);
         SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm a");
         if (is24HourFormat) {
             dateFormatter.applyPattern("HH:mm");

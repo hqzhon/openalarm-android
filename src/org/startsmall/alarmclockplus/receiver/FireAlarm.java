@@ -124,11 +124,7 @@ public class FireAlarm extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.fire_alarm);
 
-        Intent i = getIntent();
-        final String label =
-            i.getStringExtra(Alarms.AlarmColumns.LABEL);
-        TextView labelView = (TextView)findViewById(R.id.label);
-        labelView.setText(label);
+        setLabelFromIntent();
 
         // Snooze this alarm makes the alarm postponded and saved
         // as a SharedPreferences.
@@ -238,6 +234,8 @@ public class FireAlarm extends Activity {
             mMediaPlayer = null;
             Log.d(TAG, "===> MediaPlayer stopped and released");
         }
+
+        releaseWakeLock();
     }
 
     // FireAlarm comes to the foreground
@@ -251,13 +249,20 @@ public class FireAlarm extends Activity {
         disableKeyguard();
     }
 
-    // FireAlarm is no longer visible.
-    public void onStop() {
-        super.onStop();
+    public void onPause() {
+        super.onPause();
 
-        Log.d(TAG, "===> onStop()");
+        Log.d(TAG, "===> onResume()");
 
-        releaseWakeLock();
+        enableKeyguard();
+    }
+
+    private void setLabelFromIntent() {
+        Intent i = getIntent();
+        final String label =
+            i.getStringExtra(Alarms.AlarmColumns.LABEL);
+        TextView labelView = (TextView)findViewById(R.id.label);
+        labelView.setText(label);
     }
 
     private void snoozeAlarm() {
