@@ -8,7 +8,7 @@
  * A bridge between content resolver and internal database.
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.openalarm;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -37,12 +37,12 @@ public class AlarmProvider extends ContentProvider {
     private DatabaseOpenHelper mDbOpenHelper;
 
     static {
-        /// org.startsmall.alarmclockplus/alarms
+        /// org.startsmall.openalarm/alarms
         sURIMatcher.addURI(Alarms.CONTENT_URI_AUTH,
                            Alarms.CONTENT_URI_PATH,
                            MATCH_CODE_ALL_ALARMS);
 
-        /// org.startsmall.alarmclockplus/alarms/#
+        /// org.startsmall.openalarm/alarms/#
         sURIMatcher.addURI(Alarms.CONTENT_URI_AUTH,
                            Alarms.CONTENT_URI_PATH + "/#",
                            MATCH_CODE_SINGLE_ALARM);
@@ -50,7 +50,7 @@ public class AlarmProvider extends ContentProvider {
 
     private class DatabaseOpenHelper extends SQLiteOpenHelper {
         private static final String TAG = "DatabaseOpenHelper";
-        private static final String DATABASE_NAME = "alarmclockplus.db";
+        private static final String DATABASE_NAME = "openalarm.db";
         public static final String DATABASE_TABLE_NAME = "alarms";
         private static final int DATABASE_VERSION = 1;
 

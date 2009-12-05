@@ -1,5 +1,5 @@
 /**
- * @file   AlarmClockPlus.java
+ * @file   OpenAlarm.java
  * @author josh <yenliangl at gmail dot com>
  * @date   Fri Oct  9 16:57:28 2009
  *
@@ -7,10 +7,10 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.openalarm;
 
-import org.startsmall.alarmclockplus.preference.AlarmSettings;
-import org.startsmall.alarmclockplus.widget.CompoundTimeTextView;
+import org.startsmall.openalarm.preference.AlarmSettings;
+import org.startsmall.openalarm.widget.CompoundTimeTextView;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -44,10 +44,10 @@ import android.text.TextUtils;
 
 import java.util.*;
 
-public class AlarmClockPlus extends ListActivity {
+public class OpenAlarm extends ListActivity {
     public static final int OPEN_ALARM_SETTINGS_CODE = 1;
 
-    private static final String TAG = "AlarmClockPlus";
+    private static final String TAG = "OpenAlarm";
     private static final int MENU_ITEM_DELETE_ID = 0;
     private Cursor mAlarmsCursor;
 
@@ -59,7 +59,7 @@ public class AlarmClockPlus extends ListActivity {
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
-            mInflater = AlarmClockPlus.this.getLayoutInflater();
+            mInflater = OpenAlarm.this.getLayoutInflater();
             mOnClickListener =
                 new View.OnClickListener() {
                     // @Override
@@ -97,11 +97,11 @@ public class AlarmClockPlus extends ListActivity {
                         // If it was snoozed before,
                         // check/uncheck this button should
                         // disable this snoozed alert first.
-                        Alarms.cancelSnoozedAlarm(AlarmClockPlus.this,
+                        Alarms.cancelSnoozedAlarm(OpenAlarm.this,
                                                   alarmId);
 
                         // Enable this alarm again.
-                        Alarms.setAlarmEnabled(AlarmClockPlus.this,
+                        Alarms.setAlarmEnabled(OpenAlarm.this,
                                                Alarms.getAlarmUri(alarmId),
                                                isChecked);
                     }
@@ -296,7 +296,7 @@ public class AlarmClockPlus extends ListActivity {
                     android.R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            AlarmClockPlus.this.deleteAlarm(alarmId);
+                            OpenAlarm.this.deleteAlarm(alarmId);
                         }
                     })
                 .setNegativeButton(android.R.string.cancel, null)

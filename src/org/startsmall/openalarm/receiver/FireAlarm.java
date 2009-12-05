@@ -7,10 +7,10 @@
  *
  *
  */
-package org.startsmall.alarmclockplus.receiver;
+package org.startsmall.openalarm.receiver;
 
-import org.startsmall.alarmclockplus.R;
-import org.startsmall.alarmclockplus.Alarms;
+import org.startsmall.openalarm.R;
+import org.startsmall.openalarm.Alarms;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;

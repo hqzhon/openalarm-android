@@ -7,10 +7,10 @@
  *
  *
  */
-package org.startsmall.alarmclockplus.receiver;
+package org.startsmall.openalarm.receiver;
 
-import org.startsmall.alarmclockplus.Alarms;
-import org.startsmall.alarmclockplus.R;
+import org.startsmall.openalarm.Alarms;
+import org.startsmall.openalarm.R;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;

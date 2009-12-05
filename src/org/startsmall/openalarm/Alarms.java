@@ -7,7 +7,7 @@
  *
  *
  */
-package org.startsmall.alarmclockplus;
+package org.startsmall.openalarm;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -47,33 +47,33 @@ public class Alarms {
 
     /**
      * Authority of this application.
-     * <p>Value: org.startsmall.alarmclockplus</p>
+     * <p>Value: org.startsmall.openalarm</p>
      */
-    public static final String CONTENT_URI_AUTH = "org.startsmall.alarmclockplus";
+    public static final String CONTENT_URI_AUTH = "org.startsmall.openalarm";
 
     /**
      * Alarm alert action string.
-     * <p>Value: org.startsmall.alarmclockplus.HANDLE_ALARM</p>
+     * <p>Value: org.startsmall.openalarm.HANDLE_ALARM</p>
      */
     public static final String HANDLE_ALARM = CONTENT_URI_AUTH + ".HANDLE_ALARM";
 
     /**
      * Action used to launch ActionDispatcher receiver.
-     * <p>Value: org.startsmall.alarmclockplus.DISPATCH_ACTION</p>
+     * <p>Value: org.startsmall.openalarm.DISPATCH_ACTION</p>
      */
     // public static final String DISPATCH_ACTION = CONTENT_URI_AUTH + ".DISPATCH_ACTION";
 
     /**
      * Content URI of this application.
      *
-     * <p>Value: content://org.startsmall.alarmclockplus</p>
+     * <p>Value: content://org.startsmall.openalarm</p>
      */
     public static final String CONTENT_URI = "content://" + CONTENT_URI_AUTH;
 
     /**
      * Content URI for all alarms
      *
-     * <p>Value: content://org.startsmall.alarmclockplus/alarms</p>
+     * <p>Value: content://org.startsmall.openalarm/alarms</p>
      */
     public static final String CONTENT_URI_PATH = "alarms";
     public static final String CONTENT_URI_ALL_ALARMS =
@@ -82,7 +82,7 @@ public class Alarms {
     /**
      * Content URI for a single alarm
      *
-     * <p>Value: content://org.startsmall.alarmclockplus/alarms/#</p>
+     * <p>Value: content://org.startsmall.openalarm/alarms/#</p>
      */
     public static final String CONTENT_URI_SINGLE_ALARM =
         CONTENT_URI_ALL_ALARMS + "/#";
@@ -726,7 +726,7 @@ public class Alarms {
             notification.flags = Notification.FLAG_NO_CLEAR;
 
             Intent notificationIntent = new Intent(appContext,
-                                                   AlarmClockPlus.class);
+                                                   OpenAlarm.class);
             PendingIntent contentIntent =
                 PendingIntent.getActivity(appContext, 0, notificationIntent, 0);
 
@@ -757,7 +757,7 @@ public class Alarms {
         throws ClassNotFoundException {
         final int lastDotPos = handlerClassName.lastIndexOf('.');
         final String apkPaths =
-            USER_APK_DIR + "/" + "org.startsmall.alarmclockplus.apk:" + // myself
+            USER_APK_DIR + "/" + "org.startsmall.openalarm.apk:" + // myself
             // handlers defined by other developers
             USER_APK_DIR + "/" + handlerClassName.substring(0, lastDotPos) + ".apk";
 
