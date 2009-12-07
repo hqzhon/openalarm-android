@@ -10,6 +10,7 @@
 package org.startsmall.openalarm;
 
 import org.startsmall.openalarm.preference.AlarmSettings;
+import org.startsmall.openalarm.preference.ApplicationSettings;
 import org.startsmall.openalarm.widget.CompoundTimeTextView;
 
 import android.app.AlertDialog;
@@ -22,10 +23,12 @@ import android.content.pm.ResolveInfo;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -242,6 +245,10 @@ public class OpenAlarm extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set theme from persisted settings.
+        setThemeFromPreference();
+
         setContentView(R.layout.main);
 
         mAlarmsCursor =
@@ -274,7 +281,7 @@ public class OpenAlarm extends ListActivity {
             break;
 
         case R.id.menu_item_preferences:
-            editAppPreferences();
+            showApplicationPreferences();
             break;
 
         case R.id.menu_item_help:
@@ -407,14 +414,40 @@ public class OpenAlarm extends ListActivity {
     }
 
     // TODO:
-    private void editAppPreferences() {
-        Log.d(TAG, "===> Editing application preferences");
+    private void showApplicationPreferences() {
+        Intent intent = new Intent(this, ApplicationSettings.class);
+        startActivity(intent);
     }
 
     // TODO:
     private void showHelpDialog() {
         Log.d(TAG, "===> Show help dialog and copyright");
     }
+
+    // TODO:
+    // private void showSelectThemeDialog() {
+    //     AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    //     builder.setItems(
+    //         R.array.themes,
+    //         new DialogInterface.OnClickListener() {
+    //             @Override
+    //             public void onClick(DialogInterface dialog, int which) {
+
+    //                 Log.d(TAG, "=====> Select theme: " + which);
+
+
+    //                 switch (which) {
+    //                 case 0: // Light theme
+    //                     setTheme(android.R.style.Theme_Light);
+    //                     break;
+    //                 default: // Black theme
+    //                     setTheme(android.R.style.Theme_Black);
+    //                     break;
+    //                 }
+    //             }
+    //         });
+    //     builder.create().show();
+    // }
 
     private void addAlarm() {
         Uri uri = Alarms.newAlarm(this);
@@ -432,9 +465,22 @@ public class OpenAlarm extends ListActivity {
         return Alarms.deleteAlarm(this, alarmId);
     }
 
+    private void setThemeFromPreference() {
+        SharedPreferences sharedPreferences =
+            PreferenceManager.getDefaultSharedPreferences(this);
 
-
-
-
-
+        // Get theme ID.
+        int themeId = Integer.parseInt(
+            sharedPreferences.getString(
+                getString(R.string.application_settings_set_theme_key),
+                "1"));
+        switch (themeId) {
+        case 0:
+            setTheme(android.R.style.Theme_Light);
+            break;
+        default:
+            setTheme(android.R.style.Theme_Black);
+            break;
+        }
+    }
 }

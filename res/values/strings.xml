@@ -17,7 +17,7 @@
     <string name="menu_item_help">Help</string>
     <string name="menu_item_add">Add</string>
     <string name="menu_item_preferences">Preferences</string>
-    <string name="menu_item_theme_title">Theme</string>
+    <string name="menu_item_set_theme_title">Theme</string>
 
     <!-- Context menu item -->
     <string name="menu_item_edit_alarm">Edit</string>
@@ -27,10 +27,13 @@
     <string name="confirm_alarm_deletion_title">Confirm Deletion</string>
     <string name="delete_alarm_message">Do you want to delete this alarm?</string>
 
-    <!-- Application Preferences -->
-    <string name="application_settings_set_theme_title">Set Theme</string>
+    <!-- Application settings -->
+    <string name="application_settings_set_theme_key">theme</string>
+    <string name="application_settings_set_theme_title">Theme</string>
     <string name="application_settings_light_theme_title">Light</string>
-    <string name="application_settings_dark_theme_title">Dark</string>
+    <string name="application_settings_dark_theme_title">Black</string>
+    <string name="application_settings_theme_changed_message">New theme settings will be applied after restart</string>
+
 
     <!-- Alarm settings -->
     <string name="alarm_settings_label_title">Label</string>

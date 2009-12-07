@@ -2,12 +2,9 @@
   <item android:id="@+id/menu_item_add"
         android:title="@string/menu_item_add"
         android:icon="@drawable/android:ic_menu_add"/>
-  <item android:id="@+id/menu_item_preferences"
-        android:title="@string/menu_item_preferences"
-        android:icon="@drawable/android:ic_menu_edit"/>
 
   <item android:id="@+id/menu_item_preferences"
-        android:title="@string/menu_item_theme_title"
+        android:title="@string/menu_item_preferences"
         android:icon="@drawable/android:ic_menu_edit"/>
 
   <item android:id="@+id/menu_item_help"
