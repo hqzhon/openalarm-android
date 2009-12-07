@@ -43,6 +43,7 @@ import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.text.TextUtils;
 
 import java.util.*;
@@ -104,9 +105,20 @@ public class OpenAlarm extends ListActivity {
                                                   alarmId);
 
                         // Enable this alarm again.
-                        Alarms.setAlarmEnabled(OpenAlarm.this,
-                                               Alarms.getAlarmUri(alarmId),
-                                               isChecked);
+                        boolean isSucceed =
+                            Alarms.setAlarmEnabled(OpenAlarm.this,
+                                                   Alarms.getAlarmUri(alarmId),
+                                                   isChecked);
+                        // Can't enable this alarm, unchecked
+                        // this button view and brought up
+                        // AlarmSettings for this alarm.
+                        if (isChecked && !isSucceed) {
+                            Toast.makeText(OpenAlarm.this,
+                                           R.string.alarm_handler_unset_message,
+                                           Toast.LENGTH_LONG).show();
+                            parent.performClick();
+                            buttonView.setChecked(false);
+                        }
                     }
                 };
 

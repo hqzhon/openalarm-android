@@ -426,6 +426,7 @@ public class Alarms {
     private static class EnableAlarm implements OnVisitListener {
         private final boolean mEnabled;
         public long mAtTimeInMillis;
+        public String mHandler;
 
         public EnableAlarm(boolean enabled) {
             mEnabled = enabled;
@@ -450,6 +451,7 @@ public class Alarms {
             Log.d(TAG, "Inside EnableAlarm, alarm " + label
                   + " handler=" + handler);
 
+            mHandler = handler;
             if (mEnabled) {
                 mAtTimeInMillis =
                     calculateAlarmAtTimeInMillis(hour, minutes,
@@ -474,9 +476,9 @@ public class Alarms {
      * @param alarmUri Alarm uri.
      * @param enabled Enable or disable this alarm.
      */
-    public static synchronized void setAlarmEnabled(final Context context,
-                                                    final Uri alarmUri,
-                                                    final boolean enabled) {
+    public static synchronized boolean setAlarmEnabled(final Context context,
+                                                       final Uri alarmUri,
+                                                       final boolean enabled) {
         Log.d(TAG, "setAlarmEnabled(" + alarmUri + ", " + enabled + ")");
 
         ContentValues newValues = new ContentValues();
@@ -489,8 +491,13 @@ public class Alarms {
         if (enabled) {
             newValues.put(AlarmColumns.AT_TIME_IN_MILLIS,
                           enabler.mAtTimeInMillis);
+
+            if (TextUtils.isEmpty(enabler.mHandler)) {
+                return false;
+            }
         }
         updateAlarm(context, alarmUri, newValues);
+        return true;
     }
 
     /**
