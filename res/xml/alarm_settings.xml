@@ -3,23 +3,23 @@
    xmlns:android="http://schemas.android.com/apk/res/android">
 
   <PreferenceCategory android:title="Basic Settings">
-    <org.startsmall.alarmclockplus.preference.AlarmLabelPreference
+    <org.startsmall.openalarm.preference.AlarmLabelPreference
        android:key="@string/alarm_settings_label_key"
        android:title="@string/alarm_settings_label_title"
        android:defaultValue="Alarm" />
 
-    <org.startsmall.alarmclockplus.preference.AlarmActionPreference
+    <org.startsmall.openalarm.preference.AlarmActionPreference
        android:key="@string/alarm_settings_action_key"
        android:title="@string/alarm_settings_action_title"
        android:defaultValue=""
        />
 
-    <org.startsmall.alarmclockplus.preference.AlarmTimePreference
+    <org.startsmall.openalarm.preference.AlarmTimePreference
        android:key="@string/alarm_settings_time_key"
        android:title="@string/alarm_settings_time_title"
        android:defaultValue="0830" />
 
-    <org.startsmall.alarmclockplus.preference.AlarmRepeatOnPreference
+    <org.startsmall.openalarm.preference.AlarmRepeatOnPreference
        android:key="@string/alarm_settings_repeat_days_key"
        android:title="@string/alarm_settings_repeat_days_title"
        android:summary="no days"
