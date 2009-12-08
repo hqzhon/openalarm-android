@@ -195,16 +195,13 @@ public class OpenAlarm extends ListActivity {
             }
 
             // Loads handler's label into R.id.action
+            ImageView handlerIconView = (ImageView)view.findViewById(R.id.icon);
+            handlerIconView.setImageResource(R.drawable.stat_sys_warning);
             if (!TextUtils.isEmpty(handler)) {
                 PackageManager pm = context.getPackageManager();
                 try {
                     ActivityInfo info = Alarms.getHandlerInfo(pm, handler);
                     Drawable handlerIcon = info.loadIcon(pm);
-                    // String handlerLabel = info.loadLabel(pm).toString();
-                    // TextView actionTextView =
-                    //     (TextView)view.findViewById(R.id.action);
-                    // actionTextView.setText(handlerLabel);
-                    ImageView handlerIconView = (ImageView)view.findViewById(R.id.icon);
                     handlerIconView.setImageDrawable(handlerIcon);
                 } catch(PackageManager.NameNotFoundException e) {
                     Log.d(TAG, e.getMessage());
@@ -304,6 +301,7 @@ public class OpenAlarm extends ListActivity {
         return true;
     }
 
+    @Override
     public boolean onContextItemSelected(MenuItem item) {
         final int alarmId = item.getGroupId();
         switch(item.getItemId()) {
