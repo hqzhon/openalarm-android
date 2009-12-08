@@ -408,7 +408,6 @@ public class OpenAlarm extends ListActivity {
                     // cancel all alarm triggered by this kind of
                     // Intent, same as snoozed alert.
                     Alarms.disableAlarm(this, alarmId, settings.handler);
-
                     Alarms.updateAlarm(this, alarmUri, newValues);
                     Alarms.setAlarmEnabled(this, alarmUri, true);
                 }

@@ -419,6 +419,7 @@ public class Alarms {
         if(newValues == null) {
             return -1;
         }
+
         return context.getContentResolver().update(
             alarmUri, newValues, null, null);
     }
@@ -463,9 +464,6 @@ public class Alarms {
             } else {
                 disableAlarm(context, id, handler);
             }
-
-            // setNotification(context, id, handler, mEnabled);
-            setNotification(context, mEnabled);
         }
     }
 
@@ -497,6 +495,22 @@ public class Alarms {
             }
         }
         updateAlarm(context, alarmUri, newValues);
+
+        if (enabled) {
+            // setNotification(context, id, handler, mEnabled);
+            setNotification(context, true);
+        } else {
+            // If there are more than 2 alarms enabled, don't
+            // remove notification
+            final int numberOfEnabledAlarms =
+                getNumberOfEnabledAlarms(context);
+            Log.d(TAG, "===> there are still " + numberOfEnabledAlarms + " alarms enabled");
+
+            if (numberOfEnabledAlarms == 0) {
+                setNotification(context, false);
+            }
+        }
+
         return true;
     }
 
@@ -796,5 +810,18 @@ public class Alarms {
         }
         throw new PackageManager.NameNotFoundException(
             "BroadcastReceiver " + handlerClassName + " not found");
+    }
+
+    private synchronized static int getNumberOfEnabledAlarms(Context context) {
+        Cursor c =
+            context.getContentResolver().query(
+                getAlarmUri(-1),
+                new String[]{AlarmColumns._ID, AlarmColumns.ENABLED},
+                AlarmColumns.ENABLED + "=1",
+                null,
+                AlarmColumns.DEFAULT_SORT_ORDER);
+        final int count = c.getCount();
+        c.close();
+        return count;
     }
 }
