@@ -24,7 +24,6 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 public class CompoundTimeTextView extends LinearLayout {
-    private final boolean mIs24HourFormat;
     private final TextView mTimeTextView;
     private final TextView mAmTextView;
     private final TextView mPmTextView;
@@ -46,19 +45,17 @@ public class CompoundTimeTextView extends LinearLayout {
         View amPmView = inflater.inflate(R.layout.am_pm_widget, this, false);
         addView(amPmView);
 
-        mIs24HourFormat = DateFormat.is24HourFormat(context);
         mAmTextView = (TextView)findViewById(R.id.am);
         mPmTextView = (TextView)findViewById(R.id.pm);
     }
 
     public void setTime(final int hourOfDay, final int minutes) {
-        String pattern;
-        if (mIs24HourFormat) {
+        boolean is24HourFormat = DateFormat.is24HourFormat(getContext());
+
+        if (is24HourFormat) {
             mAmTextView.setVisibility(View.GONE);
             mPmTextView.setVisibility(View.GONE);
-            pattern = "HH:mm";
         } else {
-            pattern = "hh:mm";
             final int time = hourOfDay * 100 + minutes;
 
             if (time >= 1200) {
@@ -70,9 +67,7 @@ public class CompoundTimeTextView extends LinearLayout {
             }
         }
 
-        Calendar calendar = Alarms.getCalendarInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        calendar.set(Calendar.MINUTE, minutes);
-        mTimeTextView.setText(Alarms.formatDate(pattern, calendar));
+        mTimeTextView.setText(
+            Alarms.formatTime(is24HourFormat, hourOfDay, minutes));
     }
 }

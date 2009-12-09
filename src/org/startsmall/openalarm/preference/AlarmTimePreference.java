@@ -13,7 +13,6 @@ import org.startsmall.openalarm.*;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
-import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.widget.TimePicker;
 
@@ -37,7 +36,7 @@ public class AlarmTimePreference extends TextViewPreference {
         final int time = (Integer)getPreferenceValue();
         final int hourOfDay = time / 100;
         final int minutes = time % 100;
-        final boolean is24HourFormat = DateFormat.is24HourFormat(getContext());
+        final boolean is24HourFormat = Alarms.is24HourMode(getContext());
 
         return new TimePickerDialog(
             getContext(),
@@ -58,6 +57,8 @@ public class AlarmTimePreference extends TextViewPreference {
         int time = (Integer)value;
         final int hourOfDay = time / 100;
         final int minutes = time % 100;
-        return Alarms.formatDate(getContext(), hourOfDay, minutes);
+
+        final boolean is24HourFormat = Alarms.is24HourMode(getContext());
+        return Alarms.formatTime(is24HourFormat, hourOfDay, minutes);
     }
 }

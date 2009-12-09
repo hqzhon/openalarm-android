@@ -13,6 +13,7 @@ package org.startsmall.openalarm.receiver;
 import org.startsmall.openalarm.Alarms;
 import android.content.Context;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
@@ -55,6 +56,17 @@ public class InitReceiver extends BroadcastReceiver {
             // Re-schedule new time.
             long atTimeInMillis = Alarms.calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
             Alarms.enableAlarm(context, id, label, handler, atTimeInMillis, extra);
+
+            // We need to update database in order for
+            // AdapterView to update views. But I don't know if
+            // it's still ok to recursively call SQL methods in
+            // Android?
+            ContentValues newValues = new ContentValues();
+            newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
+                          atTimeInMillis);
+            Alarms.updateAlarm(context, Alarms.getAlarmUri(id),
+                               newValues);
+            Alarms.setNotification(context, true);
         }
     }
 
@@ -63,7 +75,7 @@ public class InitReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "===> InitReceiver.onReceive() at " +
-              Alarms.formatDate("yyyy:HH:mm",
+              Alarms.formatTime("yyyy:HH:mm",
                                 Alarms.getCalendarInstance()));
 
         // Cancel any alert that was snoozed into preference.
@@ -72,5 +84,6 @@ public class InitReceiver extends BroadcastReceiver {
         // Iterate all alarms and re-schedule all enabled alarms.
         ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
         Alarms.forEachAlarm(context, Alarms.getAlarmUri(-1), scheduleAlarm);
+
     }
 }

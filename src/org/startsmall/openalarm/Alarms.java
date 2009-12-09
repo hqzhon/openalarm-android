@@ -614,17 +614,13 @@ public class Alarms {
 
         Calendar calendar = getCalendarInstance();
         calendar.setTimeInMillis(atTimeInMillis);
-
-        String timeString =
-            formatDate(is24HourMode(context) ? "E k:mm" : "E K:mm aa",
-                       calendar);
-        setAlarmInSystemSettings(context, timeString);
+        setAlarmInSystemSettings(context, calendar);
     }
 
     /**
      * @return true if clock is set to 24-hour mode
      */
-    static boolean is24HourMode(final Context context) {
+    public static boolean is24HourMode(final Context context) {
         return android.text.format.DateFormat.is24HourFormat(context);
     }
 
@@ -643,34 +639,40 @@ public class Alarms {
                                     context, 0, i,
                                     PendingIntent.FLAG_CANCEL_CURRENT));
 
-        setAlarmInSystemSettings(context, "");
+        setAlarmInSystemSettings(context, null);
     }
 
     private static void setAlarmInSystemSettings(final Context context,
-                                                 String timeString) {
+                                                 final Calendar calendar) {
+        String timeString = "";
+        if (calendar != null) {
+            timeString =
+                formatTime(is24HourMode(context) ? "E kk:mm" : "E KK:mm aa",
+                           calendar);
+        }
 
-        // Make alarm alert shown on KeyguardManager
         Settings.System.putString(context.getContentResolver(),
                                   Settings.System.NEXT_ALARM_FORMATTED,
                                   timeString);
     }
 
-    public static String formatDate(String pattern, Calendar calendar) {
+    public static String formatTime(String pattern,
+                                    Calendar calendar) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
         return dateFormatter.format(calendar.getTime());
     }
 
-    public static String formatDate(Context context, final int hourOfDay, final int minutes) {
-        Calendar calendar = getCalendarInstance();
+    public static String formatTime(final boolean is24HourMode,
+                                    final int hourOfDay,
+                                    final int minutes) {
+        Calendar calendar = Alarms.getCalendarInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
 
-        final boolean is24HourFormat = is24HourMode(context);
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm a");
-        if (is24HourFormat) {
-            dateFormatter.applyPattern("HH:mm");
+        if (is24HourMode) {
+            return formatTime("kk:mm", calendar);
         }
-        return dateFormatter.format(calendar.getTime());
+        return formatTime("KK:mm", calendar);
     }
 
     public static long calculateAlarmAtTimeInMillis(final int hourOfDay,
@@ -722,11 +724,27 @@ public class Alarms {
 
     public static void setNotification(final Context context,
                                        final boolean enabled) {
-        // Set notification on status bar
+        if (enabled) {
+            broadcastAlarmChanged(context, true);
+        } else {
+            // If there are more than 2 alarms enabled, don't
+            // remove notification
+            final int numberOfEnabledAlarms =
+                getNumberOfEnabledAlarms(context);
+            Log.d(TAG, "===> there are still " + numberOfEnabledAlarms + " alarms enabled");
+
+            if (numberOfEnabledAlarms == 0) {
+                broadcastAlarmChanged(context, false);
+            }
+        }
+    }
+
+    private static void broadcastAlarmChanged(Context context,
+                                              boolean enabled) {
         final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
-        Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
-        alarmChanged.putExtra("alarmSet", enabled);
-        context.sendBroadcast(alarmChanged);
+        Intent i = new Intent(ACTION_ALARM_CHANGED);
+        i.putExtra("alarmSet", enabled);
+        context.sendBroadcast(i);
     }
 
     public static void setNotification(final Context context,
