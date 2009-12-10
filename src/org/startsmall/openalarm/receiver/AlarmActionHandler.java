@@ -128,7 +128,7 @@ public class AlarmActionHandler extends AbsActionHandler {
         ringtonePref.setShowSilent(false);
         ringtonePref.setTitle("Set Ringtone");
         ringtonePref.setKey(RINGTONE_KEY);
-
+        ringtonePref.setPersistent(true);
         category.addPreference(ringtonePref);
 
         if(!TextUtils.isEmpty(extra)) {

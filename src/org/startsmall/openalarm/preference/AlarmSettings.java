@@ -281,16 +281,18 @@ public class AlarmSettings extends PreferenceActivity {
     private String generateValueOfExtraSettings(PreferenceCategory category) {
         SharedPreferences sharedPreferences = category.getSharedPreferences();
         String result = "";
-        int numberOfPreferences =
-            category.getPreferenceCount();
+        final int numberOfPreferences = category.getPreferenceCount();
         for (int i = 0; i < numberOfPreferences; i++) {
             Preference preference = category.getPreference(i);
 
-            if (preference.hasKey()) {
+            // Preference must be persisted in order for me to
+            // use unified SharedPreference to get preference
+            // value.
+            if (preference.hasKey() && preference.isPersistent()) {
                 String key = preference.getKey();
 
                 try {
-                    String value = sharedPreferences.getString(key, "");
+                    String value = sharedPreferences.getString(key, null);
                     result += (key + "=" + value + ';');
                     continue;
                 } catch (ClassCastException e) {

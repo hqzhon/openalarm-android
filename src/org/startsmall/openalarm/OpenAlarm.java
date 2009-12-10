@@ -433,31 +433,6 @@ public class OpenAlarm extends ListActivity {
         Log.d(TAG, "===> Show help dialog and copyright");
     }
 
-    // TODO:
-    // private void showSelectThemeDialog() {
-    //     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    //     builder.setItems(
-    //         R.array.themes,
-    //         new DialogInterface.OnClickListener() {
-    //             @Override
-    //             public void onClick(DialogInterface dialog, int which) {
-
-    //                 Log.d(TAG, "=====> Select theme: " + which);
-
-
-    //                 switch (which) {
-    //                 case 0: // Light theme
-    //                     setTheme(android.R.style.Theme_Light);
-    //                     break;
-    //                 default: // Black theme
-    //                     setTheme(android.R.style.Theme_Black);
-    //                     break;
-    //                 }
-    //             }
-    //         });
-    //     builder.create().show();
-    // }
-
     private void addAlarm() {
         Uri uri = Alarms.newAlarm(this);
         int alarmId = Integer.parseInt(uri.getLastPathSegment());
