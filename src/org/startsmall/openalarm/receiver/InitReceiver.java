@@ -22,12 +22,6 @@ public class InitReceiver extends BroadcastReceiver {
     // All enabled alarms should be rescheduled after system's time
     // changed, time zone changed or machine rebooted.
     private class ScheduleEnabledAlarm implements Alarms.OnVisitListener {
-        private Intent mIntent;
-
-        public ScheduleEnabledAlarm() {
-            mIntent = new Intent(Alarms.HANDLE_ALARM);
-        }
-
         @Override
         public void onVisit(final Context context,
                             final int id,
@@ -39,34 +33,35 @@ public class InitReceiver extends BroadcastReceiver {
                             final boolean enabled,
                             final String handler,
                             final String extra) {
-            if (!enabled) {
-                return;
+            // Note that we need to update every alarm in order
+            // for AdapterView.bindView to update am/pm label
+            // whether or not an alarm is enabled.
+            if (enabled) {
+                Log.d(TAG, "Alarm " + label
+                      + ",id=" + id
+                      + ",hour=" + hour + ", minutes=" + minutes
+                      + ",handler=" + handler
+                      + ",extra=" + extra);
+
+                // Cancel old alarm because it might be incorrect due
+                // to the change of system time.
+                Alarms.disableAlarm(context, id, handler);
             }
-
-            Log.d(TAG, "Alarm " + label
-                  + ",id=" + id
-                  + ",hour=" + hour + ", minutes=" + minutes
-                  + ",handler=" + handler
-                  + ",extra=" + extra);
-
-            // Cancel old alarm because it might be incorrect due
-            // to the change of system time.
-            Alarms.disableAlarm(context, id, handler);
 
             // Re-schedule new time.
             long atTimeInMillis = Alarms.calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
-            Alarms.enableAlarm(context, id, label, handler, atTimeInMillis, extra);
+            if (enabled) {
+                Alarms.enableAlarm(context, id, label, handler,
+                                   atTimeInMillis, extra);
+            }
 
-            // We need to update database in order for
-            // AdapterView to update views. But I don't know if
-            // it's still ok to recursively call SQL methods in
-            // Android?
             ContentValues newValues = new ContentValues();
             newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
                           atTimeInMillis);
-            Alarms.updateAlarm(context, Alarms.getAlarmUri(id),
-                               newValues);
-            Alarms.setNotification(context, true);
+            Alarms.updateAlarm(context, Alarms.getAlarmUri(id), newValues);
+            if (enabled) {
+                Alarms.setNotification(context, true);
+            }
         }
     }
 
