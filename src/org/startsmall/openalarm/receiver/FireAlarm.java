@@ -19,6 +19,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -96,11 +97,8 @@ public class FireAlarm extends Activity {
 
     private static final int PLAYBACK_TIMEOUT = 18000; // 3 minutes
 
-    /// MediaPlayer object used to play ringtone.
     private MediaPlayer mMediaPlayer;
-
     private Vibrator mVibrator;
-
     private Handler mHandler;
 
     //
@@ -108,6 +106,9 @@ public class FireAlarm extends Activity {
     private PowerManager.WakeLock mWakeLock;
     private KeyguardManager mKeyguardManager;
     private KeyguardManager.KeyguardLock mKeyguardLock;
+
+
+    private boolean mIsDismissed = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -155,7 +156,7 @@ public class FireAlarm extends Activity {
             mMediaPlayer.setOnErrorListener(new OnPlaybackErrorListener());
 
             try {
-                // Detects if we are in a call.
+                // Detects if we are in a call when this alarm goes off.
                 TelephonyManager tm = (TelephonyManager)getSystemService(
                     Context.TELEPHONY_SERVICE);
                 if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
@@ -211,6 +212,10 @@ public class FireAlarm extends Activity {
                 Log.d(TAG, "===> Unable to enqueue message");
             }
         }
+
+        AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        Log.d(TAG, "===> Max volume=" + am.getStreamMaxVolume(AudioManager.STREAM_RING)
+              + ", volume=" + am.getStreamVolume(AudioManager.STREAM_RING));
     }
 
     public void onDestroy() {
@@ -243,6 +248,7 @@ public class FireAlarm extends Activity {
         super.onResume();
 
         Log.d(TAG, "===> onResume()");
+        mIsDismissed = false;
 
         // FireAlarm goes back to interact to user. But, Keyguard
         // may be in front.
@@ -252,9 +258,27 @@ public class FireAlarm extends Activity {
     public void onPause() {
         super.onPause();
 
-        Log.d(TAG, "===> onResume()");
+        Log.d(TAG, "===> onPause() - it is finishing? " + isFinishing());
 
+        // Returns to keyguarded mode if the phone was in this
+        // mode.
         enableKeyguard();
+
+        // It's possible that another activity is running up to
+        // overlap this activity. Snooze this alarm in order for
+        // the user to handle this another incoming
+        // activity.
+        if (isFinishing()) {
+            // This onPause() was triggered by the user who
+            // snoozed or dismissed the alarm or other components
+            // asked it to close.
+        } else {
+            // The FireAlarm is not interacting with the
+            // user. Lower down the volume or snooze it directly.
+            if (mMediaPlayer != null) {
+                mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+            }
+        }
     }
 
     private void setLabelFromIntent() {
@@ -271,6 +295,8 @@ public class FireAlarm extends Activity {
         final String label = i.getStringExtra(Alarms.AlarmColumns.LABEL);
         final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
         final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
+
+        Log.d(TAG, "===> snoozeAlarm(): alarm id=" + alarmId);
 
         Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, handlerClassName, extraData, 2);
         finish();
@@ -293,10 +319,10 @@ public class FireAlarm extends Activity {
         // Recalculate the new time of the alarm.
         final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
 
-        // If user clicks dimiss button in this minute, the
-        // calculateAlarmAtTimeInMillis() will return the same
-        // hour and minutes which causes this Activity to show up
-        // continuously.
+        // If user clicks dimiss button in the same minute as
+        // this alarm, the calculateAlarmAtTimeInMillis() will
+        // return the same hour and minutes which causes this
+        // Activity to show up continuously.
         final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1) - 1;
         final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
 
@@ -315,7 +341,10 @@ public class FireAlarm extends Activity {
         // Notify the system that this alarm is changed.
         Alarms.setNotification(this, true);
 
+        mIsDismissed = true;
+
         finish();
+
     }
 
     private void vibrate() {
