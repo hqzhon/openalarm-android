@@ -65,24 +65,29 @@ public class FireAlarm extends Activity {
             // The FireAlarm should prompt user when
             // MediaPlayer encountered problems on
             // playing ringtone.
-            AlertDialog.Builder builder =
-                new AlertDialog.Builder(FireAlarm.this);
-            builder.setCancelable(false)
-                .setTitle(R.string.media_player_error_dialog_title)
-                .setMessage(
-                    String.format(
-                        FireAlarm.this.getString(R.string.media_player_error_dialog_message), what))
-                .setPositiveButton(
-                    R.string.isee,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog,
-                                            int which) {
-                            // QUESTION? What do you gonna do when this happens????
-                            Log.d(TAG, "======> I see!");
-                        }
-                    })
-                .show();
+
+
+            Log.d(TAG, "========================> " + what + "====> " + extra);
+
+
+            // AlertDialog.Builder builder =
+            //     new AlertDialog.Builder(FireAlarm.this);
+            // builder.setCancelable(false)
+            //     .setTitle(R.string.media_player_error_dialog_title)
+            //     .setMessage(
+            //         String.format(
+            //             FireAlarm.this.getString(R.string.media_player_error_dialog_message), what))
+            //     .setPositiveButton(
+            //         R.string.isee,
+            //         new DialogInterface.OnClickListener() {
+            //             @Override
+            //             public void onClick(DialogInterface dialog,
+            //                                 int which) {
+            //                 // QUESTION? What do you gonna do when this happens????
+            //                 Log.d(TAG, "======> I see!");
+            //             }
+            //         })
+            //     .show();
             return true;
         }
     }
@@ -106,9 +111,6 @@ public class FireAlarm extends Activity {
     private PowerManager.WakeLock mWakeLock;
     private KeyguardManager mKeyguardManager;
     private KeyguardManager.KeyguardLock mKeyguardLock;
-
-
-    private boolean mIsDismissed = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -248,11 +250,16 @@ public class FireAlarm extends Activity {
         super.onResume();
 
         Log.d(TAG, "===> onResume()");
-        mIsDismissed = false;
 
         // FireAlarm goes back to interact to user. But, Keyguard
         // may be in front.
         disableKeyguard();
+
+        // The volume of ringtone might be lowered down. Increase
+        // it to normal volume.
+        if (mMediaPlayer != null) {
+            mMediaPlayer.setVolume(1.0f, 1.0f);
+        }
     }
 
     public void onPause() {
@@ -272,10 +279,18 @@ public class FireAlarm extends Activity {
             // This onPause() was triggered by the user who
             // snoozed or dismissed the alarm or other components
             // asked it to close.
+
+
+            Log.d(TAG, "=====> onPause(): in the finishing process...");
+
+
         } else {
-            // The FireAlarm is not interacting with the
-            // user. Lower down the volume or snooze it directly.
+            Log.d(TAG, "=====> onPause(): FireAlarm is not interacting to the user any more...");
+
             if (mMediaPlayer != null) {
+                // The FireAlarm is not interacting with the
+                // user. Lower down the volume or snooze it directly.
+
                 mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
             }
         }
@@ -341,10 +356,7 @@ public class FireAlarm extends Activity {
         // Notify the system that this alarm is changed.
         Alarms.setNotification(this, true);
 
-        mIsDismissed = true;
-
         finish();
-
     }
 
     private void vibrate() {
