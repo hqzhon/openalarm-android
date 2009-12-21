@@ -68,6 +68,6 @@ public class CompoundTimeTextView extends LinearLayout {
         }
 
         mTimeTextView.setText(
-            Alarms.formatTime(is24HourFormat, hourOfDay, minutes));
+            Alarms.formatTime(is24HourFormat, hourOfDay, minutes, false));
     }
 }

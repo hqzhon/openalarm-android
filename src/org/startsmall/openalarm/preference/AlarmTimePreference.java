@@ -59,6 +59,6 @@ public class AlarmTimePreference extends TextViewPreference {
         final int minutes = time % 100;
 
         final boolean is24HourFormat = Alarms.is24HourMode(getContext());
-        return Alarms.formatTime(is24HourFormat, hourOfDay, minutes);
+        return Alarms.formatTime(is24HourFormat, hourOfDay, minutes, true);
     }
 }

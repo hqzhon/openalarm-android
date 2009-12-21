@@ -647,7 +647,7 @@ public class Alarms {
         String timeString = "";
         if (calendar != null) {
             timeString =
-                formatTime(is24HourMode(context) ? "E kk:mm" : "E KK:mm aa",
+                formatTime(is24HourMode(context) ? "E HH:mm" : "E hh:mm aa",
                            calendar);
         }
 
@@ -664,15 +664,18 @@ public class Alarms {
 
     public static String formatTime(final boolean is24HourMode,
                                     final int hourOfDay,
-                                    final int minutes) {
+                                    final int minutes,
+                                    boolean isAmPmEnabled) {
         Calendar calendar = Alarms.getCalendarInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
 
         if (is24HourMode) {
-            return formatTime("kk:mm", calendar);
+            return formatTime("HH:mm", calendar);
         }
-        return formatTime("KK:mm", calendar);
+        return formatTime(
+            isAmPmEnabled ? "hh:mm aa" : "hh:mm",
+            calendar);
     }
 
     public static long calculateAlarmAtTimeInMillis(final int hourOfDay,
