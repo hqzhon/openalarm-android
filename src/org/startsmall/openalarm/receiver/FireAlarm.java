@@ -49,7 +49,8 @@ public class FireAlarm extends Activity {
             case STOP_PLAYBACK:
                 // This callback is executed because user doesn't
                 // tell me what to do, i.e., dimiss or snooze. I decide
-                // to snooze it.
+                // to snooze it or when the FireAlarm is paused.
+                Log.d(TAG, "============> StopPlayback.handleMessage() @ " + System.currentTimeMillis());
                 FireAlarm.this.snoozeAlarm();
                 return true;
             default:
@@ -67,7 +68,7 @@ public class FireAlarm extends Activity {
             // playing ringtone.
 
 
-            Log.d(TAG, "========================> " + what + "====> " + extra);
+            Log.d(TAG, "========================> onError(): " + what + "====> " + extra);
 
 
             // AlertDialog.Builder builder =
@@ -100,7 +101,7 @@ public class FireAlarm extends Activity {
     /// Copied from Android's source code which is claimed recommended values by media team.
     private static final float IN_CALL_VOLUME = 0.125f;
 
-    private static final int PLAYBACK_TIMEOUT = 18000; // 3 minutes
+    private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
 
     private MediaPlayer mMediaPlayer;
     private Vibrator mVibrator;
@@ -116,7 +117,7 @@ public class FireAlarm extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "===> onCreate()");
+        Log.d(TAG, "==============================> onCreate()");
 
         // Wakeup the device and release keylock.
         mPowerManager = (PowerManager)this.getSystemService(Context.POWER_SERVICE);
@@ -197,44 +198,37 @@ public class FireAlarm extends Activity {
                 return;
             }
 
-            // Set a 3-minutes one-shot timer to stop the
-            // playback of ringtone.
-            if (mHandler == null) {
-                mHandler = new Handler(new StopPlayback());
-            }
-            Message stopPlaybackMessage =
-                mHandler.obtainMessage(STOP_PLAYBACK, mMediaPlayer);
+            // Set a 3-minutes one-shot stop timer for stopping
+            // the MediaPlayer.
+            mHandler = new Handler(new StopPlayback());
+            Message stopPlaybackMessage = mHandler.obtainMessage(STOP_PLAYBACK, mMediaPlayer);
             if (mHandler.sendMessageDelayed(stopPlaybackMessage,
                                             PLAYBACK_TIMEOUT)) {
                 // Play ringtone now.
                 mMediaPlayer.start();
-
                 vibrate();
             } else {
                 Log.d(TAG, "===> Unable to enqueue message");
             }
         }
 
-        AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        Log.d(TAG, "===> Max volume=" + am.getStreamMaxVolume(AudioManager.STREAM_RING)
-              + ", volume=" + am.getStreamVolume(AudioManager.STREAM_RING));
+        // AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        // Log.d(TAG, "===> Max volume=" + am.getStreamMaxVolume(AudioManager.STREAM_RING)
+        //       + ", volume=" + am.getStreamVolume(AudioManager.STREAM_RING));
     }
 
+    @Override
     public void onDestroy() {
         super.onDestroy();
 
-        Log.d(TAG, "===> onDestroy()");
+        Log.d(TAG, "===============================> onDestroy()");
 
-
-        // In case the FireAlarm is finished before the shot-time
-        // of Handler. Without this, any message in the queue
-        // will be processed before message queue is destroyed
-        // along with the destruction of FireAlarm.
         if (mHandler != null) {
             mHandler.removeMessages(STOP_PLAYBACK, mMediaPlayer);
             mHandler = null;
         }
 
+        // Stop and release MediaPlayer object.
         if (mMediaPlayer != null) {
             mMediaPlayer.stop();
             mMediaPlayer.release();
@@ -246,6 +240,7 @@ public class FireAlarm extends Activity {
     }
 
     // FireAlarm comes to the foreground
+    @Override
     public void onResume() {
         super.onResume();
 
@@ -262,38 +257,20 @@ public class FireAlarm extends Activity {
         }
     }
 
+    @Override
     public void onPause() {
-        super.onPause();
+        Log.d(TAG, "===============================> onPause()");
 
-        Log.d(TAG, "===> onPause() - it is finishing? " + isFinishing());
 
         // Returns to keyguarded mode if the phone was in this
         // mode.
         enableKeyguard();
 
         // It's possible that another activity is running up to
-        // overlap this activity. Snooze this alarm in order for
-        // the user to handle this another incoming
-        // activity.
-        if (isFinishing()) {
-            // This onPause() was triggered by the user who
-            // snoozed or dismissed the alarm or other components
-            // asked it to close.
-
-
-            Log.d(TAG, "=====> onPause(): in the finishing process...");
-
-
-        } else {
-            Log.d(TAG, "=====> onPause(): FireAlarm is not interacting to the user any more...");
-
-            if (mMediaPlayer != null) {
-                // The FireAlarm is not interacting with the
-                // user. Lower down the volume or snooze it directly.
-
-                mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
-            }
-        }
+        // overlap this activity. The callback of the handler is
+        // automatically executed by super.onPause() to snooze
+        // the alarm and finsh the FireAlarm.
+        super.onPause();
     }
 
     private void setLabelFromIntent() {
@@ -311,7 +288,7 @@ public class FireAlarm extends Activity {
         final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
         final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
-        Log.d(TAG, "===> snoozeAlarm(): alarm id=" + alarmId);
+        Log.d(TAG, "===============================> snoozeAlarm(): alarm id=" + alarmId);
 
         Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, handlerClassName, extraData, 2);
         finish();
@@ -322,7 +299,7 @@ public class FireAlarm extends Activity {
         final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         final Uri alarmUri = Alarms.getAlarmUri(alarmId);
 
-        Log.d(TAG, "===> dismissAlarm(): alarm uri=" + alarmUri);
+        Log.d(TAG, "===============================> dismissAlarm(): alarm uri=" + alarmUri);
 
         // Disable the old alert. The explicit class field of
         // the Intent was set to this activity when setting alarm
