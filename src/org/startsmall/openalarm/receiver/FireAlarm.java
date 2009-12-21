@@ -179,15 +179,13 @@ public class FireAlarm extends Activity {
             } catch (Exception e1) {
                 // mMediaPlayer had entered Error state and
                 // OnErrorListener was called asynchronously.
-
-                mMediaPlayer.reset();
-                FileDescriptor fd =
-                    getResources().openRawResourceFd(R.raw.in_call_ringtone).getFileDescriptor();
-                try {
-                    mMediaPlayer.setDataSource(fd);
-                } catch (Exception e2) {
-                    return;
-                }
+                // mMediaPlayer.reset();
+                // AssetFileDescriptor afd =
+                //     getResources().openRawResourceFd(R.raw.in_call_ringtone);
+                // mMediaPlayer.setDataSource(afd.getFileDescriptor(),
+                //                            afd.getStartOffset(),
+                //                            afd.getLength());
+                // afd.close();
             }
 
             mMediaPlayer.setLooping(true);
