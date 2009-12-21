@@ -19,6 +19,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -50,7 +51,6 @@ public class FireAlarm extends Activity {
                 // This callback is executed because user doesn't
                 // tell me what to do, i.e., dimiss or snooze. I decide
                 // to snooze it or when the FireAlarm is paused.
-                Log.d(TAG, "============> StopPlayback.handleMessage() @ " + System.currentTimeMillis());
                 FireAlarm.this.snoozeAlarm();
                 return true;
             default:
@@ -67,9 +67,7 @@ public class FireAlarm extends Activity {
             // MediaPlayer encountered problems on
             // playing ringtone.
 
-
             Log.d(TAG, "========================> onError(): " + what + "====> " + extra);
-
 
             // AlertDialog.Builder builder =
             //     new AlertDialog.Builder(FireAlarm.this);
@@ -170,9 +168,12 @@ public class FireAlarm extends Activity {
                     Log.d(TAG, "We're in a call. Lower volume and use fallback ringtone!");
                     // This raw media must be supported by
                     // Android and no errors thrown from it.
-                    FileDescriptor fd =
-                        getResources().openRawResourceFd(R.raw.in_call_ringtone).getFileDescriptor();
-                    mMediaPlayer.setDataSource(fd);
+                    AssetFileDescriptor afd =
+                        getResources().openRawResourceFd(R.raw.in_call_ringtone);
+                    mMediaPlayer.setDataSource(afd.getFileDescriptor(),
+                                               afd.getStartOffset(),
+                                               afd.getLength());
+                    afd.close();
                     mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
                 }
             } catch (Exception e1) {
@@ -249,28 +250,17 @@ public class FireAlarm extends Activity {
         // FireAlarm goes back to interact to user. But, Keyguard
         // may be in front.
         disableKeyguard();
-
-        // The volume of ringtone might be lowered down. Increase
-        // it to normal volume.
-        if (mMediaPlayer != null) {
-            mMediaPlayer.setVolume(1.0f, 1.0f);
-        }
     }
 
     @Override
     public void onPause() {
-        Log.d(TAG, "===============================> onPause()");
+        super.onPause();
 
+        Log.d(TAG, "===============================> onPause()");
 
         // Returns to keyguarded mode if the phone was in this
         // mode.
         enableKeyguard();
-
-        // It's possible that another activity is running up to
-        // overlap this activity. The callback of the handler is
-        // automatically executed by super.onPause() to snooze
-        // the alarm and finsh the FireAlarm.
-        super.onPause();
     }
 
     private void setLabelFromIntent() {
@@ -285,12 +275,14 @@ public class FireAlarm extends Activity {
         Intent i = getIntent();
         final int alarmId = i.getIntExtra(Alarms.AlarmColumns._ID, -1);
         final String label = i.getStringExtra(Alarms.AlarmColumns.LABEL);
+        final int repeatOnDays = i.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
         final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
         final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
         Log.d(TAG, "===============================> snoozeAlarm(): alarm id=" + alarmId);
 
-        Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, handlerClassName, extraData, 2);
+        Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, repeatOnDays,
+                           handlerClassName, extraData, 2);
         finish();
     }
 
@@ -317,13 +309,12 @@ public class FireAlarm extends Activity {
         // Activity to show up continuously.
         final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1) - 1;
         final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
-
         final long atTimeInMillis =
-            Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes,
-                                                repeatOnDaysCode);
+            Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes, repeatOnDaysCode);
+
         final String label = intent.getStringExtra(Alarms.AlarmColumns.LABEL);
         final String extraData = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        Alarms.enableAlarm(this, alarmId, label, handlerClassName, atTimeInMillis, extraData);
+        Alarms.enableAlarm(this, alarmId, label, atTimeInMillis, repeatOnDaysCode, handlerClassName, extraData);
 
         // Update the new time into database.
         ContentValues newValues = new ContentValues();

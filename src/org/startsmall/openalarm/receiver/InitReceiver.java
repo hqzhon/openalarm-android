@@ -51,13 +51,12 @@ public class InitReceiver extends BroadcastReceiver {
             // Re-schedule new time.
             long atTimeInMillis = Alarms.calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
             if (enabled) {
-                Alarms.enableAlarm(context, id, label, handler,
-                                   atTimeInMillis, extra);
+                Alarms.enableAlarm(context, id, label, atTimeInMillis, repeatOnDaysCode,
+                                   handler, extra);
             }
 
             ContentValues newValues = new ContentValues();
-            newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
-                          atTimeInMillis);
+            newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
             Alarms.updateAlarm(context, Alarms.getAlarmUri(id), newValues);
             if (enabled) {
                 Alarms.setNotification(context, true);

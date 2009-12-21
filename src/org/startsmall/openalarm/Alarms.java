@@ -457,7 +457,8 @@ public class Alarms {
                 mAtTimeInMillis =
                     calculateAlarmAtTimeInMillis(hour, minutes,
                                                  repeatOnDaysCode);
-                enableAlarm(context, id, label, handler, mAtTimeInMillis, extra);
+                enableAlarm(context, id, label, mAtTimeInMillis, repeatOnDaysCode,
+                            handler, extra);
 
                 showToast(context, mAtTimeInMillis);
 
@@ -527,21 +528,22 @@ public class Alarms {
     public static void snoozeAlarm(final Context context,
                                    final int alarmId,
                                    final String label,
+                                   final int repeatOnDays,
                                    final String handlerClassName,
                                    final String extraData,
                                    final int minutesLater) {
         // Cancel the old alert.
         disableAlarm(context, alarmId, handlerClassName);
 
-        Log.d(TAG, "===> snoozeAlarm(): Cancel old alert with data=" + getAlarmUri(alarmId)
-              + ", associated class=" + handlerClassName);
-
         // Arrange new time for snoozed alarm from current date
         // and time.
         Calendar calendar = getCalendarInstance();
         calendar.add(Calendar.MINUTE, minutesLater);
+        int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+        int minutes = calendar.get(Calendar.MINUTE);
         long newAtTimeInMillis = calendar.getTimeInMillis();
-        enableAlarm(context, alarmId, label, handlerClassName, newAtTimeInMillis, extraData);
+        enableAlarm(context, alarmId, label, newAtTimeInMillis, repeatOnDays,
+                    handlerClassName, extraData);
 
         // Put info into SharedPreferences for the snoozed alarm.
         SharedPreferences preferences =
@@ -584,8 +586,9 @@ public class Alarms {
     public static void enableAlarm(final Context context,
                                    final int alarmId,
                                    final String label,
-                                   final String handlerClassName,
                                    final long atTimeInMillis,
+                                   final int repeatOnDays,
+                                   final String handlerClassName,
                                    final String extraData) {
         Intent i = new Intent(HANDLE_ALARM, getAlarmUri(alarmId));
         i.setClassName(context, handlerClassName);
@@ -593,6 +596,15 @@ public class Alarms {
         // Alarm ID is always necessary for its operations.
         i.putExtra(AlarmColumns._ID, alarmId);
         i.putExtra(AlarmColumns.LABEL, label);
+
+        // Extract hourOfDay and minutes
+        Calendar c = getCalendarInstance();
+        c.setTimeInMillis(atTimeInMillis);
+        final int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
+        final int minutes = c.get(Calendar.MINUTE);
+        i.putExtra(AlarmColumns.HOUR, hourOfDay);
+        i.putExtra(AlarmColumns.MINUTES, minutes);
+        i.putExtra(AlarmColumns.REPEAT_DAYS, repeatOnDays);
 
         // Intent might be provided different class to associate,
         // like FireAlarm. We need to cache the handlerClass in
