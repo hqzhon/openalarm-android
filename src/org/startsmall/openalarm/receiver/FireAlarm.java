@@ -123,10 +123,11 @@ public class FireAlarm extends Activity {
 
         acquireWakeLock();
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        // requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.fire_alarm);
 
         setLabelFromIntent();
+        setWindowTitleFromIntent();
 
         // Snooze this alarm makes the alarm postponded and saved
         // as a SharedPreferences.
@@ -261,10 +262,19 @@ public class FireAlarm extends Activity {
         enableKeyguard();
     }
 
+    private void setWindowTitleFromIntent() {
+        Intent i = getIntent();
+        final String label = i.getStringExtra(Alarms.AlarmColumns.LABEL);
+        setTitle(label);
+    }
+
     private void setLabelFromIntent() {
         Intent i = getIntent();
+        // Recalculate the new time of the alarm.
+        final int hourOfDay = i.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
+        final int minutes = i.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
         final String label =
-            i.getStringExtra(Alarms.AlarmColumns.LABEL);
+            Alarms.formatTime(Alarms.is24HourMode(this), hourOfDay, minutes, true);
         TextView labelView = (TextView)findViewById(R.id.label);
         labelView.setText(label);
     }

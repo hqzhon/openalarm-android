@@ -34,7 +34,7 @@
     </activity>
 
     <activity android:name=".receiver.FireAlarm"
-              android:theme="@style/Theme.Dialog.NoTitle">
+              android:theme="@android:style/Theme.Dialog">
     </activity>
 
     <receiver android:name=".receiver.InitReceiver"
