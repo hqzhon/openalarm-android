@@ -12,13 +12,10 @@ package org.startsmall.openalarm.receiver;
 import org.startsmall.openalarm.R;
 import org.startsmall.openalarm.Alarms;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -30,6 +27,7 @@ import android.os.Vibrator;
 import android.net.Uri;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -52,6 +50,7 @@ public class FireAlarm extends Activity {
                 // tell me what to do, i.e., dimiss or snooze. I decide
                 // to snooze it or when the FireAlarm is paused.
                 FireAlarm.this.snoozeAlarm();
+                FireAlarm.this.finish();
                 return true;
             default:
                 break;
@@ -63,30 +62,7 @@ public class FireAlarm extends Activity {
     private class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
         @Override
         public boolean onError(MediaPlayer mp, int what, int extra) {
-            // The FireAlarm should prompt user when
-            // MediaPlayer encountered problems on
-            // playing ringtone.
-
             Log.d(TAG, "========================> onError(): " + what + "====> " + extra);
-
-            // AlertDialog.Builder builder =
-            //     new AlertDialog.Builder(FireAlarm.this);
-            // builder.setCancelable(false)
-            //     .setTitle(R.string.media_player_error_dialog_title)
-            //     .setMessage(
-            //         String.format(
-            //             FireAlarm.this.getString(R.string.media_player_error_dialog_message), what))
-            //     .setPositiveButton(
-            //         R.string.isee,
-            //         new DialogInterface.OnClickListener() {
-            //             @Override
-            //             public void onClick(DialogInterface dialog,
-            //                                 int which) {
-            //                 // QUESTION? What do you gonna do when this happens????
-            //                 Log.d(TAG, "======> I see!");
-            //             }
-            //         })
-            //     .show();
             return true;
         }
     }
@@ -105,7 +81,6 @@ public class FireAlarm extends Activity {
     private Vibrator mVibrator;
     private Handler mHandler;
 
-    //
     private PowerManager mPowerManager;
     private PowerManager.WakeLock mWakeLock;
     private KeyguardManager mKeyguardManager;
@@ -137,6 +112,7 @@ public class FireAlarm extends Activity {
                 @Override
                 public void onClick(View v) {
                     FireAlarm.this.snoozeAlarm();
+                    FireAlarm.this.finish();
                 }
             });
 
@@ -148,6 +124,7 @@ public class FireAlarm extends Activity {
                 @Override
                 public void onClick(View v) {
                     FireAlarm.this.dismissAlarm();
+                    FireAlarm.this.finish();
                 }
             });
 
@@ -211,10 +188,6 @@ public class FireAlarm extends Activity {
                 Log.d(TAG, "===> Unable to enqueue message");
             }
         }
-
-        // AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        // Log.d(TAG, "===> Max volume=" + am.getStreamMaxVolume(AudioManager.STREAM_RING)
-        //       + ", volume=" + am.getStreamVolume(AudioManager.STREAM_RING));
     }
 
     @Override
@@ -262,6 +235,27 @@ public class FireAlarm extends Activity {
         enableKeyguard();
     }
 
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (keyCode == KeyEvent.KEYCODE_BACK &&
+            event.getRepeatCount() == 0) { // don't handle BACK key.
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void onNewIntent(Intent newIntent) {
+        Log.d(TAG, "===============================> onNewIntent()");
+
+        // Dismiss the old alarm.
+        dismissAlarm();
+
+        setIntent(newIntent);
+
+        // Refresh UI of the existing instance.
+        setLabelFromIntent();
+        setWindowTitleFromIntent();
+    }
+
     private void setWindowTitleFromIntent() {
         Intent i = getIntent();
         final String label = i.getStringExtra(Alarms.AlarmColumns.LABEL);
@@ -291,7 +285,6 @@ public class FireAlarm extends Activity {
 
         Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, repeatOnDays,
                            handlerClassName, extraData, 2);
-        finish();
     }
 
     private void dismissAlarm() {
@@ -331,8 +324,6 @@ public class FireAlarm extends Activity {
 
         // Notify the system that this alarm is changed.
         Alarms.setNotification(this, true);
-
-        finish();
     }
 
     private void vibrate() {
