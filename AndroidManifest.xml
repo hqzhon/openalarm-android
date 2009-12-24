@@ -12,7 +12,7 @@
 
   <application android:label="@string/app_name"
                android:icon="@drawable/color_alarm">
-    <provider android:name="AlarmProvider"
+    <provider android:name=".provider.AlarmProvider"
               android:authorities="org.startsmall.openalarm" />
 
     <activity android:name=".OpenAlarm"

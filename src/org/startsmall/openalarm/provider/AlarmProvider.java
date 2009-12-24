@@ -8,7 +8,9 @@
  * A bridge between content resolver and internal database.
  *
  */
-package org.startsmall.openalarm;
+package org.startsmall.openalarm.provider;
+
+import org.startsmall.openalarm.Alarms;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
