@@ -385,36 +385,38 @@ public class OpenAlarm extends ListActivity {
                 newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
             }
 
+            boolean updated = false;
             // If this alarm is enabled, re-schedule it.
-            if (settings.enabled) {
+            if (settings.enabled &&
                 // If these values were updated, we need to
                 // re-schedule the alarm with these new values.
-                if (newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
-                    newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
-                    newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
-                    newValues.containsKey(Alarms.AlarmColumns.HANDLER) ||
-                    newValues.containsKey(Alarms.AlarmColumns.EXTRA)) {
+                (newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
+                 newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
+                 newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
+                 newValues.containsKey(Alarms.AlarmColumns.HANDLER) ||
+                 newValues.containsKey(Alarms.AlarmColumns.EXTRA))) {
 
-                    // Deactivate the old alarm when the following
-                    // situation happens,
-                    //
-                    //  ---+------+--------+------->
-                    //   now     old      new
-                    //
+                // Deactivate the old alarm when the following
+                // situation happens,
+                //
+                //  ---+------+--------+------->
+                //   now     old      new
+                //
 
-                    // If the alert was snoozed and then
-                    // re-scheduled, no need to go through
-                    // Alarms.cancelSnoozedAlarm() because I can
-                    // cancel all alarm triggered by this kind of
-                    // Intent, same as snoozed alert.
-                    Alarms.disableAlarm(this, alarmId, settings.handler);
-                    Alarms.updateAlarm(this, alarmUri, newValues);
-                    Alarms.setAlarmEnabled(this, alarmUri, true);
-                }
-            } else {
-                if (newValues.size() > 0) {
-                    Alarms.updateAlarm(this, alarmUri, newValues);
-                }
+                // If the alert was snoozed and then
+                // re-scheduled, no need to go through
+                // Alarms.cancelSnoozedAlarm() because I can
+                // cancel all alarm triggered by this kind of
+                // Intent, same as snoozed alert.
+                Alarms.disableAlarm(this, alarmId, settings.handler);
+                Alarms.updateAlarm(this, alarmUri, newValues);
+                Alarms.setAlarmEnabled(this, alarmUri, true);
+
+                updated = true;
+            }
+
+            if (newValues.size() > 0 && !updated) {
+                Alarms.updateAlarm(this, alarmUri, newValues);
             }
             break;
         default:
