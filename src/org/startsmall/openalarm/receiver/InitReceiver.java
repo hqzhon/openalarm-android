@@ -8,9 +8,8 @@
  * rebooted.
  */
 
-package org.startsmall.openalarm.receiver;
+package org.startsmall.openalarm;
 
-import org.startsmall.openalarm.Alarms;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;

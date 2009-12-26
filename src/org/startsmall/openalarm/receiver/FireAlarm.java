@@ -7,10 +7,8 @@
  *
  *
  */
-package org.startsmall.openalarm.receiver;
+package org.startsmall.openalarm;
 
-import org.startsmall.openalarm.R;
-import org.startsmall.openalarm.Alarms;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;

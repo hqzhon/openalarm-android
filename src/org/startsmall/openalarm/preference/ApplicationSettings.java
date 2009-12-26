@@ -8,9 +8,7 @@
  *
  */
 
-package org.startsmall.openalarm.preference;
-
-import org.startsmall.openalarm.R;
+package org.startsmall.openalarm;
 
 import android.preference.ListPreference;
 import android.preference.Preference;

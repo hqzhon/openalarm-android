@@ -9,10 +9,6 @@
  */
 package org.startsmall.openalarm;
 
-import org.startsmall.openalarm.preference.AlarmSettings;
-import org.startsmall.openalarm.preference.ApplicationSettings;
-import org.startsmall.openalarm.widget.CompoundTimeTextView;
-
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ComponentName;

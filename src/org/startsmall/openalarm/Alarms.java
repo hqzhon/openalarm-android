@@ -596,7 +596,7 @@ public class Alarms {
             String handlerPackageName = handlerClass.getPackage().getName();
             i.setClassName(handlerPackageName, handlerClassName);
         } catch (ClassNotFoundException e) {
-            Log.d(TAG, "Handler class not found");
+            Log.d(TAG, "=======================>Handler class not found");
             return;
         }
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);

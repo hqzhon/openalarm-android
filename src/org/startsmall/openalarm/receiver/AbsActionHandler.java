@@ -1,4 +1,14 @@
-package org.startsmall.openalarm.receiver;
+/**
+ * @file   AbsActionHandler.java
+ * @author josh <yenliangl at gmail dot com>
+ * @date   Sat Dec 26 16:27:35 2009
+ *
+ * @brief
+ *
+ *
+ */
+
+package org.startsmall.openalarm;
 
 import android.content.Context;
 import android.content.BroadcastReceiver;

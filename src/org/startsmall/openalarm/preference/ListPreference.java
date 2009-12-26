@@ -7,7 +7,7 @@
  *
  *
  */
-package org.startsmall.openalarm.preference;
+package org.startsmall.openalarm;
 
 import android.content.Context;
 import android.content.Intent;

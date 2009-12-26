@@ -8,10 +8,8 @@
  *
  */
 
-package org.startsmall.openalarm.widget;
+package org.startsmall.openalarm;
 
-import org.startsmall.openalarm.Alarms;
-import org.startsmall.openalarm.R;
 import android.content.Context;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;

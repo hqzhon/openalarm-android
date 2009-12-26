@@ -7,9 +7,7 @@
  *
  *
  */
-package org.startsmall.openalarm.preference;
-
-import org.startsmall.openalarm.*;
+package org.startsmall.openalarm;
 
 import android.app.Dialog;
 import android.os.Bundle;
