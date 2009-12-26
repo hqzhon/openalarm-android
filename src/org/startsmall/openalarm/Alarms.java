@@ -591,7 +591,15 @@ public class Alarms {
                                    final String handlerClassName,
                                    final String extraData) {
         Intent i = new Intent(HANDLE_ALARM, getAlarmUri(alarmId));
-        i.setClassName(context, handlerClassName);
+        try {
+            Class<?> handlerClass = getHandlerClass(handlerClassName);
+            String handlerPackageName = handlerClass.getPackage().getName();
+            i.setClassName(handlerPackageName, handlerClassName);
+        } catch (ClassNotFoundException e) {
+            Log.d(TAG, "Handler class not found");
+            return;
+        }
+        i.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
         // Alarm ID is always necessary for its operations.
         i.putExtra(AlarmColumns._ID, alarmId);
