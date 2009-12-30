@@ -181,7 +181,7 @@ public class FireAlarm extends Activity {
                                             PLAYBACK_TIMEOUT)) {
                 // Play ringtone now.
                 mMediaPlayer.start();
-                vibrate();
+                vibrate(true);
             } else {
                 Log.d(TAG, "===> Unable to enqueue message");
             }
@@ -283,6 +283,9 @@ public class FireAlarm extends Activity {
 
         Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, repeatOnDays,
                            handlerClassName, extraData, 2);
+
+        // Disable vibrator
+        vibrate(false);
     }
 
     private void dismissAlarm() {
@@ -322,19 +325,23 @@ public class FireAlarm extends Activity {
 
         // Notify the system that this alarm is changed.
         Alarms.setNotification(this, true);
+
+        // Disable vibrator
+        vibrate(false);
     }
 
-    private void vibrate() {
-        final long[] vibratePattern = new long[] {500, 500};
-
+    private void vibrate(boolean enabled) {
         Intent intent = getIntent();
         if (intent.hasExtra("vibrate") &&
             intent.getBooleanExtra("vibrate", false)) {
             if (mVibrator == null) {
-                mVibrator =
-                    (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+                mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
             }
-            mVibrator.vibrate(vibratePattern, 0);
+            if (enabled) {
+                mVibrator.vibrate(new long[]{500, 500}, 0);
+            } else {
+                mVibrator.cancel();
+            }
         }
     }
 
