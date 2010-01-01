@@ -56,6 +56,7 @@
     <string name="alarm_notification_ticker_text">Alarm is changed</string>
     <string name="alarm_notification_content_text">Use %s</string>
     <string name="alarm_handler_unset_message">Don't know how to handle this alarm. Please choose Action.</string>
+    <string name="alarm_repeat_days_unset_message">No repeat days set. Please choose some days for this alarm.</string>
 
     <!-- Alarm settings/dialogs/Title -->
     <string name="alarm_settings_action_dialog_title">Complete action using...</string>

@@ -101,6 +101,9 @@ public class Alarms {
 
     private static final String USER_APK_DIR = "/data/app";
 
+    public static final int ERROR_NO_DAYS_SET = 1;
+    public static final int ERROR_NO_HANDLER_SET = 2;
+
     /*****************************************************************
      * Constants used in content provider and SQLiteDatabase.    *
      *****************************************************************/
@@ -244,7 +247,7 @@ public class Alarms {
                     }
                 }
             } else {
-                result.add("No days");
+                result.add("Not set");
             }
             return result;
         }
@@ -424,49 +427,49 @@ public class Alarms {
             alarmUri, newValues, null, null);
     }
 
-    private static class EnableAlarm implements OnVisitListener {
-        private final boolean mEnabled;
-        public long mAtTimeInMillis;
-        public String mHandler;
+    // private static class EnableAlarm implements OnVisitListener {
+    //     private final boolean mEnabled;
+    //     public long mAtTimeInMillis;
+    //     public String mHandler;
 
-        public EnableAlarm(boolean enabled) {
-            mEnabled = enabled;
-        }
+    //     public EnableAlarm(boolean enabled) {
+    //         mEnabled = enabled;
+    //     }
 
-        @Override
-        public void onVisit(final Context context,
-                            final int id,
-                            final String label,
-                            final int hour,
-                            final int minutes,
-                            final int oldAtTimeInMillis,
-                            final int repeatOnDaysCode,
-                            final boolean enabled,
-                            final String handler,
-                            final String extra) {
-            if (TextUtils.isEmpty(handler)) {
-                Log.d(TAG, "***** null alarm handler is not allowed");
-                return;
-            }
+    //     @Override
+    //     public void onVisit(final Context context,
+    //                         final int id,
+    //                         final String label,
+    //                         final int hour,
+    //                         final int minutes,
+    //                         final int oldAtTimeInMillis,
+    //                         final int repeatOnDaysCode,
+    //                         final boolean enabled,
+    //                         final String handler,
+    //                         final String extra) {
+    //         if (TextUtils.isEmpty(handler)) {
+    //             Log.d(TAG, "***** null alarm handler is not allowed");
+    //             return;
+    //         }
 
-            Log.d(TAG, "Inside EnableAlarm, alarm " + label
-                  + " handler=" + handler);
+    //         Log.d(TAG, "Inside EnableAlarm, alarm " + label
+    //               + " handler=" + handler);
 
-            mHandler = handler;
-            if (mEnabled) {
-                mAtTimeInMillis =
-                    calculateAlarmAtTimeInMillis(hour, minutes,
-                                                 repeatOnDaysCode);
-                enableAlarm(context, id, label, mAtTimeInMillis, repeatOnDaysCode,
-                            handler, extra);
+    //         mHandler = handler;
+    //         if (mEnabled) {
+    //             mAtTimeInMillis =
+    //                 calculateAlarmAtTimeInMillis(hour, minutes,
+    //                                              repeatOnDaysCode);
+    //             enableAlarm(context, id, label, mAtTimeInMillis, repeatOnDaysCode,
+    //                         handler, extra);
 
-                showToast(context, mAtTimeInMillis);
+    //             showToast(context, mAtTimeInMillis);
 
-            } else {
-                disableAlarm(context, id, handler);
-            }
-        }
-    }
+    //         } else {
+    //             disableAlarm(context, id, handler);
+    //         }
+    //     }
+    // }
 
     /**
      * Enable/disable the alarm pointed by @c alarmUri.
@@ -475,33 +478,49 @@ public class Alarms {
      * @param alarmUri Alarm uri.
      * @param enabled Enable or disable this alarm.
      */
-    public static synchronized boolean setAlarmEnabled(final Context context,
-                                                       final Uri alarmUri,
-                                                       final boolean enabled) {
+    public static synchronized int setAlarmEnabled(final Context context,
+                                                   final Uri alarmUri,
+                                                   final boolean enabled) {
         Log.d(TAG, "setAlarmEnabled(" + alarmUri + ", " + enabled + ")");
+
+        // Fetch alarm's settings in the content database.
+        GetAlarmSettings settings = new GetAlarmSettings();
+        forEachAlarm(context, alarmUri, settings);
+
+        // Check the integrity of the alarm's settings.
+        if (TextUtils.isEmpty(settings.handler)) {
+            return ERROR_NO_HANDLER_SET;
+        } else if (settings.repeatOnDaysCode == 0) {
+            return ERROR_NO_DAYS_SET;
+        }
 
         ContentValues newValues = new ContentValues();
         newValues.put(AlarmColumns.ENABLED, enabled ? 1 : 0);
 
-        // Activate or deactivate this alarm.
-        EnableAlarm enabler = new EnableAlarm(enabled);
-        forEachAlarm(context, alarmUri, enabler);
-
+        // Enable the alarm in system.
         if (enabled) {
-            newValues.put(AlarmColumns.AT_TIME_IN_MILLIS,
-                          enabler.mAtTimeInMillis);
+            long timeInMillis =
+                calculateAlarmAtTimeInMillis(settings.hour,
+                                             settings.minutes,
+                                             settings.repeatOnDaysCode);
+            enableAlarm(context, settings.id, settings.label, timeInMillis,
+                        settings.repeatOnDaysCode, settings.handler,
+                        settings.extra);
+            showToast(context, timeInMillis);
 
-            if (TextUtils.isEmpty(enabler.mHandler)) {
-                return false;
-            }
+            newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, timeInMillis);
+        } else {
+            disableAlarm(context, settings.id, settings.handler);
         }
+
+        // Update settings of an alarm (enabled and newTimeInMillis)
         updateAlarm(context, alarmUri, newValues);
 
         if (enabled) {
             // setNotification(context, id, handler, mEnabled);
             setNotification(context, true);
         } else {
-            // If there are more than 2 alarms enabled, don't
+            // If there are more than two alarms enabled, don't
             // remove notification
             final int numberOfEnabledAlarms =
                 getNumberOfEnabledAlarms(context);
@@ -512,7 +531,7 @@ public class Alarms {
             }
         }
 
-        return true;
+        return 0;
     }
 
     /**

@@ -101,17 +101,21 @@ public class OpenAlarm extends ListActivity {
                                                   alarmId);
 
                         // Enable this alarm again.
-                        boolean isSucceed =
+                        int errorCode =
                             Alarms.setAlarmEnabled(OpenAlarm.this,
                                                    Alarms.getAlarmUri(alarmId),
                                                    isChecked);
                         // Can't enable this alarm, unchecked
                         // this button view and brought up
                         // AlarmSettings for this alarm.
-                        if (isChecked && !isSucceed) {
-                            Toast.makeText(OpenAlarm.this,
-                                           R.string.alarm_handler_unset_message,
-                                           Toast.LENGTH_LONG).show();
+                        if (isChecked && errorCode != 0) {
+                            int errorMsgResId = 0;
+                            if (errorCode == Alarms.ERROR_NO_HANDLER_SET) {
+                                errorMsgResId = R.string.alarm_handler_unset_message;
+                            } else if (errorCode == Alarms.ERROR_NO_DAYS_SET) {
+                                errorMsgResId = R.string.alarm_repeat_days_unset_message;
+                            }
+                            Toast.makeText(OpenAlarm.this, errorMsgResId, Toast.LENGTH_LONG).show();
                             parent.performClick();
                             buttonView.setChecked(false);
                         }
@@ -183,12 +187,7 @@ public class OpenAlarm extends ListActivity {
                 dayLabel.setText(days.next());
                 repeatDaysView.addView(dayLabel, params);
             }
-
-            if(daysCode == 0) {
-                repeatDaysView.setVisibility(View.GONE);
-            } else {
-                repeatDaysView.setVisibility(View.VISIBLE);
-            }
+            repeatDaysView.setVisibility(View.VISIBLE);
 
             // Loads handler's label into R.id.action
             ImageView handlerIconView = (ImageView)view.findViewById(R.id.icon);
