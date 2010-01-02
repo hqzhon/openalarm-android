@@ -97,8 +97,7 @@ public class OpenAlarm extends ListActivity {
                         // If it was snoozed before,
                         // check/uncheck this button should
                         // disable this snoozed alert first.
-                        Alarms.cancelSnoozedAlarm(OpenAlarm.this,
-                                                  alarmId);
+                        Alarms.cancelSnoozedAlarm(OpenAlarm.this, alarmId);
 
                         // Enable this alarm again.
                         int errorCode =
@@ -288,8 +287,12 @@ public class OpenAlarm extends ListActivity {
             showApplicationPreferences();
             break;
 
-        case R.id.menu_item_help:
-            showHelpDialog();
+        // case R.id.menu_item_help:
+        //     showHelpDialog();
+        //     break;
+
+        case R.id.menu_item_send_feedback:
+            sendFeedback();
             break;
         }
 
@@ -419,15 +422,23 @@ public class OpenAlarm extends ListActivity {
         }
     }
 
-    // TODO:
     private void showApplicationPreferences() {
         Intent intent = new Intent(this, ApplicationSettings.class);
         startActivity(intent);
     }
 
-    // TODO:
-    private void showHelpDialog() {
-        Log.d(TAG, "===> Show help dialog and copyright");
+    // // TODO:
+    // private void showHelpDialog() {
+    //     Log.d(TAG, "===> Show help dialog and copyright");
+    // }
+
+    private void sendFeedback() {
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("plain/text");
+        i.putExtra(Intent.EXTRA_EMAIL, new String[]{"yenliangl@gmail.com"});
+        i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
+        i.putExtra(Intent.EXTRA_TEXT, "Hi Josh!" );
+        startActivity(Intent.createChooser(i, "Send Feedback To Developer"));
     }
 
     private void addAlarm() {

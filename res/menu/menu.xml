@@ -5,9 +5,10 @@
 
   <item android:id="@+id/menu_item_preferences"
         android:title="@string/menu_item_preferences"
-        android:icon="@drawable/android:ic_menu_edit"/>
+        android:icon="@drawable/android:ic_menu_preferences"/>
 
-  <item android:id="@+id/menu_item_help"
-        android:title="@string/menu_item_help"
-        android:icon="@drawable/android:ic_menu_help" />
+  <item android:id="@+id/menu_item_send_feedback"
+        android:title="@string/menu_item_send_feedback"
+        android:icon="@drawable/android:ic_dialog_email" />
+
 </menu>

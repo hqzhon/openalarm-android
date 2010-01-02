@@ -579,6 +579,12 @@ public class Alarms {
         preferenceEditor.commit();
     }
 
+    /**
+     * Cancel an snoozed alarm.
+     *
+     * @param context Application context.
+     * @param alarmId Alarm id that may be snoozed. An non -1 value for this method to cancel any alarm snoozed.
+     */
     public static void cancelSnoozedAlarm(final Context context,
                                           final int alarmId) {
         Log.d(TAG, "===> Canceling snoozed alarm " + alarmId);
@@ -590,13 +596,15 @@ public class Alarms {
             preferences.getInt(AlarmColumns._ID, -1);
         if (alarmId != -1 &&     // no checking on alarmId
             persistedAlarmId != alarmId) {
+            // The alarmId was not snoozed before. No need to
+            // cancel it.
             return;
         }
 
         final String handler =
             preferences.getString(AlarmColumns.HANDLER, null);
         if (!TextUtils.isEmpty(handler)) {
-            disableAlarm(context, alarmId, handler);
+            disableAlarm(context, persistedAlarmId, handler);
             // Remove _ID to indicate that the snoozed alert is cancelled.
             preferences.edit().remove(AlarmColumns._ID).commit();
         }

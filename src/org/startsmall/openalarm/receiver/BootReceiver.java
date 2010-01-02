@@ -1,5 +1,5 @@
 /**
- * @file   InitReceiver.java
+ * @file   BootReceiver.java
  * @author josh <yenliangl at gmail dot com>
  * @date   Tue Nov 10 17:47:36 2009
  *
@@ -17,8 +17,8 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class InitReceiver extends BroadcastReceiver {
-    // All enabled alarms should be rescheduled after system's time
+public class BootReceiver extends BroadcastReceiver {
+    // All enabled alarms should be rescheduled if system time
     // changed, time zone changed or machine rebooted.
     private class ScheduleEnabledAlarm implements Alarms.OnVisitListener {
         @Override
@@ -32,7 +32,7 @@ public class InitReceiver extends BroadcastReceiver {
                             final boolean enabled,
                             final String handler,
                             final String extra) {
-            // Note that we need to update every alarm in order
+            // @note We need to update every alarm in order
             // for AdapterView.bindView to update am/pm label
             // whether or not an alarm is enabled.
             if (enabled) {
@@ -48,10 +48,12 @@ public class InitReceiver extends BroadcastReceiver {
             }
 
             // Re-schedule new time.
-            long atTimeInMillis = Alarms.calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
+            long atTimeInMillis =
+                Alarms.calculateAlarmAtTimeInMillis(hour, minutes,
+                                                    repeatOnDaysCode);
             if (enabled) {
-                Alarms.enableAlarm(context, id, label, atTimeInMillis, repeatOnDaysCode,
-                                   handler, extra);
+                Alarms.enableAlarm(context, id, label, atTimeInMillis,
+                                   repeatOnDaysCode, handler, extra);
             }
 
             ContentValues newValues = new ContentValues();
@@ -63,11 +65,11 @@ public class InitReceiver extends BroadcastReceiver {
         }
     }
 
-    private static final String TAG = "InitReceiver";
+    private static final String TAG = "BootReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "===> InitReceiver.onReceive() at " +
+        Log.d(TAG, "===> BootReceiver.onReceive() at " +
               Alarms.formatTime("yyyy:HH:mm",
                                 Alarms.getCalendarInstance()));
 

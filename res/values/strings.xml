@@ -18,6 +18,7 @@
     <string name="menu_item_add">Add</string>
     <string name="menu_item_preferences">Preferences</string>
     <string name="menu_item_set_theme_title">Theme</string>
+    <string name="menu_item_send_feedback">Send Feedback</string>
 
     <!-- Context menu item -->
     <string name="menu_item_edit_alarm">Edit</string>
