@@ -311,7 +311,7 @@ public class OpenAlarm extends ListActivity {
                     android.R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            OpenAlarm.this.deleteAlarm(alarmId);
+                            Alarms.deleteAlarm(OpenAlarm.this, alarmId);
                         }
                     })
                 .setNegativeButton(android.R.string.cancel, null)
@@ -433,12 +433,11 @@ public class OpenAlarm extends ListActivity {
     // }
 
     private void sendFeedback() {
-        Intent i = new Intent(Intent.ACTION_SEND);
-        i.setType("plain/text");
-        i.putExtra(Intent.EXTRA_EMAIL, new String[]{"yenliangl@gmail.com"});
+        Intent i = new Intent(Intent.ACTION_SENDTO);
+        i.setData(Uri.parse("mailto:yenliangl@gmail.com"));
         i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
         i.putExtra(Intent.EXTRA_TEXT, "Hi Josh!" );
-        startActivity(Intent.createChooser(i, "Send Feedback To Developer"));
+        startActivity(Intent.createChooser(i, "Send Feedback"));
     }
 
     private void addAlarm() {
@@ -451,10 +450,6 @@ public class OpenAlarm extends ListActivity {
         Intent intent = new Intent(this, AlarmSettings.class);
         intent.putExtra(Alarms.AlarmColumns._ID, alarmId);
         startActivityForResult(intent, OPEN_ALARM_SETTINGS_CODE);
-    }
-
-    private int deleteAlarm(int alarmId) {
-        return Alarms.deleteAlarm(this, alarmId);
     }
 
     private void setThemeFromPreference() {
