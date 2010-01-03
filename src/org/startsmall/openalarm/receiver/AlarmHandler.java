@@ -17,9 +17,12 @@ import android.media.Ringtone;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
+import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.util.AttributeSet;
 
@@ -72,6 +75,7 @@ public class AlarmHandler extends AbsActionHandler {
     private static final String TAG = "AlarmHandler";
     private static final String VIBRATE_KEY = "vibrate";
     private static final String RINGTONE_KEY = "ringtone";
+    private static final String SNOOZE_DURATION_KEY = "snooze_duration";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -90,6 +94,11 @@ public class AlarmHandler extends AbsActionHandler {
             String rtString = values.getString(RINGTONE_KEY);
             if(rtString != null) {
                 intent.putExtra(RINGTONE_KEY, rtString);
+            }
+
+            int snoozeDuration = values.getInt(SNOOZE_DURATION_KEY, -1);
+            if (snoozeDuration != -1) {
+                intent.putExtra(SNOOZE_DURATION_KEY, snoozeDuration);
             }
         }
 
@@ -114,7 +123,9 @@ public class AlarmHandler extends AbsActionHandler {
         CheckBoxPreference vibratePref = new CheckBoxPreference(context);
         vibratePref.setKey(VIBRATE_KEY);
         vibratePref.setPersistent(true);
-        vibratePref.setTitle(R.string.alarm_extra_settings_vibrate_title);
+        vibratePref.setTitle(R.string.alarm_handler_vibrate_title);
+        vibratePref.setSummaryOn(R.string.alarm_handler_vibrate_summary_on);
+        vibratePref.setSummaryOff(R.string.alarm_handler_vibrate_summary_off);
         category.addPreference(vibratePref);
 
         // Ringtone;
@@ -122,11 +133,31 @@ public class AlarmHandler extends AbsActionHandler {
             null);
         ringtonePref.setShowDefault(false);
         ringtonePref.setShowSilent(false);
-        ringtonePref.setTitle("Set Ringtone");
+        ringtonePref.setTitle(R.string.alarm_handler_ringtone_title);
         ringtonePref.setKey(RINGTONE_KEY);
         ringtonePref.setPersistent(true);
         ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALL);
         category.addPreference(ringtonePref);
+
+        // Snooze duration
+        EditTextPreference snoozeDurationPref = new EditTextPreference(context);
+        snoozeDurationPref.setPersistent(true);
+        snoozeDurationPref.setTitle(R.string.alarm_handler_snooze_duration_title);
+        snoozeDurationPref.setKey(SNOOZE_DURATION_KEY);
+        snoozeDurationPref.setDefaultValue("2");
+        snoozeDurationPref.getEditText().setKeyListener(
+            DigitsKeyListener.getInstance(false, false));
+        snoozeDurationPref.setDialogTitle(R.string.alarm_handler_snooze_duration_dialog_title);
+        snoozeDurationPref.setOnPreferenceChangeListener(
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference p, Object newValue) {
+                    ((EditTextPreference)p).setSummary(
+                        Integer.parseInt((String)newValue) + " minutes");
+                    return true;
+                }
+            });
+        category.addPreference(snoozeDurationPref);
 
         if(!TextUtils.isEmpty(extra)) {
             Bundle result = parsePreferenceValuesFromExtra(extra);
@@ -141,6 +172,12 @@ public class AlarmHandler extends AbsActionHandler {
                 Ringtone ringtone =
                     RingtoneManager.getRingtone(context, rtUri);
                 ringtonePref.setSummary(ringtone.getTitle(context));
+            }
+
+            int snoozeDuration = result.getInt(SNOOZE_DURATION_KEY, -1);
+            if (snoozeDuration != -1) {
+                snoozeDurationPref.setSummary(
+                    Integer.toString(snoozeDuration) + " minutes");
             }
         }
     }
@@ -165,6 +202,11 @@ public class AlarmHandler extends AbsActionHandler {
             } else if(elems[0].equals(RINGTONE_KEY)) {
                 if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
                     result.putString(RINGTONE_KEY, elems[1]);
+                }
+            } else if (elems[0].equals(SNOOZE_DURATION_KEY)) {
+                if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                    result.putInt(SNOOZE_DURATION_KEY,
+                                  Integer.parseInt(elems[1]));
                 }
             }
         }

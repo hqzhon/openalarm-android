@@ -305,6 +305,11 @@ public class Alarms {
                      final String extra);
     }
 
+    /**
+     * Helper class that stores settings of an alarm in public
+     * feilds for outsider to access.
+     *
+     */
     public static class GetAlarmSettings implements OnVisitListener {
         public int id;
         public String label;
@@ -394,10 +399,10 @@ public class Alarms {
     }
 
     /**
+     * Delete an alarm from content database.
      *
-     *
-     * @param context
-     * @param alarmId
+     * @param context Context object
+     * @param alarmId Id of an alarm.
      *
      * @return
      */
@@ -408,11 +413,11 @@ public class Alarms {
     }
 
     /**
+     * Update alarm's settings in content database
      *
-     *
-     * @param context
-     * @param alarmId
-     * @param newValues
+     * @param context Context object
+     * @param alarmId Alarm id.
+     * @param newValues New values of settings.
      *
      * @return
      */
@@ -427,50 +432,6 @@ public class Alarms {
             alarmUri, newValues, null, null);
     }
 
-    // private static class EnableAlarm implements OnVisitListener {
-    //     private final boolean mEnabled;
-    //     public long mAtTimeInMillis;
-    //     public String mHandler;
-
-    //     public EnableAlarm(boolean enabled) {
-    //         mEnabled = enabled;
-    //     }
-
-    //     @Override
-    //     public void onVisit(final Context context,
-    //                         final int id,
-    //                         final String label,
-    //                         final int hour,
-    //                         final int minutes,
-    //                         final int oldAtTimeInMillis,
-    //                         final int repeatOnDaysCode,
-    //                         final boolean enabled,
-    //                         final String handler,
-    //                         final String extra) {
-    //         if (TextUtils.isEmpty(handler)) {
-    //             Log.d(TAG, "***** null alarm handler is not allowed");
-    //             return;
-    //         }
-
-    //         Log.d(TAG, "Inside EnableAlarm, alarm " + label
-    //               + " handler=" + handler);
-
-    //         mHandler = handler;
-    //         if (mEnabled) {
-    //             mAtTimeInMillis =
-    //                 calculateAlarmAtTimeInMillis(hour, minutes,
-    //                                              repeatOnDaysCode);
-    //             enableAlarm(context, id, label, mAtTimeInMillis, repeatOnDaysCode,
-    //                         handler, extra);
-
-    //             showToast(context, mAtTimeInMillis);
-
-    //         } else {
-    //             disableAlarm(context, id, handler);
-    //         }
-    //     }
-    // }
-
     /**
      * Enable/disable the alarm pointed by @c alarmUri.
      *
@@ -481,7 +442,7 @@ public class Alarms {
     public static synchronized int setAlarmEnabled(final Context context,
                                                    final Uri alarmUri,
                                                    final boolean enabled) {
-        Log.d(TAG, "setAlarmEnabled(" + alarmUri + ", " + enabled + ")");
+        Log.d(TAG, "===> setAlarmEnabled(): alarmUri=" + alarmUri + ", enabled=" + enabled);
 
         // Fetch alarm's settings in the content database.
         GetAlarmSettings settings = new GetAlarmSettings();
@@ -539,8 +500,9 @@ public class Alarms {
      *
      * @param context
      * @param alarmId
+     * @param label
+     * @param repeatOnDays
      * @param handlerClassName
-     * @param intent
      * @param extraData
      * @param minutesLater
      */
@@ -560,6 +522,10 @@ public class Alarms {
         calendar.add(Calendar.MINUTE, minutesLater);
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int minutes = calendar.get(Calendar.MINUTE);
+
+        Log.d(TAG, "===> Snoozed alarm with id " + alarmId +
+              " will go off at " + hourOfDay + ":" + minutes);
+
         long newAtTimeInMillis = calendar.getTimeInMillis();
         enableAlarm(context, alarmId, label, newAtTimeInMillis, repeatOnDays,
                     handlerClassName, extraData);
@@ -573,8 +539,8 @@ public class Alarms {
                                  newAtTimeInMillis);
         preferenceEditor.putInt(AlarmColumns._ID, alarmId);
         preferenceEditor.putString(AlarmColumns.LABEL, label);
-        // The handler is required to be persisted because it is
-        // needed when we want to cancel the snoozed alarm.
+        // The handler is persisted because it is needed when we
+        // want to cancel the snoozed alarm.
         preferenceEditor.putString(AlarmColumns.HANDLER, handlerClassName);
         preferenceEditor.commit();
     }
@@ -587,13 +553,15 @@ public class Alarms {
      */
     public static void cancelSnoozedAlarm(final Context context,
                                           final int alarmId) {
-        Log.d(TAG, "===> Canceling snoozed alarm " + alarmId);
 
         SharedPreferences preferences =
             context.getSharedPreferences(
                 PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
         final int persistedAlarmId =
             preferences.getInt(AlarmColumns._ID, -1);
+
+        Log.d(TAG, "===> Cancel alarm with id " + alarmId + ", persisted alarm id = " + persistedAlarmId);
+
         if (alarmId != -1 &&     // no checking on alarmId
             persistedAlarmId != alarmId) {
             // The alarmId was not snoozed before. No need to
@@ -604,6 +572,8 @@ public class Alarms {
         final String handler =
             preferences.getString(AlarmColumns.HANDLER, null);
         if (!TextUtils.isEmpty(handler)) {
+
+            Log.d(TAG, "===> Snoozed alarm with id " + alarmId + " has handler set to '" + handler + "'");
             disableAlarm(context, persistedAlarmId, handler);
             // Remove _ID to indicate that the snoozed alert is cancelled.
             preferences.edit().remove(AlarmColumns._ID).commit();
@@ -623,7 +593,7 @@ public class Alarms {
             String handlerPackageName = handlerClass.getPackage().getName();
             i.setClassName(handlerPackageName, handlerClassName);
         } catch (ClassNotFoundException e) {
-            Log.d(TAG, "=======================>Handler class not found");
+            Log.d(TAG, "===> Handler is not set for this alarm");
             return;
         }
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -678,6 +648,7 @@ public class Alarms {
 
         Intent i = new Intent(HANDLE_ALARM, alarmUri);
         i.setClassName(context, handlerClassName);
+        i.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
         AlarmManager alarmManager =
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);

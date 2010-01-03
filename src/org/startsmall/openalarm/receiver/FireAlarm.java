@@ -88,7 +88,7 @@ public class FireAlarm extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "==============================> onCreate()");
+        Log.d(TAG, "===> onCreate()");
 
         // Wakeup the device and release keylock.
         mPowerManager = (PowerManager)this.getSystemService(Context.POWER_SERVICE);
@@ -169,7 +169,7 @@ public class FireAlarm extends Activity {
             try {
                 mMediaPlayer.prepare();
             } catch (Exception e) {
-                Log.d(TAG, "=========> mMediaPlayer.prepare(): " + e);
+                Log.d(TAG, "===> mMediaPlayer.prepare(): " + e);
                 return;
             }
 
@@ -192,7 +192,7 @@ public class FireAlarm extends Activity {
     public void onDestroy() {
         super.onDestroy();
 
-        Log.d(TAG, "===============================> onDestroy()");
+        Log.d(TAG, "===> onDestroy()");
 
         if (mHandler != null) {
             mHandler.removeMessages(STOP_PLAYBACK, mMediaPlayer);
@@ -226,7 +226,7 @@ public class FireAlarm extends Activity {
     public void onPause() {
         super.onPause();
 
-        Log.d(TAG, "===============================> onPause()");
+        Log.d(TAG, "===> onPause()");
 
         // Returns to keyguarded mode if the phone was in this
         // mode.
@@ -242,8 +242,6 @@ public class FireAlarm extends Activity {
     }
 
     public void onNewIntent(Intent newIntent) {
-        Log.d(TAG, "===============================> onNewIntent()");
-
         // Dismiss the old alarm.
         dismissAlarm();
 
@@ -279,10 +277,11 @@ public class FireAlarm extends Activity {
         final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
         final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
 
-        Log.d(TAG, "===============================> snoozeAlarm(): alarm id=" + alarmId);
+        // This is defined in AlarmHandler.java
+        final int snoozeDuration = i.getIntExtra("snooze_duration", -1);
 
         Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, repeatOnDays,
-                           handlerClassName, extraData, 2);
+                           handlerClassName, extraData, snoozeDuration);
 
         // Disable vibrator
         vibrate(false);
@@ -292,8 +291,6 @@ public class FireAlarm extends Activity {
         final Intent intent = getIntent();
         final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         final Uri alarmUri = Alarms.getAlarmUri(alarmId);
-
-        Log.d(TAG, "===============================> dismissAlarm(): alarm uri=" + alarmUri);
 
         // Disable the old alert. The explicit class field of
         // the Intent was set to this activity when setting alarm

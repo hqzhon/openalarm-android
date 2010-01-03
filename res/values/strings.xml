@@ -10,6 +10,7 @@
     <string name="day">day</string>
     <string name="hour">hour</string>
     <string name="minute">minute</string>
+    <string name="minutes">minutes</string>
     <string name="second">second</string>
     <string name="millisecond">millisecond</string>
 
@@ -52,6 +53,9 @@
 
     <string name="alarm_settings_extra_category_key">extra_settings</string>
 
+    <string name="alarm_settings_action_dialog_title">Complete action using...</string>
+    <string name="alarm_settings_input_label_dialog_title">Enter label</string>
+
     <!-- Alarm activation toast format -->
     <string name="alarm_notification_toast_text">Alarm is set at %s</string>
     <string name="alarm_notification_ticker_text">Alarm is changed</string>
@@ -59,15 +63,15 @@
     <string name="alarm_handler_unset_message">Don\'t know how to handle this alarm. Please choose Action.</string>
     <string name="alarm_repeat_days_unset_message">No repeat days set. Please choose some days for this alarm.</string>
 
-    <!-- Alarm settings/dialogs/Title -->
-    <string name="alarm_settings_action_dialog_title">Complete action using...</string>
-    <string name="alarm_settings_input_label_dialog_title">Enter label</string>
+    <!-- Alarm handler -->
+    <string name="alarm_handler_ringtone_title">Ringtone</string>
 
-    <!-- Built-in action handler's extra settings -->
-    <string name="alarm_extra_settings_vibrate_title">Vibrate</string>
-    <string name="alarm_extra_settings_vibrate_on_summary">Vibrate On</string>
-    <string name="alarm_extra_settings_vibrate_off_summary">Vibrate Off</string>
-    <string name="alarm_extra_settings_vibrate_key">vibrate</string>
+    <string name="alarm_handler_snooze_duration_title">Snooze Duration</string>
+    <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
+
+    <string name="alarm_handler_vibrate_title">Vibrate</string>
+    <string name="alarm_handler_vibrate_summary_on">On</string>
+    <string name="alarm_handler_vibrate_summary_off">Off</string>
 
     <!-- FireAlarm -->
     <string name="fire_alarm_snooze_text">Snooze</string>
@@ -76,6 +80,4 @@
     <!-- MediaPlayer -->
     <string name="media_player_error_dialog_title">Unable to play ringtone</string>
     <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
-
-
 </resources>
