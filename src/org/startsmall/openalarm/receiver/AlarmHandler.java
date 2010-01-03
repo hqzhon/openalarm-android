@@ -1,5 +1,5 @@
 /**
- * @file   AlarmActionHandler.java
+ * @file   AlarmHandler.java
  * @author josh <yenliangl at gmail dot com>
  * @date   Thu Oct 29 11:22:32 2009
  *
@@ -26,7 +26,7 @@ import android.util.AttributeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AlarmActionHandler extends AbsActionHandler {
+public class AlarmHandler extends AbsActionHandler {
 
     interface IRingtoneChangedListener {
         public void onRingtoneChanged(Uri uri);
@@ -69,7 +69,7 @@ public class AlarmActionHandler extends AbsActionHandler {
         }
     }
 
-    private static final String TAG = "AlarmActionHandler";
+    private static final String TAG = "AlarmHandler";
     private static final String VIBRATE_KEY = "vibrate";
     private static final String RINGTONE_KEY = "ringtone";
 
@@ -95,8 +95,7 @@ public class AlarmActionHandler extends AbsActionHandler {
 
         // Start a parent activity with a brand new activity stack.
         intent.setClass(context, FireAlarm.class)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        // Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         context.startActivity(intent);
     }
 

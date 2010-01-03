@@ -48,7 +48,7 @@
       </intent-filter>
     </receiver>
 
-    <receiver android:name=".AlarmActionHandler"
+    <receiver android:name=".AlarmHandler"
               android:label="Alarm"
               android:icon="@drawable/stat_notify_alarm">
       <intent-filter>
