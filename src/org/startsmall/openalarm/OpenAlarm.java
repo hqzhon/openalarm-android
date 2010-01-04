@@ -1,4 +1,23 @@
 /**
+ *  OpenAlarm - an extensible alarm for Android
+ *  Copyright (C) 2010 Liu Yen-Liang (Josh)
+ *
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
  * @file   OpenAlarm.java
  * @author josh <yenliangl at gmail dot com>
  * @date   Fri Oct  9 16:57:28 2009
@@ -34,6 +53,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
+import android.webkit.WebView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
@@ -287,12 +307,12 @@ public class OpenAlarm extends ListActivity {
             showApplicationPreferences();
             break;
 
-        // case R.id.menu_item_help:
-        //     showHelpDialog();
-        //     break;
-
         case R.id.menu_item_send_feedback:
             sendFeedback();
+            break;
+
+        case R.id.menu_item_about:
+            showAboutThisAppDialog();
             break;
         }
 
@@ -427,10 +447,23 @@ public class OpenAlarm extends ListActivity {
         startActivity(intent);
     }
 
-    // // TODO:
-    // private void showHelpDialog() {
-    //     Log.d(TAG, "===> Show help dialog and copyright");
-    // }
+    private void showAboutThisAppDialog() {
+        WebView helpWebView = new WebView(this);
+        helpWebView.loadUrl("file:///android_asset/" +
+                            getString(R.string.about_me));
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.
+            setTitle("About this application").
+            setPositiveButton(android.R.string.ok,
+                              new DialogInterface.OnClickListener() {
+                                  @Override
+                                  public void onClick(DialogInterface dialog, int which) {
+                                      dialog.dismiss();
+                                  }
+                              }).
+            setView(helpWebView).
+            create().show();
+    }
 
     private void sendFeedback() {
         Intent i = new Intent(Intent.ACTION_SENDTO);

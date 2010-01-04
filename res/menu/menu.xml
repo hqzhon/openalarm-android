@@ -9,6 +9,10 @@
 
   <item android:id="@+id/menu_item_send_feedback"
         android:title="@string/menu_item_send_feedback"
-        android:icon="@drawable/android:ic_dialog_email" />
+        android:icon="@drawable/android:ic_menu_send" />
+
+  <item android:id="@+id/menu_item_about"
+        android:title="@string/menu_item_about"
+        android:icon="@drawable/android:ic_menu_help" />
 
 </menu>
