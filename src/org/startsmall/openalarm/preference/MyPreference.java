@@ -61,6 +61,7 @@ abstract class MyPreference extends Preference {
     }
 
     private void persistPreferenceValue(String value) {
+        mValue = value;
         if(shouldPersist()) {
             persistString(value);
             notifyChanged();
@@ -83,9 +84,9 @@ abstract class MyPreference extends Preference {
     @Override
     protected Parcelable onSaveInstanceState() {
         final Parcelable superState = super.onSaveInstanceState();
-        // if(isPersistent()) {    // persistent preference
-        //     return superState;
-        // }
+        if(isPersistent()) {
+            return superState;
+        }
 
         SavedState myState = new SavedState(superState);
         myState.value = mValue;
@@ -96,8 +97,8 @@ abstract class MyPreference extends Preference {
     protected void onRestoreInstanceState(Parcelable state) {
         if(state != null && state.getClass().equals(SavedState.class)) {
             SavedState myState = (SavedState)state;
+            persistPreferenceValue(myState.value);
             super.onRestoreInstanceState(myState.getSuperState());
-            // persistPreferenceValue(myState.value);
         } else {
             super.onRestoreInstanceState(state);
         }

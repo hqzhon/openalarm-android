@@ -20,7 +20,7 @@
     <string name="menu_item_add">Add</string>
     <string name="menu_item_preferences">Preferences</string>
     <string name="menu_item_set_theme_title">Theme</string>
-    <string name="menu_item_send_feedback">Send Feedback</string>
+    <string name="menu_item_send_feedback">Send feedback</string>
     <string name="menu_item_about">About</string>
 
     <!-- Context menu item -->
@@ -28,7 +28,7 @@
     <string name="menu_item_delete_alarm">Delete</string>
 
     <!-- Delete alarm message -->
-    <string name="confirm_alarm_deletion_title">Confirm Deletion</string>
+    <string name="confirm_alarm_deletion_title">Confirm deletion</string>
     <string name="delete_alarm_message">Do you want to delete this alarm?</string>
 
     <!-- Application settings -->
@@ -46,11 +46,11 @@
     <string name="alarm_settings_time_key">time</string>
 
     <string name="alarm_settings_action_title">Action</string>
-    <string name="alarm_settings_action_summary">Choose Action</string>
+    <string name="alarm_settings_action_summary">Choose action</string>
     <string name="alarm_settings_action_key">action</string>
 
-    <string name="alarm_settings_repeat_days_title">Repeat On</string>
-    <string name="alarm_settings_repeat_days_summary">On Everyday</string>
+    <string name="alarm_settings_repeat_days_title">Repeat on</string>
+    <string name="alarm_settings_repeat_days_summary">On everyday</string>
     <string name="alarm_settings_repeat_days_key">repeat_days</string>
 
     <string name="alarm_settings_extra_category_key">extra_settings</string>
@@ -68,7 +68,7 @@
     <!-- Alarm handler -->
     <string name="alarm_handler_ringtone_title">Ringtone</string>
 
-    <string name="alarm_handler_snooze_duration_title">Snooze Duration</string>
+    <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
     <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
 
     <string name="alarm_handler_vibrate_title">Vibrate</string>

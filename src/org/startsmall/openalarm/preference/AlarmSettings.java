@@ -109,6 +109,7 @@ public class AlarmSettings extends PreferenceActivity {
 
     protected void onRestoreInstanceState(Bundle outState) {
         Log.d(TAG, "===========> onRestoreInstanceState()");
+        super.onRestoreInstanceState(outState);
     }
 
     protected void onDestroy() {
