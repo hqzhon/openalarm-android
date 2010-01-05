@@ -11,9 +11,11 @@ package org.startsmall.openalarm;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceActivity;
@@ -22,10 +24,16 @@ import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.lang.reflect.Method;
 
 public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
+
+    // Dialog IDs
     private static final int LABEL_INPUT_DIALOG = 1;
     private static final int TIME_PICK_DIALOG = 2;
     private static final int HANDLER_PICK_DIALOG = 3;
@@ -36,6 +44,8 @@ public class AlarmSettings extends PreferenceActivity {
     AlarmActionPreference mActionPreference;
     AlarmRepeatOnPreference mRepeatOnPreference;
     PreferenceCategory mExtraSettingsCategory;
+
+    private int mDebugCounter;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -67,67 +77,6 @@ public class AlarmSettings extends PreferenceActivity {
         mExtraSettingsCategory =
             (PreferenceCategory)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_extra_category_key));
-
-        Intent intent = getIntent();
-        int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        if(alarmId == -1) {
-            throw new IllegalArgumentException("invalid alarm id");
-        }
-
-        if (bundle != null) {
-            // If this activity is destroyed and recreated due to
-            // some reasons, for instance, orientation change,
-            // the bundle is non-null, we should try to load
-            // settings of this alarm from persisted preferences
-            // (preferences can handle this by their own)
-
-            // The preferences of action handler under Extra
-            // Settings category were destroyed. They are
-            // inflated again here.
-            String handlerClassName =
-                bundle.getString(Alarms.AlarmColumns.HANDLER);
-            String extra = bundle.getString(
-                getString(R.string.alarm_settings_extra_category_key));
-            inflateExtraSettings(handlerClassName, extra);
-        } else {
-            // If this activity is launched at its first time,
-            // the settings of the alarm should be fetched from
-            // SQLite database.
-            Log.d(TAG,
-                  "========> Loading settings from SQL db for alarm"
-                  + alarmId);
-            Alarms.forEachAlarm(
-                this,
-                Alarms.getAlarmUri(alarmId),
-                new Alarms.OnVisitListener() {
-                    public void onVisit(final Context context,
-                                        final int id,
-                                        final String label,
-                                        final int hour,
-                                        final int minutes,
-                                        final int atTimeInMillis,
-                                        final int repeatDays,
-                                        final boolean enabled,
-                                        final String handler,
-                                        final String extra) {
-                        mLabelPreference.setPreferenceValue(label);
-
-                        mTimePreference.setPreferenceValue(
-                            hour * 100 + minutes);
-                        mRepeatOnPreference.setPreferenceValue(repeatDays);
-
-                        if(!TextUtils.isEmpty(handler)) {
-                            // This happens when this is the
-                            // first time the user uses this
-                            // application and no any handler
-                            // string has stored in the SQL db.
-                            mActionPreference.setPreferenceValue(handler);
-                            AlarmSettings.this.inflateExtraSettings(
-                                handler, extra);
-                        }
-                    }
-                });
-        }
     }
 
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
@@ -151,68 +100,11 @@ public class AlarmSettings extends PreferenceActivity {
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 
-    public boolean onKeyDown(int keyCode, KeyEvent event)  {
-        if (keyCode == KeyEvent.KEYCODE_BACK &&
-            event.getRepeatCount() == 0) {
-
-            Intent intent = getIntent();
-            int alarmId =
-                intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-            if(alarmId == -1) {
-                throw new IllegalArgumentException("invalid alarm id");
-            } else {
-                //Uri alarmUri = Alarms.getAlarmUri(alarmId);
-
-                final String label =
-                    (String)mLabelPreference.getPreferenceValue();
-                final int time =
-                    (Integer)mTimePreference.getPreferenceValue();
-                final int hourOfDay = time / 100;
-                final int minutes = time % 100;
-                final int repeatOnCode =
-                    (Integer)mRepeatOnPreference.getPreferenceValue();
-                final String handler =
-                    (String)mActionPreference.getPreferenceValue();
-                final String extra =
-                    generateValueOfExtraSettings(mExtraSettingsCategory);
-
-                Intent result = new Intent();
-                result.putExtra(Alarms.AlarmColumns._ID, alarmId);
-                result.putExtra(Alarms.AlarmColumns.LABEL, label);
-                result.putExtra(Alarms.AlarmColumns.HOUR, hourOfDay);
-                result.putExtra(Alarms.AlarmColumns.MINUTES, minutes);
-                result.putExtra(Alarms.AlarmColumns.REPEAT_DAYS, repeatOnCode);
-                result.putExtra(Alarms.AlarmColumns.HANDLER, handler);
-                if (!TextUtils.isEmpty(extra)) {
-                    result.putExtra(Alarms.AlarmColumns.EXTRA, extra);
-                }
-                setResult(RESULT_OK, result);
-            }
-        }
-
-        return super.onKeyDown(keyCode, event);
-    }
-
     // Save the current state of this activity into Bundle. It
     // will be restored in onCreate() with saved state passed in.
     protected void onSaveInstanceState(Bundle outState) {
-        Intent intent = getIntent();
-        int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        outState.putInt(Alarms.AlarmColumns._ID, alarmId);
-        outState.putString(Alarms.AlarmColumns.LABEL,
-                           (String)mLabelPreference.getPreferenceValue());
-        outState.putInt(Alarms.AlarmColumns.REPEAT_DAYS,
-                        (Integer)mRepeatOnPreference.getPreferenceValue());
-        outState.putInt(Alarms.AlarmColumns.AT_TIME_IN_MILLIS,
-                        (Integer)mTimePreference.getPreferenceValue());
-        outState.putString(Alarms.AlarmColumns.HANDLER,
-                           (String)mActionPreference.getPreferenceValue());
-
-        String extra =
-            generateValueOfExtraSettings(mExtraSettingsCategory);
-        outState.putString(
-            getString(R.string.alarm_settings_extra_category_key),
-            extra);
+        Log.d(TAG, "===> AlarmSettings.onSaveInstanceState()" + (mDebugCounter++) );
+        super.onSaveInstanceState(outState);
     }
 
     protected void onRestoreInstanceState(Bundle outState) {
@@ -223,7 +115,6 @@ public class AlarmSettings extends PreferenceActivity {
         super.onDestroy();
         Log.d(TAG, "======> AlarmSettings.onDestroy()");
     }
-
 
     protected Dialog onCreateDialog(int dialogId) {
         Dialog dialog;
@@ -247,17 +138,140 @@ public class AlarmSettings extends PreferenceActivity {
         default:
             throw new IllegalArgumentException("wrong dialog id");
         }
-
         return dialog;
     }
 
+    // Commit alarm settings into backing SQL database and
+    // re-calculate its time if it is needed.
     protected void onPause() {
+        Log.d(TAG, "===> AlarmSettings.onPause(): " + (mDebugCounter++));
+
         super.onPause();
 
+        Intent i = getIntent();
+        final int alarmId = i.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        final String newLabel = (String)mLabelPreference.getPreferenceValue();
+        final int newTime = (Integer)mTimePreference.getPreferenceValue();
+        final int newHourOfDay = newTime / 100;
+        final int newMinutes = newTime % 100;
+        final int newRepeatOnDaysCode = (Integer)mRepeatOnPreference.getPreferenceValue();
+        final String newHandler = (String)mActionPreference.getPreferenceValue();
+        final String newExtra = generateValueOfExtraSettings(mExtraSettingsCategory);
+
+        // Fetch settings from persistent database
+        Uri alarmUri = Alarms.getAlarmUri(alarmId);
+        Alarms.GetAlarmSettings dbSettings = new Alarms.GetAlarmSettings();
+        Alarms.forEachAlarm(this, alarmUri, dbSettings);
+
+        Log.d(TAG, "===> Get alarm settings in SQL database: id=" + alarmId +
+              ", label=" + dbSettings.label +
+              ", enabled=" + dbSettings.enabled +
+              ", time=" + dbSettings.hour + ":" + dbSettings.minutes +
+              ", repeat on='" + Alarms.RepeatWeekdays.toString(dbSettings.repeatOnDaysCode) + "'" +
+              ", handler=" + dbSettings.handler +
+              ", extra=" + dbSettings.extra);
+
+        ContentValues newValues = new ContentValues();
+        if (!newLabel.equals(dbSettings.label)) {
+            newValues.put(Alarms.AlarmColumns.LABEL, newLabel);
+        }
+
+        if (newHourOfDay != dbSettings.hour) {
+            newValues.put(Alarms.AlarmColumns.HOUR, newHourOfDay);
+        }
+
+        if (newMinutes != dbSettings.minutes) {
+            newValues.put(Alarms.AlarmColumns.MINUTES, newMinutes);
+        }
+
+        if (newRepeatOnDaysCode != dbSettings.repeatOnDaysCode) {
+            newValues.put(Alarms.AlarmColumns.REPEAT_DAYS, newRepeatOnDaysCode);
+        }
+
+        if (!TextUtils.isEmpty(newHandler) &&
+            !newHandler.equals(dbSettings.handler)) {
+            newValues.put(Alarms.AlarmColumns.HANDLER, newHandler);
+        }
+
+        if (!TextUtils.isEmpty(newExtra) && !newExtra.equals(dbSettings.extra)) {
+            newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
+        }
+
+        boolean updated = false;
+        // If this alarm is already enabled, we need to calculate
+        // a new time for it.
+        if (dbSettings.enabled &&
+            // If these values were updated, we need to
+            // re-schedule the alarm with these new values.
+            (newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
+             newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
+             newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
+             newValues.containsKey(Alarms.AlarmColumns.HANDLER) ||
+             newValues.containsKey(Alarms.AlarmColumns.EXTRA))) {
+
+            // Deactivate the old alarm when the following
+            // situation happens,
+            //
+            //  ---+------+--------+------->
+            //   now     old      new
+            //
+
+            // If the alert was snoozed and then
+            // re-scheduled, no need to go through
+            // Alarms.cancelSnoozedAlarm() because I can
+            // cancel all alarm triggered by this kind of
+            // Intent, same as snoozed alert.
+
+            // Disable the alert enabled by dbSettings.handler;
+            Alarms.disableAlarm(this, alarmId, dbSettings.handler);
+
+            Alarms.updateAlarm(this, alarmUri, newValues);
+            Alarms.setAlarmEnabled(this, alarmUri, true);
+
+            updated = true;
+        }
+
+        if (newValues.size() > 0 && !updated) {
+            Alarms.updateAlarm(this, alarmUri, newValues);
+        }
     }
 
-    private void inflateExtraSettings(String handlerClassName,
-                                      String defaultValue) {
+    protected void onResume() {
+        super.onResume();
+
+        // Fetch alarm settings from persistent content
+        Intent i = getIntent();
+        final int alarmId = i.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        Log.d(TAG,
+              "===> AlarmSettings.onResume(): Loading settings from SQL db for alarm"
+              + alarmId);
+        Alarms.GetAlarmSettings dbSettings = new Alarms.GetAlarmSettings();
+        Alarms.forEachAlarm(this, Alarms.getAlarmUri(alarmId), dbSettings);
+
+        // Populate alarm settings into Preferences.
+        mLabelPreference.setPreferenceValue(dbSettings.label);
+        mTimePreference.setPreferenceValue(
+            dbSettings.hour * 100 + dbSettings.minutes);
+        mRepeatOnPreference.setPreferenceValue(dbSettings.repeatOnDaysCode);
+        mActionPreference.setPreferenceValue(dbSettings.handler);
+
+        // If a preference can cause AlarmSettings.onPause() to
+        // be called (i.e, AlarmSettings is overlapped by some
+        // other activity) and the value of this preference is
+        // changed by the user. The value of the preference is
+        // newer than the stored value. We should pass this value
+        // to the preference inflation process. (Take a look at
+        // RingtonePreference).
+        String valueOfExtraSettings = generateValueOfExtraSettings(mExtraSettingsCategory);
+        if (TextUtils.isEmpty(valueOfExtraSettings)) {
+            inflateExtraSettings(dbSettings.handler, dbSettings.extra);
+        } else {
+            inflateExtraSettings(dbSettings.handler, valueOfExtraSettings);
+        }
+        Log.d(TAG, "===> valueOfExtraSettings='" + valueOfExtraSettings + "', dbSettings.extra=" + dbSettings.extra);
+    }
+
+    private void inflateExtraSettings(String handlerClassName, String defaultValue) {
         if(TextUtils.isEmpty(handlerClassName)) {
             return;
         }
@@ -278,7 +292,7 @@ public class AlarmSettings extends PreferenceActivity {
 
     private String generateValueOfExtraSettings(PreferenceCategory category) {
         SharedPreferences sharedPreferences = category.getSharedPreferences();
-        String result = "";
+        StringBuilder sb = new StringBuilder();
         final int numberOfPreferences = category.getPreferenceCount();
         for (int i = 0; i < numberOfPreferences; i++) {
             Preference preference = category.getPreference(i);
@@ -291,41 +305,41 @@ public class AlarmSettings extends PreferenceActivity {
 
                 try {
                     String value = sharedPreferences.getString(key, null);
-                    result += (key + "=" + value + ';');
+                    sb.append(key + "=" + value + ';');
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     boolean value = sharedPreferences.getBoolean(key, false);
-                    result += (key + "=" + value + ';');
+                    sb.append(key + "=" + value + ';');
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     float value = sharedPreferences.getFloat(key, -1.0f);
-                    result += (key + "=" + value + ';');
+                    sb.append(key + "=" + value + ';');
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     int value = sharedPreferences.getInt(key, -1);
-                    result += (key + "=" + value + ';');
+                    sb.append(key + "=" + value + ';');
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     long value = sharedPreferences.getLong(key, -1);
-                    result += (key + "=" + value + ';');
+                    sb.append(key + "=" + value + ';');
                     continue;
                 } catch (ClassCastException e) {
                 }
             }
         }
 
-        return result;
+        return sb.toString();
     }
 }

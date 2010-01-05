@@ -35,7 +35,6 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -65,8 +64,6 @@ import android.text.TextUtils;
 import java.util.*;
 
 public class OpenAlarm extends ListActivity {
-    public static final int OPEN_ALARM_SETTINGS_CODE = 1;
-
     private static final String TAG = "OpenAlarm";
     private static final int MENU_ITEM_DELETE_ID = 0;
     private Cursor mAlarmsCursor;
@@ -346,102 +343,6 @@ public class OpenAlarm extends ListActivity {
         return true;
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(resultCode != RESULT_OK) {
-            return;
-        }
-
-        switch(requestCode) {
-        case OPEN_ALARM_SETTINGS_CODE:
-            // Extract alarm settings derived from user on AlarmSettings
-            // activity.
-            final int alarmId = data.getIntExtra(Alarms.AlarmColumns._ID, -1);
-            final String newLabel = data.getStringExtra(Alarms.AlarmColumns.LABEL);
-            final int newHourOfDay = data.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
-            final int newMinutes = data.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
-            final int newRepeatOnDaysCode = data.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
-            final String newHandler = data.getStringExtra(Alarms.AlarmColumns.HANDLER);
-            final String newExtra = data.getStringExtra(Alarms.AlarmColumns.EXTRA);
-
-            Uri alarmUri = Alarms.getAlarmUri(alarmId);
-            Alarms.GetAlarmSettings settings = new Alarms.GetAlarmSettings();
-            Alarms.forEachAlarm(this, alarmUri, settings);
-
-            Log.d(TAG, "===> Alarm settings in SQL: id=" + alarmId
-                  + ", label=" + settings.label
-                  + ", enabled=" + settings.enabled
-                  + ", time=" + settings.hour + ":" + settings.minutes
-                  + ", repeat_on=" + Alarms.RepeatWeekdays.toString(settings.repeatOnDaysCode)
-                  + ", handler=" + settings.handler
-                  + ", extra=" + settings.extra);
-
-            ContentValues newValues = new ContentValues();
-            if (!newLabel.equals(settings.label)) {
-                newValues.put(Alarms.AlarmColumns.LABEL, newLabel);
-            }
-
-            if (newHourOfDay != settings.hour) {
-                newValues.put(Alarms.AlarmColumns.HOUR, newHourOfDay);
-            }
-
-            if (newMinutes != settings.minutes) {
-                newValues.put(Alarms.AlarmColumns.MINUTES, newMinutes);
-            }
-
-            if (newRepeatOnDaysCode != settings.repeatOnDaysCode) {
-                newValues.put(Alarms.AlarmColumns.REPEAT_DAYS,
-                              newRepeatOnDaysCode);
-            }
-
-            if (!TextUtils.isEmpty(newHandler) &&
-               !newHandler.equals(settings.handler)) {
-                newValues.put(Alarms.AlarmColumns.HANDLER, newHandler);
-            }
-
-            if (!TextUtils.isEmpty(newExtra) &&
-               !newExtra.equals(settings.extra)) {
-                newValues.put(Alarms.AlarmColumns.EXTRA, newExtra);
-            }
-
-            boolean updated = false;
-            // If this alarm is enabled, re-schedule it.
-            if (settings.enabled &&
-                // If these values were updated, we need to
-                // re-schedule the alarm with these new values.
-                (newValues.containsKey(Alarms.AlarmColumns.HOUR) ||
-                 newValues.containsKey(Alarms.AlarmColumns.MINUTES) ||
-                 newValues.containsKey(Alarms.AlarmColumns.REPEAT_DAYS) ||
-                 newValues.containsKey(Alarms.AlarmColumns.HANDLER) ||
-                 newValues.containsKey(Alarms.AlarmColumns.EXTRA))) {
-
-                // Deactivate the old alarm when the following
-                // situation happens,
-                //
-                //  ---+------+--------+------->
-                //   now     old      new
-                //
-
-                // If the alert was snoozed and then
-                // re-scheduled, no need to go through
-                // Alarms.cancelSnoozedAlarm() because I can
-                // cancel all alarm triggered by this kind of
-                // Intent, same as snoozed alert.
-                Alarms.disableAlarm(this, alarmId, settings.handler);
-                Alarms.updateAlarm(this, alarmUri, newValues);
-                Alarms.setAlarmEnabled(this, alarmUri, true);
-
-                updated = true;
-            }
-
-            if (newValues.size() > 0 && !updated) {
-                Alarms.updateAlarm(this, alarmUri, newValues);
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
     private void showApplicationPreferences() {
         Intent intent = new Intent(this, ApplicationSettings.class);
         startActivity(intent);
@@ -482,7 +383,7 @@ public class OpenAlarm extends ListActivity {
     private void editAlarmSettings(int alarmId) {
         Intent intent = new Intent(this, AlarmSettings.class);
         intent.putExtra(Alarms.AlarmColumns._ID, alarmId);
-        startActivityForResult(intent, OPEN_ALARM_SETTINGS_CODE);
+        startActivity(intent);
     }
 
     private void setThemeFromPreference() {

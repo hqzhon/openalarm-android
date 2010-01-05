@@ -20,7 +20,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
-public abstract class MyPreference extends Preference {
+abstract class MyPreference extends Preference {
     private String mTag;
     private String mValue;
 
@@ -58,9 +58,6 @@ public abstract class MyPreference extends Preference {
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
-
-        Log.d(mTag,
-              "====> onBindView(this=" + this + ", view=" + view + ")");
     }
 
     private void persistPreferenceValue(String value) {

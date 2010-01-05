@@ -38,8 +38,8 @@ public class AlarmHandler extends AbsActionHandler {
     private class MyRingtonePreference extends RingtonePreference {
         IRingtoneChangedListener mRingtoneChangedListener;
 
-        public MyRingtonePreference(Context context, AttributeSet attrs) {
-            super(context, attrs);
+        public MyRingtonePreference(Context context) {
+            super(context);
 
             setShowDefault(true);
             setShowSilent(true);
@@ -129,8 +129,7 @@ public class AlarmHandler extends AbsActionHandler {
         category.addPreference(vibratePref);
 
         // Ringtone;
-        MyRingtonePreference ringtonePref = new MyRingtonePreference(context,
-            null);
+        MyRingtonePreference ringtonePref = new MyRingtonePreference(context);
         ringtonePref.setShowDefault(false);
         ringtonePref.setShowSilent(false);
         ringtonePref.setTitle(R.string.alarm_handler_ringtone_title);
