@@ -1,9 +1,9 @@
 /**
  * @file   AlarmSettings.java
- * @author  <yenliangl@gmail.com>
- * @date   Wed Oct  7 16:05:00 2009
+ * @author josh <yenliangl at gmail dot com>
+ * @date   Tue Jan  5 22:09:25 2010
  *
- * @brief  Settings for an alarm.
+ * @brief
  *
  *
  */
@@ -34,10 +34,10 @@ public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
 
     // Dialog IDs
-    private static final int LABEL_INPUT_DIALOG = 1;
-    private static final int TIME_PICK_DIALOG = 2;
-    private static final int HANDLER_PICK_DIALOG = 3;
-    private static final int REPEAT_DAYS_PICK_DIALOG = 4;
+    private static final int DIALOG_ID_ENTER_LABEL = 1;
+    private static final int DIALOG_ID_PICKUP_TIME = 2;
+    private static final int DIALOG_ID_PICKUP_HANDLER = 3;
+    private static final int DIALOG_ID_PICKUP_REPEAT_DAYS = 4;
 
     AlarmLabelPreference mLabelPreference;
     AlarmTimePreference mTimePreference;
@@ -83,13 +83,13 @@ public class AlarmSettings extends PreferenceActivity {
                                          Preference preference) {
         int id = -1;
         if(preference == mLabelPreference) {
-            id = LABEL_INPUT_DIALOG;
+            id = DIALOG_ID_ENTER_LABEL;
         } else if(preference == mTimePreference) {
-            id = TIME_PICK_DIALOG;
+            id = DIALOG_ID_PICKUP_TIME;
         } else if(preference == mActionPreference) {
-            id = HANDLER_PICK_DIALOG;
+            id = DIALOG_ID_PICKUP_HANDLER;
         } else if(preference == mRepeatOnPreference) {
-            id = REPEAT_DAYS_PICK_DIALOG;
+            id = DIALOG_ID_PICKUP_REPEAT_DAYS;
         }
 
         if(id != -1) {
@@ -102,37 +102,48 @@ public class AlarmSettings extends PreferenceActivity {
 
     // Save the current state of this activity into Bundle. It
     // will be restored in onCreate() with saved state passed in.
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "===> AlarmSettings.onSaveInstanceState()" + (mDebugCounter++) );
-        super.onSaveInstanceState(outState);
-    }
+    // protected void onSaveInstanceState(Bundle outState) {
+    //     Log.d(TAG, "===> AlarmSettings.onSaveInstanceState()" + (mDebugCounter++) );
+    //     super.onSaveInstanceState(outState);
+    // }
 
-    protected void onRestoreInstanceState(Bundle outState) {
-        Log.d(TAG, "===========> onRestoreInstanceState()");
-        super.onRestoreInstanceState(outState);
-    }
+    // protected void onRestoreInstanceState(Bundle outState) {
+    //     Log.d(TAG, "===========> onRestoreInstanceState()");
+    //     super.onRestoreInstanceState(outState);
+    // }
 
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "======> AlarmSettings.onDestroy()");
-    }
+    // protected void onDestroy() {
+    //     super.onDestroy();
+    //     Log.d(TAG, "======> AlarmSettings.onDestroy()");
+    // }
 
+    /**
+     * All dialogs are managed by this activity. Things on the
+     * screen must be snapshot into a Bundle through their
+     * onSaveInstanceState() and restored through
+     * onRestoreInstanceState(). \sa MyPreference.
+     *
+     * @param dialogId ID of dialog. Must be consistent with the one used in showDialog().
+     *
+     * @return Created Dialog object reference.
+     */
+    @Override
     protected Dialog onCreateDialog(int dialogId) {
         Dialog dialog;
         switch(dialogId) {
-        case LABEL_INPUT_DIALOG:
+        case DIALOG_ID_ENTER_LABEL:
             dialog = mLabelPreference.getDialog();
             break;
 
-        case TIME_PICK_DIALOG:
+        case DIALOG_ID_PICKUP_TIME:
             dialog = mTimePreference.getDialog();
             break;
 
-        case HANDLER_PICK_DIALOG:
+        case DIALOG_ID_PICKUP_HANDLER:
             dialog = mActionPreference.getDialog();
             break;
 
-        case REPEAT_DAYS_PICK_DIALOG:
+        case DIALOG_ID_PICKUP_REPEAT_DAYS:
             dialog = mRepeatOnPreference.getDialog();
             break;
 
@@ -142,8 +153,12 @@ public class AlarmSettings extends PreferenceActivity {
         return dialog;
     }
 
-    // Commit alarm settings into backing SQL database and
-    // re-calculate its time if it is needed.
+    /**
+     * Commit alarm settings into backing SQL database and
+     * re-calculate its time if it is needed.
+     *
+     */
+    @Override
     protected void onPause() {
         Log.d(TAG, "===> AlarmSettings.onPause(): " + (mDebugCounter++));
 
@@ -237,15 +252,18 @@ public class AlarmSettings extends PreferenceActivity {
         }
     }
 
+    /**
+     * Resume this activity and populate alarm settings from
+     * saved SQL rows.
+     *
+     */
+    @Override
     protected void onResume() {
         super.onResume();
 
         // Fetch alarm settings from persistent content
         Intent i = getIntent();
         final int alarmId = i.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        Log.d(TAG,
-              "===> AlarmSettings.onResume(): Loading settings from SQL db for alarm"
-              + alarmId);
         Alarms.GetAlarmSettings dbSettings = new Alarms.GetAlarmSettings();
         Alarms.forEachAlarm(this, Alarms.getAlarmUri(alarmId), dbSettings);
 
@@ -272,6 +290,15 @@ public class AlarmSettings extends PreferenceActivity {
         Log.d(TAG, "===> valueOfExtraSettings='" + valueOfExtraSettings + "', dbSettings.extra=" + dbSettings.extra);
     }
 
+    /**
+     * Load preferences of an alarm handler. Use Class.forName()
+     * and reflective methods to call addMyPreferences() of an
+     * alarm handler which installs its preferences under Extra
+     * Settings category.
+     *
+     * @param handlerClassName Class name of alarm handler.
+     * @param defaultValue Concatenated values of all preferences under Extra Settings category.
+     */
     private void inflateExtraSettings(String handlerClassName, String defaultValue) {
         if(TextUtils.isEmpty(handlerClassName)) {
             return;

@@ -18,7 +18,6 @@ import android.os.Parcelable;
 import android.os.Parcel;
 import android.preference.Preference;
 import android.util.AttributeSet;
-// import android.util.Log;
 import android.view.View;
 
 import java.util.Calendar;
