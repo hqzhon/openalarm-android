@@ -787,50 +787,50 @@ public class Alarms {
         context.sendBroadcast(i);
     }
 
-    public static void setNotification(final Context context,
-                                       final int alarmId,
-                                       final String handlerClassName,
-                                       boolean enabled) {
-        Context appContext = context.getApplicationContext();
-        NotificationManager nm =
-            (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+    // public static void setNotification(final Context context,
+    //                                    final int alarmId,
+    //                                    final String handlerClassName,
+    //                                    boolean enabled) {
+    //     Context appContext = context.getApplicationContext();
+    //     NotificationManager nm =
+    //         (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (enabled) {
-            String tickerText = appContext.getString(R.string.alarm_notification_ticker_text);
-            Notification notification =
-                new Notification(
-                    R.drawable.stat_notify_alarm,
-                    tickerText,
-                    System.currentTimeMillis());
-            notification.flags = Notification.FLAG_NO_CLEAR;
+    //     if (enabled) {
+    //         String tickerText = appContext.getString(R.string.alarm_notification_ticker_text);
+    //         Notification notification =
+    //             new Notification(
+    //                 R.drawable.alarm_handler,
+    //                 tickerText,
+    //                 System.currentTimeMillis());
+    //         notification.flags = Notification.FLAG_NO_CLEAR;
 
-            Intent notificationIntent = new Intent(appContext,
-                                                   OpenAlarm.class);
-            PendingIntent contentIntent =
-                PendingIntent.getActivity(appContext, 0, notificationIntent, 0);
+    //         Intent notificationIntent = new Intent(appContext,
+    //                                                OpenAlarm.class);
+    //         PendingIntent contentIntent =
+    //             PendingIntent.getActivity(appContext, 0, notificationIntent, 0);
 
-            PackageManager pm = appContext.getPackageManager();
-            String handlerLabel;
-            try {
-                ActivityInfo handlerInfo =
-                    getHandlerInfo(pm, handlerClassName);
-                handlerLabel = handlerInfo.loadLabel(pm).toString();
-            } catch(PackageManager.NameNotFoundException e) {
-                Log.d(TAG, e.getMessage());
-                return;
-            }
+    //         PackageManager pm = appContext.getPackageManager();
+    //         String handlerLabel;
+    //         try {
+    //             ActivityInfo handlerInfo =
+    //                 getHandlerInfo(pm, handlerClassName);
+    //             handlerLabel = handlerInfo.loadLabel(pm).toString();
+    //         } catch(PackageManager.NameNotFoundException e) {
+    //             Log.d(TAG, e.getMessage());
+    //             return;
+    //         }
 
-            String contentText =
-                String.format(appContext.getString(R.string.alarm_notification_content_text), handlerLabel + "(" + handlerClassName + ")");
-            notification.setLatestEventInfo(appContext,
-                                            tickerText,
-                                            contentText,
-                                            contentIntent);
-            nm.notify(alarmId, notification);
-        } else {
-            nm.cancel(alarmId);
-        }
-    }
+    //         String contentText =
+    //             String.format(appContext.getString(R.string.alarm_notification_content_text), handlerLabel + "(" + handlerClassName + ")");
+    //         notification.setLatestEventInfo(appContext,
+    //                                         tickerText,
+    //                                         contentText,
+    //                                         contentIntent);
+    //         nm.notify(alarmId, notification);
+    //     } else {
+    //         nm.cancel(alarmId);
+    //     }
+    // }
 
     public static Class<?> getHandlerClass(final String handlerClassName)
         throws ClassNotFoundException {
