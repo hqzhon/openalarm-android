@@ -29,7 +29,6 @@
   <PreferenceCategory
      android:title="Extra Settings"
      android:key="@string/alarm_settings_extra_category_key" >
-
   </PreferenceCategory>
 
 </PreferenceScreen>

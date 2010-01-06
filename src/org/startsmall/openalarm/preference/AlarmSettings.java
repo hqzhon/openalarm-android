@@ -269,10 +269,10 @@ public class AlarmSettings extends PreferenceActivity {
 
         // Populate alarm settings into Preferences.
         mLabelPreference.setPreferenceValue(dbSettings.label);
+        mActionPreference.setPreferenceValue(dbSettings.handler);
         mTimePreference.setPreferenceValue(
             dbSettings.hour * 100 + dbSettings.minutes);
         mRepeatOnPreference.setPreferenceValue(dbSettings.repeatOnDaysCode);
-        mActionPreference.setPreferenceValue(dbSettings.handler);
 
         // If a preference can cause AlarmSettings.onPause() to
         // be called (i.e, AlarmSettings is overlapped by some

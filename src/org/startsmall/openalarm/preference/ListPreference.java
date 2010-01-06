@@ -39,15 +39,16 @@ public abstract class ListPreference extends TextViewPreference {
     }
 
     public void setPreferenceValue(String value) {
-        int index = findIndexOfValue(value);
-        if(index != -1) {
-            mCheckedEntryIndex = index;
+        mCheckedEntryIndex = findIndexOfValue(value);
+        if(mCheckedEntryIndex != -1) {
             super.setPreferenceValue(value);
+        } else {                // use default value at index 0
+            super.setPreferenceValue("");
         }
     }
 
     public final void setPreferenceValueIndex(int index) {
-        if(mEntries.size() >= index) {
+        if(mEntries.size() >= index && index > -1) {
             mCheckedEntryIndex = index;
             setPreferenceValue(mEntryValues.get(index).toString());
         }

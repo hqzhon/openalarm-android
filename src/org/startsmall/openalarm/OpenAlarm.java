@@ -208,7 +208,7 @@ public class OpenAlarm extends ListActivity {
 
             // Loads handler's label into R.id.action
             ImageView handlerIconView = (ImageView)view.findViewById(R.id.icon);
-            handlerIconView.setImageResource(R.drawable.stat_sys_warning);
+            handlerIconView.setImageResource(R.drawable.null_handler);
             if (!TextUtils.isEmpty(handler)) {
                 PackageManager pm = context.getPackageManager();
                 try {

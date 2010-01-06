@@ -29,7 +29,7 @@
                  android:scaleType="fitXY"
                  android:maxWidth="36dp"
                  android:maxHeight="36dp"
-                 android:src="@drawable/stat_notify_alarm"/>
+                 android:src="@drawable/null_handler"/>
 
       <!-- Alarm Label -->
       <TextView style="?android:attr/textAppearanceLarge"
