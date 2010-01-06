@@ -46,6 +46,7 @@ import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
@@ -341,6 +342,19 @@ public class OpenAlarm extends ListActivity {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            // ListView doesn't handle DPAD_CENTER and CENTER key
+            // event, we have to handle it in Activity.
+        case KeyEvent.KEYCODE_ENTER:
+        case KeyEvent.KEYCODE_DPAD_CENTER:
+            getListView().getSelectedView().performClick();
+            return true;
+        }
+        return false;
     }
 
     private void showApplicationPreferences() {
