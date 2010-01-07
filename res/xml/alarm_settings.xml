@@ -2,7 +2,7 @@
 <PreferenceScreen
    xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <PreferenceCategory android:title="Basic Settings">
+  <PreferenceCategory android:title="@string/alarm_basic_settings_title">
     <org.startsmall.openalarm.AlarmLabelPreference
        android:key="@string/alarm_settings_label_key"
        android:title="@string/alarm_settings_label_title"
@@ -27,7 +27,7 @@
   </PreferenceCategory>
 
   <PreferenceCategory
-     android:title="Extra Settings"
+     android:title="@string/alarm_extra_settings_title"
      android:key="@string/alarm_settings_extra_category_key" >
   </PreferenceCategory>
 

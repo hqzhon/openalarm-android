@@ -227,11 +227,11 @@ public class Alarms {
             return (1 << (day - 1));
         }
 
-        public static String toString(int code) {
+        public static String toString(int code, String everyday, String notSet) {
             String result = "";
             if(code > 0) {
                 if(code == 0x7F) { // b1111111
-                    result = "Everyday";
+                    result = everyday;
                 } else {
                     for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
                         if(isSet(code, i)) {
@@ -245,16 +245,16 @@ public class Alarms {
                     }
                 }
             } else {
-                result = "No days";
+                result = notSet;
             }
             return result;
         }
 
-        public static List<String> toStringList(int code) {
+        public static List<String> toStringList(int code, String everyday, String notSet) {
             List<String> result = new LinkedList<String>();
             if(code > 0) {
                 if(code == 0x7F) { // b1111111
-                    result.add("Everyday");
+                    result.add(everyday);
                 } else {
                     for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
                         if(isSet(code, i)) {
@@ -266,7 +266,7 @@ public class Alarms {
                     }
                 }
             } else {
-                result.add("Not set");
+                result.add(notSet);
             }
             return result;
         }
@@ -756,9 +756,8 @@ public class Alarms {
         DateFormat dateFormat =
             DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
         String text =
-            String.format(
-                context.getString(R.string.alarm_notification_toast_text),
-                dateFormat.format(new Date(atTimeInMillis)));
+            context.getString(R.string.alarm_notification_toast_text,
+                              dateFormat.format(new Date(atTimeInMillis)));
         Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
 

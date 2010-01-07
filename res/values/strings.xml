@@ -1,86 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpenAlarm</string>
+  <!--  -->
+  <string name="app_name">OpenAlarm</string>
 
-    <string name="about_me">about_me.html</string>
+  <string name="about_me">about_me.html</string>
 
-    <string name="edit">Edit</string>
-    <string name="delete">Delete</string>
-    <string name="isee">I see</string>
+  <string name="edit">Edit</string>
+  <string name="delete">Delete</string>
+  <string name="isee">I see</string>
 
-    <!-- Time unit -->
-    <string name="day">day</string>
-    <string name="hour">hour</string>
-    <string name="minute">minute</string>
-    <string name="minutes">minutes</string>
-    <string name="second">second</string>
-    <string name="millisecond">millisecond</string>
+  <!-- Time unit -->
+  <string name="day">day</string>
+  <string name="hour">hour</string>
+  <string name="minute">minute</string>
+  <string name="minutes">minutes</string>
+  <string name="second">second</string>
+  <string name="millisecond">millisecond</string>
 
-    <!-- Options menu item -->
-    <string name="menu_item_add">Add</string>
-    <string name="menu_item_preferences">Preferences</string>
-    <string name="menu_item_set_theme_title">Theme</string>
-    <string name="menu_item_send_feedback">Send feedback</string>
-    <string name="menu_item_about">About</string>
+  <!-- Options menu item -->
+  <string name="menu_item_add">Add</string>
+  <string name="menu_item_preferences">Preferences</string>
+  <string name="menu_item_set_theme_title">Theme</string>
+  <string name="menu_item_send_feedback">Send feedback</string>
+  <string name="menu_item_about">About</string>
 
-    <!-- Context menu item -->
-    <string name="menu_item_edit_alarm">Edit</string>
-    <string name="menu_item_delete_alarm">Delete</string>
+  <!-- Context menu item -->
+  <string name="menu_item_edit_alarm">Edit</string>
+  <string name="menu_item_delete_alarm">Delete</string>
 
-    <!-- Delete alarm message -->
-    <string name="confirm_alarm_deletion_title">Confirm deletion</string>
-    <string name="delete_alarm_message">Do you want to delete this alarm?</string>
+  <!-- Delete alarm message -->
+  <string name="confirm_alarm_deletion_title">Confirm deletion</string>
+  <string name="delete_alarm_message">Do you want to delete this alarm?</string>
 
-    <!-- Application settings -->
-    <string name="application_settings_set_theme_key">theme</string>
-    <string name="application_settings_set_theme_title">Theme</string>
-    <string name="application_settings_light_theme_title">Light</string>
-    <string name="application_settings_dark_theme_title">Black</string>
-    <string name="application_settings_theme_changed_message">New theme settings will be applied after restart</string>
+  <!-- Application settings -->
+  <string name="application_settings_set_theme_key">theme</string>
+  <string name="application_settings_set_theme_title">Theme</string>
+  <string name="application_settings_light_theme_title">Light</string>
+  <string name="application_settings_dark_theme_title">Black</string>
+  <string name="application_settings_theme_changed_message">New theme settings will be applied after restart</string>
 
-    <!-- Alarm settings -->
-    <string name="alarm_settings_label_title">Label</string>
-    <string name="alarm_settings_label_key">label</string>
-    <string name="alarm_settings_label_dialog_title">Enter label</string>
+  <!-- Alarm settings -->
+  <string name="alarm_basic_settings_title">Basic Settings</string>
+  <string name="alarm_extra_settings_title">Extra Settings</string>
 
-    <string name="alarm_settings_time_title">Time</string>
-    <string name="alarm_settings_time_key">time</string>
+  <string name="alarm_settings_label_title">Label</string>
+  <string name="alarm_settings_label_key">label</string>
+  <string name="alarm_settings_label_dialog_title">Enter label</string>
 
-    <string name="alarm_settings_action_title">Action</string>
-    <string name="alarm_settings_action_summary">Choose action</string>
-    <string name="alarm_settings_action_key">action</string>
-    <string name="alarm_settings_action_dialog_title">Complete action using</string>
+  <string name="alarm_settings_time_title">Time</string>
+  <string name="alarm_settings_time_key">time</string>
 
-    <string name="alarm_settings_repeat_days_title">Repeat on</string>
-    <string name="alarm_settings_repeat_days_summary">On everyday</string>
-    <string name="alarm_settings_repeat_days_key">repeat_days</string>
-    <string name="alarm_settings_repeat_days_dialog_title">Repeat on these days</string>
+  <string name="alarm_settings_action_title">Action</string>
+  <string name="alarm_settings_action_summary">Choose action</string>
+  <string name="alarm_settings_action_key">action</string>
+  <string name="alarm_settings_action_dialog_title">Complete action using</string>
 
-    <string name="alarm_settings_extra_category_key">extra_settings</string>
+  <string name="alarm_settings_repeat_days_title">Repeat on</string>
+  <string name="alarm_settings_repeat_days_summary">On everyday</string>
+  <string name="alarm_settings_repeat_days_key">repeat_days</string>
+  <string name="alarm_settings_repeat_days_dialog_title">Repeat on these days</string>
+  <string name="repeat_on_everyday">Everyday</string>
+  <string name="no_repeat_days">Not set</string>
 
+  <string name="alarm_settings_extra_category_key">extra_settings</string>
 
-    <!-- Alarm activation toast format -->
-    <string name="alarm_notification_toast_text">Alarm is set at %s</string>
-    <string name="alarm_notification_ticker_text">Alarm is changed</string>
-    <string name="alarm_notification_content_text">Use %s</string>
-    <string name="alarm_handler_unset_message">Don\'t know how to handle this alarm. Please choose Action.</string>
-    <string name="alarm_repeat_days_unset_message">No repeat days set. Please choose some days for this alarm.</string>
+  <!-- Alarm activation toast format -->
+  <string name="alarm_notification_toast_text">Alarm is set at %s</string>
+  <string name="alarm_notification_ticker_text">Alarm is changed</string>
+  <string name="alarm_notification_content_text">Use %s</string>
+  <string name="alarm_handler_unset_message">Don\'t know how to handle this alarm. Please choose Action.</string>
+  <string name="alarm_repeat_days_unset_message">No repeat days set. Please choose some days for this alarm.</string>
 
-    <!-- Alarm handler -->
-    <string name="alarm_handler_ringtone_title">Ringtone</string>
+  <!-- Alarm handler -->
+  <string name="alarm_handler_ringtone_title">Ringtone</string>
 
-    <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
-    <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
+  <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
+  <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
 
-    <string name="alarm_handler_vibrate_title">Vibrate</string>
-    <string name="alarm_handler_vibrate_summary_on">On</string>
-    <string name="alarm_handler_vibrate_summary_off">Off</string>
+  <string name="alarm_handler_vibrate_title">Vibrate</string>
+  <string name="alarm_handler_vibrate_summary_on">On</string>
+  <string name="alarm_handler_vibrate_summary_off">Off</string>
 
-    <!-- FireAlarm -->
-    <string name="fire_alarm_snooze_text">Snooze</string>
-    <string name="fire_alarm_dismiss_text">Dismiss</string>
+  <!-- FireAlarm -->
+  <string name="fire_alarm_snooze_text">Snooze</string>
+  <string name="fire_alarm_dismiss_text">Dismiss</string>
 
-    <!-- MediaPlayer -->
-    <string name="media_player_error_dialog_title">Unable to play ringtone</string>
-    <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
+  <!-- MediaPlayer -->
+  <string name="media_player_error_dialog_title">Unable to play ringtone</string>
+  <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 </resources>

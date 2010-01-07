@@ -183,7 +183,7 @@ public class AlarmSettings extends PreferenceActivity {
               ", label=" + dbSettings.label +
               ", enabled=" + dbSettings.enabled +
               ", time=" + dbSettings.hour + ":" + dbSettings.minutes +
-              ", repeat on='" + Alarms.RepeatWeekdays.toString(dbSettings.repeatOnDaysCode) + "'" +
+              ", repeat on='" + Alarms.RepeatWeekdays.toString(dbSettings.repeatOnDaysCode, getString(R.string.repeat_on_everyday), getString(R.string.no_repeat_days)) + "'" +
               ", handler=" + dbSettings.handler +
               ", extra=" + dbSettings.extra);
 

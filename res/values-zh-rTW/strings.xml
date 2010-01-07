@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">OpenAlarm</string>
+
+  <!-- <string name="about_me">about_me.html</string> -->
+
+  <string name="edit">"編輯"</string>
+  <string name="delete">"刪除"</string>
+  <string name="isee">"我了"</string>
+
+  <!-- Time unit -->
+  <string name="day">"天"</string>
+  <string name="hour">"小時"</string>
+  <string name="minute">"分"</string>
+  <string name="minutes">"分"</string>
+  <string name="second">"秒"</string>
+  <string name="millisecond">"毫秒"</string>
+
+  <!-- Options menu item -->
+  <string name="menu_item_add">"增加"</string>
+  <!-- <string name="menu_item_preferences">Preferences</string> -->
+  <string name="menu_item_set_theme_title">"主題"</string>
+  <string name="menu_item_send_feedback">"溝通意見"</string>
+  <string name="menu_item_about">"關於"</string>
+
+  <!-- Context menu item -->
+  <string name="menu_item_edit_alarm">"編輯"</string>
+  <string name="menu_item_delete_alarm">"刪除"</string>
+
+  <!-- Delete alarm message -->
+  <string name="confirm_alarm_deletion_title">"刪除確認"</string>
+  <string name="delete_alarm_message">"您確定要刪除她嗎？"</string>
+
+  <!-- Application settings -->
+  <!-- <string name="application_settings_set_theme_key">theme</string> -->
+  <!-- <string name="application_settings_set_theme_title">Theme</string> -->
+  <!-- <string name="application_settings_light_theme_title">Light</string> -->
+  <!-- <string name="application_settings_dark_theme_title">Black</string> -->
+  <!-- <string name="application_settings_theme_changed_message">New theme settings will be applied after restart</string> -->
+
+  <!-- Alarm settings -->
+  <string name="alarm_basic_settings_title">"基本設定"</string>
+  <string name="alarm_extra_settings_title">"進階設定"</string>
+
+  <string name="alarm_settings_label_title">"名稱"</string>
+  <!-- <string name="alarm_settings_label_key">label</string> -->
+  <string name="alarm_settings_label_dialog_title">"名稱"</string>
+
+  <string name="alarm_settings_time_title">"時間"</string>
+  <string name="alarm_settings_time_key">time</string>
+
+  <string name="alarm_settings_action_title">"動作"</string>
+  <string name="alarm_settings_action_summary">"選擇動作"</string>
+  <!-- <string name="alarm_settings_action_key">action</string> -->
+  <string name="alarm_settings_action_dialog_title">"使用那一個動作"</string>
+
+  <string name="alarm_settings_repeat_days_title">"重複"</string>
+  <string name="alarm_settings_repeat_days_summary">"每天"</string>
+  <!-- <string name="alarm_settings_repeat_days_key">repeat_days</string> -->
+  <string name="alarm_settings_repeat_days_dialog_title">"哪幾天啊？"</string>
+  <string name="repeat_on_everyday">"每天"</string>
+  <string name="no_repeat_days">"未指定"</string>
+
+  <!-- <string name="alarm_settings_extra_category_key">extra_settings</string> -->
+
+  <!-- Alarm activation toast format -->
+  <string name="alarm_notification_toast_text">"鬧鈴設定在"%s"響喔"</string>
+  <string name="alarm_notification_ticker_text">Alarm is changed</string>
+  <string name="alarm_notification_content_text">Use %s</string>
+  <string name="alarm_handler_unset_message">"未指定動作"</string>
+  <string name="alarm_repeat_days_unset_message">"未指定重複日子"</string>
+
+  <!-- Alarm handler -->
+  <string name="alarm_handler_ringtone_title">"鈴聲"</string>
+
+  <string name="alarm_handler_snooze_duration_title">"貪睡間隔"</string>
+  <string name="alarm_handler_snooze_duration_dialog_title">"貪睡幾分鐘"</string>
+
+  <string name="alarm_handler_vibrate_title">"振動"</string>
+  <string name="alarm_handler_vibrate_summary_on">"開啟"</string>
+  <string name="alarm_handler_vibrate_summary_off">"關閉"</string>
+
+  <!-- FireAlarm -->
+  <string name="fire_alarm_snooze_text">"再睡一下"</string>
+  <string name="fire_alarm_dismiss_text">"我起來了啦"</string>
+
+  <!-- MediaPlayer -->
+  <string name="media_player_error_dialog_title">Unable to play ringtone</string>
+  <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
+</resources>

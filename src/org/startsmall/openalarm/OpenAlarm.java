@@ -188,7 +188,9 @@ public class OpenAlarm extends ListActivity {
                 (LinearLayout)view.findViewById(R.id.repeat_days);
             repeatDaysView.removeAllViews();
             Iterator<String> days =
-                Alarms.RepeatWeekdays.toStringList(daysCode).iterator();
+                Alarms.RepeatWeekdays.toStringList(daysCode,
+                                                   context.getString(R.string.repeat_on_everyday),
+                                                   context.getString(R.string.no_repeat_days)).iterator();
 
             LinearLayout.LayoutParams params =
                 new LinearLayout.LayoutParams(
@@ -225,7 +227,7 @@ public class OpenAlarm extends ListActivity {
                   + ", label=" + label
                   + ", time=" + hourOfDay + ":" + minutes
                   + ", enabled=" + enabledCheckBox.isChecked()
-                  + ", repeat on=" + Alarms.RepeatWeekdays.toString(daysCode)
+                  + ", repeat on='" + Alarms.RepeatWeekdays.toString(daysCode, getString(R.string.repeat_on_everyday), getString(R.string.no_repeat_days)) + "'"
                   + ", handler=" + handler
                   + ", extra=" + extra);
         }

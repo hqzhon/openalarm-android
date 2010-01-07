@@ -52,7 +52,9 @@ public class AlarmRepeatOnPreference extends MyPreference
     @Override
     protected void onBindView(View view) {
         setSummary(Alarms.RepeatWeekdays.toString(
-                       (Integer)getPreferenceValue()));
+                       (Integer)getPreferenceValue(),
+                       getContext().getString(R.string.repeat_on_everyday),
+                       getContext().getString(R.string.no_repeat_days)));
         super.onBindView(view);
     }
 
