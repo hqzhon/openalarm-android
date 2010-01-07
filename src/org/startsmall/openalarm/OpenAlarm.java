@@ -268,7 +268,7 @@ public class OpenAlarm extends ListActivity {
         super.onCreate(savedInstanceState);
 
         // Set theme from persisted settings.
-        setThemeFromPreference();
+        // setThemeFromPreference();
 
         setContentView(R.layout.main);
 
@@ -301,9 +301,9 @@ public class OpenAlarm extends ListActivity {
             addAlarm();
             break;
 
-        case R.id.menu_item_preferences:
-            showApplicationPreferences();
-            break;
+        // case R.id.menu_item_preferences:
+        //     showApplicationPreferences();
+        //     break;
 
         case R.id.menu_item_send_feedback:
             sendFeedback();
@@ -400,22 +400,22 @@ public class OpenAlarm extends ListActivity {
         startActivity(intent);
     }
 
-    private void setThemeFromPreference() {
-        SharedPreferences sharedPreferences =
-            PreferenceManager.getDefaultSharedPreferences(this);
+    // private void setThemeFromPreference() {
+    //     SharedPreferences sharedPreferences =
+    //         PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Get theme ID.
-        int themeId = Integer.parseInt(
-            sharedPreferences.getString(
-                getString(R.string.application_settings_set_theme_key),
-                "1"));
-        switch (themeId) {
-        case 0:
-            setTheme(android.R.style.Theme_Light);
-            break;
-        default:
-            setTheme(android.R.style.Theme_Black);
-            break;
-        }
-    }
+    //     // Get theme ID.
+    //     int themeId = Integer.parseInt(
+    //         sharedPreferences.getString(
+    //             getString(R.string.application_settings_set_theme_key),
+    //             "1"));
+    //     switch (themeId) {
+    //     case 0:
+    //         setTheme(android.R.style.Theme_Light);
+    //         break;
+    //     default:
+    //         setTheme(android.R.style.Theme_Black);
+    //         break;
+    //     }
+    // }
 }
