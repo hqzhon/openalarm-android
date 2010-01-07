@@ -76,6 +76,7 @@ public class AlarmRepeatOnPreference extends MyPreference
                          0,
                          7);
         builder
+            .setTitle(R.string.alarm_settings_repeat_days_dialog_title)
             .setMultiChoiceItems(weekdays, checked, this)
             .setPositiveButton(android.R.string.ok, this)
             .setNegativeButton(android.R.string.cancel, null);

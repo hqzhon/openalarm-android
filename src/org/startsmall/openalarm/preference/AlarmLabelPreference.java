@@ -44,7 +44,7 @@ public class AlarmLabelPreference extends TextViewPreference {
 
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         builder
-            .setTitle(R.string.alarm_settings_input_label_dialog_title)
+            .setTitle(R.string.alarm_settings_label_dialog_title)
             .setPositiveButton(
                 android.R.string.ok,
                 new DialogInterface.OnClickListener() {

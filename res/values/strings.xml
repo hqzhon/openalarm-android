@@ -41,6 +41,7 @@
     <!-- Alarm settings -->
     <string name="alarm_settings_label_title">Label</string>
     <string name="alarm_settings_label_key">label</string>
+    <string name="alarm_settings_label_dialog_title">Enter label</string>
 
     <string name="alarm_settings_time_title">Time</string>
     <string name="alarm_settings_time_key">time</string>
@@ -48,15 +49,15 @@
     <string name="alarm_settings_action_title">Action</string>
     <string name="alarm_settings_action_summary">Choose action</string>
     <string name="alarm_settings_action_key">action</string>
+    <string name="alarm_settings_action_dialog_title">Complete action using</string>
 
     <string name="alarm_settings_repeat_days_title">Repeat on</string>
     <string name="alarm_settings_repeat_days_summary">On everyday</string>
     <string name="alarm_settings_repeat_days_key">repeat_days</string>
+    <string name="alarm_settings_repeat_days_dialog_title">Repeat on these days</string>
 
     <string name="alarm_settings_extra_category_key">extra_settings</string>
 
-    <string name="alarm_settings_action_dialog_title">Complete action using...</string>
-    <string name="alarm_settings_input_label_dialog_title">Enter label</string>
 
     <!-- Alarm activation toast format -->
     <string name="alarm_notification_toast_text">Alarm is set at %s</string>
