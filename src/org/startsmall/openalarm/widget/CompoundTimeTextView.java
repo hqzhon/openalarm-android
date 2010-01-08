@@ -12,6 +12,7 @@ package org.startsmall.openalarm;
 
 import android.content.Context;
 import android.text.format.DateFormat;
+import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -31,7 +32,7 @@ public class CompoundTimeTextView extends LinearLayout {
 
         // Time text view;
         mTimeTextView = new TextView(context);
-        mTimeTextView.setTextAppearance(context, android.R.style.TextAppearance_Large);
+        mTimeTextView.setTextAppearance(context, android.R.style.TextAppearance_Medium);
         mTimeTextView.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);
         LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
                                                LayoutParams.WRAP_CONTENT);
@@ -44,7 +45,9 @@ public class CompoundTimeTextView extends LinearLayout {
         addView(amPmView);
 
         mAmTextView = (TextView)findViewById(R.id.am);
+        mAmTextView.setText(DateUtils.getAMPMString(Calendar.AM));
         mPmTextView = (TextView)findViewById(R.id.pm);
+        mPmTextView.setText(DateUtils.getAMPMString(Calendar.PM));
     }
 
     public void setTime(final int hourOfDay, final int minutes) {

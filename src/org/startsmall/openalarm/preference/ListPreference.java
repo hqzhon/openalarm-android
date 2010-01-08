@@ -10,9 +10,7 @@
 package org.startsmall.openalarm;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import java.util.ArrayList;
 

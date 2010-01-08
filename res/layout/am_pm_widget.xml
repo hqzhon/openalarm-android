@@ -4,20 +4,20 @@
               android:layout_width="wrap_content"
               android:layout_height="fill_parent"
               android:orientation="vertical">
-  <TextView android:id="@+id/am"
+  <TextView style="?android:attr/textAppearanceSmall"
+            android:id="@+id/am"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:text="AM" />
+            android:gravity="center_vertical"/>
 
   <LinearLayout android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="1dp"
                 android:layout_weight="1"/>
 
-  <TextView android:id="@+id/pm"
+  <TextView style="?android:attr/textAppearanceSmall"
+            android:id="@+id/pm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:text="PM"/>
+            android:gravity="center_vertical"/>
 </LinearLayout>

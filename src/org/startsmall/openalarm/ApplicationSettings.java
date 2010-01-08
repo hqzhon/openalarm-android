@@ -15,13 +15,13 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
-import android.util.Log;
+//import android.util.Log;
 import android.widget.Toast;
 
-import java.util.Arrays;
+//import java.util.Arrays;
 
 public class ApplicationSettings extends PreferenceActivity {
-    private static final String TAG = "AlarmSettings";
+    // private static final String TAG = "AlarmSettings";
 
     @Override
     public void onCreate(Bundle bundle) {

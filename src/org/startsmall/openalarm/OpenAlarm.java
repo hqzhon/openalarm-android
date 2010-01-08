@@ -30,19 +30,15 @@ package org.startsmall.openalarm;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -184,6 +180,7 @@ public class OpenAlarm extends ListActivity {
             enabledCheckBox.setOnCheckedChangeListener(null);
             enabledCheckBox.setChecked(enabled);
             enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
+
             final LinearLayout repeatDaysView =
                 (LinearLayout)view.findViewById(R.id.repeat_days);
             repeatDaysView.removeAllViews();
@@ -202,7 +199,8 @@ public class OpenAlarm extends ListActivity {
                 TextView dayLabel = new TextView(context);
                 dayLabel.setClickable(false);
                 dayLabel.setBackgroundResource(R.drawable.rounded_background);
-                dayLabel.setTextAppearance(context, android.R.attr.textAppearanceSmall);
+                // dayLabel.setTextAppearance(context, android.R.attr.textAppearanceSmall);
+                dayLabel.setTextAppearance(context, R.style.RepeatDaysTextAppearance);
                 dayLabel.setText(days.next());
                 repeatDaysView.addView(dayLabel, params);
             }
@@ -359,10 +357,12 @@ public class OpenAlarm extends ListActivity {
         return false;
     }
 
+    /*
     private void showApplicationPreferences() {
         Intent intent = new Intent(this, ApplicationSettings.class);
         startActivity(intent);
     }
+    */
 
     private void showAboutThisAppDialog() {
         WebView helpWebView = new WebView(this);

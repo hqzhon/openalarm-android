@@ -99,9 +99,9 @@ public class AlarmProvider extends ContentProvider {
                          Alarms.AlarmColumns.ENABLED + ", " +
                          Alarms.AlarmColumns.HANDLER + ", " +
                          Alarms.AlarmColumns.EXTRA + ") VALUES ";
-            db.execSQL(cmd + "('default1', 7, 00, 0, 1, 0, '', '');");
-            db.execSQL(cmd + "('default2', 8, 30, 0, 5, 0, '', '');");
-            db.execSQL(cmd + "('default3', 9, 00, 0, 9, 0, '', '');");
+            db.execSQL(cmd + "('Go to work', 7, 00, 0, 1, 0, '', '');");
+            db.execSQL(cmd + "('Pick up kids', 8, 30, 0, 5, 0, '', '');");
+            db.execSQL(cmd + "('See her mom', 9, 00, 0, 9, 0, '', '');");
         }
     }
 

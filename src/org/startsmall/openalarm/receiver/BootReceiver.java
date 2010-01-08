@@ -6,6 +6,9 @@
  * Receiver that will be called when user changes time, time
  * format (12-hour or 24-hour format) or device has been
  * rebooted.
+ *
+ * Don't move the package path from org.startsmall.openalarm to
+ * any other directory.
  */
 
 package org.startsmall.openalarm;
@@ -14,7 +17,7 @@ import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.text.TextUtils;
+//import android.text.TextUtils;
 import android.util.Log;
 
 public class BootReceiver extends BroadcastReceiver {
@@ -69,15 +72,15 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "===> BootReceiver.onReceive() at " +
-              Alarms.formatTime("yyyy:HH:mm",
-                                Alarms.getCalendarInstance()));
+        // Log.d(TAG, "===> BootReceiver.onReceive() at " +
+        //       Alarms.formatTime("yyyy:HH:mm",
+        //                         Alarms.getCalendarInstance()));
 
-        // Cancel any alert that was snoozed into preference.
-        Alarms.cancelSnoozedAlarm(context, -1);
+        // // Cancel any alert that was snoozed into preference.
+        // Alarms.cancelSnoozedAlarm(context, -1);
 
-        // Iterate all alarms and re-schedule all enabled alarms.
-        ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
-        Alarms.forEachAlarm(context, Alarms.getAlarmUri(-1), scheduleAlarm);
+        // // Iterate all alarms and re-schedule all enabled alarms.
+        // ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
+        // Alarms.forEachAlarm(context, Alarms.getAlarmUri(-1), scheduleAlarm);
     }
 }

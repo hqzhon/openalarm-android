@@ -60,7 +60,7 @@
   <string name="alarm_settings_repeat_days_key">repeat_days</string>
   <string name="alarm_settings_repeat_days_dialog_title">Repeat on these days</string>
   <string name="repeat_on_everyday">Everyday</string>
-  <string name="no_repeat_days">Not set</string>
+  <string name="no_repeat_days">Never</string>
 
   <string name="alarm_settings_extra_category_key">extra_settings</string>
 

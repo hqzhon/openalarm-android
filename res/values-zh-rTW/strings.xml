@@ -59,7 +59,7 @@
   <!-- <string name="alarm_settings_repeat_days_key">repeat_days</string> -->
   <string name="alarm_settings_repeat_days_dialog_title">"哪幾天啊？"</string>
   <string name="repeat_on_everyday">"每天"</string>
-  <string name="no_repeat_days">"未指定"</string>
+  <string name="no_repeat_days">"未定"</string>
 
   <!-- <string name="alarm_settings_extra_category_key">extra_settings</string> -->
 

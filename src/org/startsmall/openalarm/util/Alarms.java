@@ -29,10 +29,10 @@
 package org.startsmall.openalarm;
 
 import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationManager;
+//import android.app.Notification;
+//import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentUris;
+//import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -49,12 +49,14 @@ import android.text.format.DateUtils;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.DateFormat;
 import java.util.Iterator;
 import java.util.List;
-import java.util.LinkedList;
+//import java.util.LinkedList;
+//import java.util.Locale;
 import java.text.SimpleDateFormat;
 
 /**
@@ -251,24 +253,26 @@ public class Alarms {
         }
 
         public static List<String> toStringList(int code, String everyday, String notSet) {
-            List<String> result = new LinkedList<String>();
-            if(code > 0) {
-                if(code == 0x7F) { // b1111111
-                    result.add(everyday);
-                } else {
-                    for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
-                        if(isSet(code, i)) {
-                            result.add(
-                                DateUtils.getDayOfWeekString(
-                                    i,
-                                    DateUtils.LENGTH_MEDIUM));
-                        }
-                    }
-                }
-            } else {
-                result.add(notSet);
-            }
-            return result;
+            return Arrays.asList(
+                toString(code, everyday, notSet).split(" "));
+            // List<String> result = new LinkedList<String>();
+            // if(code > 0) {
+            //     if(code == 0x7F) { // b1111111
+            //         result.add(everyday);
+            //     } else {
+            //         for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
+            //             if(isSet(code, i)) {
+            //                 result.add(
+            //                     DateUtils.getDayOfWeekString(
+            //                         i,
+            //                         DateUtils.LENGTH_MEDIUM));
+            //             }
+            //         }
+            //     }
+            // } else {
+            //     result.add(notSet);
+            // }
+            // return result;
         }
     }
 
@@ -609,8 +613,14 @@ public class Alarms {
         Intent i = new Intent(HANDLE_ALARM, getAlarmUri(alarmId));
         try {
             Class<?> handlerClass = getHandlerClass(handlerClassName);
-            String handlerPackageName = handlerClass.getPackage().getName();
-            i.setClassName(handlerPackageName, handlerClassName);
+
+            // @note Note that the contextPackagename is not the
+            // same as Java packate. We should always place
+            // receivers in the root package directory, for
+            // instance, org.startsmall.openalarm instead of
+            // org.startsmall.openalarm.receiver.
+            String contextPackageName = handlerClass.getPackage().getName();
+            i.setClassName(contextPackageName, handlerClassName);
         } catch (ClassNotFoundException e) {
             Log.d(TAG, "===> Handler is not set for this alarm");
             return;
@@ -754,11 +764,18 @@ public class Alarms {
     public static void showToast(final Context context,
                                  final long atTimeInMillis) {
         DateFormat dateFormat =
-            DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+
         String text =
             context.getString(R.string.alarm_notification_toast_text,
                               dateFormat.format(new Date(atTimeInMillis)));
-        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+        // Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+
+        Toast.makeText(
+            context,
+            DateUtils.getRelativeTimeSpanString(
+                atTimeInMillis, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS),
+            Toast.LENGTH_LONG).show();
     }
 
     public static void setNotification(final Context context,

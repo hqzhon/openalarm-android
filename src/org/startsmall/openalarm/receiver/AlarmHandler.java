@@ -10,7 +10,6 @@
 package org.startsmall.openalarm;
 
 import android.content.Context;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
@@ -24,10 +23,6 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.text.method.DigitsKeyListener;
 import android.util.Log;
-import android.util.AttributeSet;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AlarmHandler extends AbsActionHandler {
 
@@ -45,7 +40,8 @@ public class AlarmHandler extends AbsActionHandler {
             setShowSilent(true);
         }
 
-        public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
+        @SuppressWarnings("unused")
+		public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
             mRingtoneChangedListener = listener;
         }
 
@@ -79,7 +75,10 @@ public class AlarmHandler extends AbsActionHandler {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
+        Log.d(TAG, "===> AlarmHandler.onReceive()");
+
+
+        //final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         // Parse extra settings out of combined value.
         final String extra =
             intent.getStringExtra(Alarms.AlarmColumns.EXTRA);

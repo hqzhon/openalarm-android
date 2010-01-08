@@ -13,7 +13,6 @@ package org.startsmall.openalarm;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.util.Log;
 import android.preference.PreferenceCategory;
 
 abstract class AbsActionHandler extends BroadcastReceiver {

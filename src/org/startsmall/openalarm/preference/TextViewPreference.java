@@ -9,19 +9,13 @@
  */
 package org.startsmall.openalarm;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.preference.Preference;
 import android.util.AttributeSet;
-import android.util.Log;
+//import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-public class TextViewPreference extends MyPreference {
+class TextViewPreference extends MyPreference {
     protected TextViewPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWidgetLayoutResource(R.layout.alarm_text_view_preference_widget);

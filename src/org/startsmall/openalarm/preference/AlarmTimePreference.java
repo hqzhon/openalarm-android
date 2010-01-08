@@ -15,8 +15,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TimePicker;
 
-import java.util.Calendar;
-
 public class AlarmTimePreference extends TextViewPreference {
     public AlarmTimePreference(Context context, AttributeSet attrs) {
         super(context, attrs);

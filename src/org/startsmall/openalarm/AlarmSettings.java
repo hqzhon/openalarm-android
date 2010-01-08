@@ -12,7 +12,6 @@ package org.startsmall.openalarm;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -23,11 +22,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import java.lang.reflect.Method;
 
 public class AlarmSettings extends PreferenceActivity {

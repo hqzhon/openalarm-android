@@ -17,7 +17,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.Preference;
 import android.util.AttributeSet;
-import android.util.Log;
+//import android.util.Log;
 import android.view.View;
 
 abstract class MyPreference extends Preference {
@@ -122,7 +122,8 @@ abstract class MyPreference extends Preference {
             dest.writeString(value);
         }
 
-        public static final Parcelable.Creator<SavedState> CREATOR =
+        @SuppressWarnings("unused")
+		public static final Parcelable.Creator<SavedState> CREATOR =
             new Parcelable.Creator<SavedState>() {
 
             public SavedState createFromParcel(Parcel in) {

@@ -13,10 +13,6 @@ import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.TypedArray;
-import android.os.Parcelable;
-import android.os.Parcel;
-import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -67,10 +63,8 @@ public class AlarmRepeatOnPreference extends MyPreference
             }
         }
 
-        SimpleDateFormat dateFormat =
-            (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG);
         DateFormatSymbols dateFormatSymbols =
-            dateFormat.getDateFormatSymbols();
+            ((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.MEDIUM)).getDateFormatSymbols();
         CharSequence[] weekdays = new CharSequence[7];
         System.arraycopy(dateFormatSymbols.getWeekdays(),
                          Calendar.SUNDAY,
