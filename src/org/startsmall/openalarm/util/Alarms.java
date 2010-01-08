@@ -29,10 +29,7 @@
 package org.startsmall.openalarm;
 
 import android.app.AlarmManager;
-//import android.app.Notification;
-//import android.app.NotificationManager;
 import android.app.PendingIntent;
-//import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -55,14 +52,8 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.util.Iterator;
 import java.util.List;
-//import java.util.LinkedList;
-//import java.util.Locale;
 import java.text.SimpleDateFormat;
 
-/**
- *
- *
- */
 public class Alarms {
     private static final String TAG = "Alarms";
 
@@ -255,24 +246,6 @@ public class Alarms {
         public static List<String> toStringList(int code, String everyday, String notSet) {
             return Arrays.asList(
                 toString(code, everyday, notSet).split(" "));
-            // List<String> result = new LinkedList<String>();
-            // if(code > 0) {
-            //     if(code == 0x7F) { // b1111111
-            //         result.add(everyday);
-            //     } else {
-            //         for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
-            //             if(isSet(code, i)) {
-            //                 result.add(
-            //                     DateUtils.getDayOfWeekString(
-            //                         i,
-            //                         DateUtils.LENGTH_MEDIUM));
-            //             }
-            //         }
-            //     }
-            // } else {
-            //     result.add(notSet);
-            // }
-            // return result;
         }
     }
 
@@ -761,21 +734,16 @@ public class Alarms {
         return calendar.getTimeInMillis();
     }
 
-    public static void showToast(final Context context,
-                                 final long atTimeInMillis) {
+    private static void showToast(final Context context,
+                                  final long atTimeInMillis) {
         DateFormat dateFormat =
-            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-
+            DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
         String text =
-            context.getString(R.string.alarm_notification_toast_text,
-                              dateFormat.format(new Date(atTimeInMillis)));
-        // Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-
-        Toast.makeText(
-            context,
-            DateUtils.getRelativeTimeSpanString(
-                atTimeInMillis, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS),
-            Toast.LENGTH_LONG).show();
+            context.getString(
+                R.string.alarm_notification_toast_text,
+                android.text.format.DateFormat.format(
+                    "E hh:mm", atTimeInMillis));
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
 
     public static void setNotification(final Context context,
