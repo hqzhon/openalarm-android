@@ -46,16 +46,23 @@ public class AlarmHandler extends AbsAlarmHandler {
     // MediaPlayer enters Prepared state and now a
     // Handler should be setup to stop playback of
     // ringtone after some period of time.
-    private class StopPlayback implements Handler.Callback {
+    private static class StopPlayback implements Handler.Callback {
         @Override
         public boolean handleMessage(Message msg) {
+            AlarmHandler handler;
+            if (msg.obj instanceof AlarmHandler) {
+                handler = (AlarmHandler)msg.obj;
+            } else {
+                return false;
+            }
+
             switch (msg.what) {
-            case STOP_PLAYBACK:
+            case MESSAGE_ID_STOP_PLAYBACK:
                 // This callback is executed because user doesn't
                 // tell me what to do, i.e., dimiss or snooze. I decide
                 // to snooze it or when the AlarmHandler is paused.
-                AlarmHandler.this.snoozeAlarm();
-                AlarmHandler.this.finish();
+                handler.snoozeAlarm();
+                handler.finish();
                 return true;
             default:
                 break;
@@ -64,10 +71,10 @@ public class AlarmHandler extends AbsAlarmHandler {
         }
     }
 
-    private class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
+    private static class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
         @Override
         public boolean onError(MediaPlayer mp, int what, int extra) {
-            Log.d(TAG, "========================> onError(): " + what + "====> " + extra);
+            Log.d(TAG, "===> onError(): " + what + "====> " + extra);
             return true;
         }
     }
@@ -87,7 +94,7 @@ public class AlarmHandler extends AbsAlarmHandler {
         }
 
         @SuppressWarnings("unused")
-		public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
+        public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
             mRingtoneChangedListener = listener;
         }
 
@@ -116,25 +123,20 @@ public class AlarmHandler extends AbsAlarmHandler {
 
     private static final String TAG = "AlarmHandler";
 
-    private static final String KEY_VIBRATE = "vibrate";
-    private static final String KEY_RINGTONE = "ringtone";
-    private static final String KEY_SNOOZE_DURATION = "snooze_duration";
-
-    //
+    private static final String EXTRA_KEY_VIBRATE = "vibrate";
+    private static final String EXTRA_KEY_RINGTONE = "ringtone";
+    private static final String EXTRA_KEY_SNOOZE_DURATION = "snooze_duration";
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
-
-    /// An ID used to identify the Message sent to stop the playback of ringtone in the Handler.Callback.
-    private static final int STOP_PLAYBACK = 1;
-
-    /// Copied from Android's source code which is claimed recommended values by media team.
+    private static final int MESSAGE_ID_STOP_PLAYBACK = 1;
+    private static final int PLAYBACK_TIMEOUT = 120000; // 2 minutes
     private static final float IN_CALL_VOLUME = 0.125f;
 
-    private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
 
     private MediaPlayer mMediaPlayer;
     private Vibrator mVibrator;
     private Handler mHandler;
 
+    private TelephonyManager mTelephonyManager;
     private PowerManager mPowerManager;
     private PowerManager.WakeLock mWakeLock;
     private KeyguardManager mKeyguardManager;
@@ -147,8 +149,10 @@ public class AlarmHandler extends AbsAlarmHandler {
         Log.d(TAG, "===> onCreate()");
 
         // Wakeup the device and release keylock.
-        mPowerManager = (PowerManager)this.getSystemService(Context.POWER_SERVICE);
-        mKeyguardManager = (KeyguardManager)this.getSystemService(Context.KEYGUARD_SERVICE);
+        mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        mKeyguardManager = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
+        mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        mHandler =  new Handler(new StopPlayback());
 
         acquireWakeLock();
 
@@ -187,67 +191,12 @@ public class AlarmHandler extends AbsAlarmHandler {
         final String extra = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
 
-        // Setup ringtone
-        if (intent.hasExtra(KEY_RINGTONE)) {
-            String ringtoneUriString = intent.getStringExtra(KEY_RINGTONE);
-
-            Log.d(TAG, "===> Play ringtone: " + ringtoneUriString);
-
-            mMediaPlayer = new MediaPlayer();
-            mMediaPlayer.setOnErrorListener(new OnPlaybackErrorListener());
-
-            try {
-                // Detects if we are in a call when this alarm goes off.
-                TelephonyManager tm = (TelephonyManager)getSystemService(
-                    Context.TELEPHONY_SERVICE);
-                if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
-                    mMediaPlayer.setDataSource(this, Uri.parse(ringtoneUriString));
-                } else {
-                    Log.d(TAG, "We're in a call. Lower volume and use fallback ringtone!");
-                    // This raw media must be supported by
-                    // Android and no errors thrown from it.
-                    AssetFileDescriptor afd =
-                        getResources().openRawResourceFd(R.raw.in_call_ringtone);
-                    mMediaPlayer.setDataSource(afd.getFileDescriptor(),
-                                               afd.getStartOffset(),
-                                               afd.getLength());
-                    afd.close();
-                    mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
-                }
-            } catch (Exception e1) {
-                // mMediaPlayer had entered Error state and
-                // OnErrorListener was called asynchronously.
-                // mMediaPlayer.reset();
-                // AssetFileDescriptor afd =
-                //     getResources().openRawResourceFd(R.raw.in_call_ringtone);
-                // mMediaPlayer.setDataSource(afd.getFileDescriptor(),
-                //                            afd.getStartOffset(),
-                //                            afd.getLength());
-                // afd.close();
-            }
-
-            mMediaPlayer.setLooping(true);
-
-            try {
-                mMediaPlayer.prepare();
-            } catch (Exception e) {
-                Log.d(TAG, "===> mMediaPlayer.prepare(): " + e);
-                return;
-            }
-
-            // Set a 3-minutes one-shot stop timer for stopping
-            // the MediaPlayer.
-            mHandler = new Handler(new StopPlayback());
-            Message stopPlaybackMessage = mHandler.obtainMessage(STOP_PLAYBACK, mMediaPlayer);
-            if (mHandler.sendMessageDelayed(stopPlaybackMessage,
-                                            PLAYBACK_TIMEOUT)) {
-                // Play ringtone now.
-                mMediaPlayer.start();
-                vibrate(true);
-            } else {
-                Log.d(TAG, "===> Unable to enqueue message");
-            }
+        // Prepare MediaPlayer for playing ringtone.
+        if (prepareMediaPlayer()) {
+            mMediaPlayer.start();
         }
+
+        startVibration();
     }
 
     @Override
@@ -257,7 +206,7 @@ public class AlarmHandler extends AbsAlarmHandler {
         Log.d(TAG, "===> onDestroy()");
 
         if (mHandler != null) {
-            mHandler.removeMessages(STOP_PLAYBACK, mMediaPlayer);
+            mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, mMediaPlayer);
             mHandler = null;
         }
 
@@ -295,6 +244,7 @@ public class AlarmHandler extends AbsAlarmHandler {
         enableKeyguard();
     }
 
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK &&
             event.getRepeatCount() == 0) { // don't handle BACK key.
@@ -303,7 +253,10 @@ public class AlarmHandler extends AbsAlarmHandler {
         return super.onKeyDown(keyCode, event);
     }
 
+    @Override
     public void onNewIntent(Intent newIntent) {
+        Log.v(TAG, "===> onNewIntent()");
+
         // Dismiss the old alarm.
         dismissAlarm();
 
@@ -315,6 +268,14 @@ public class AlarmHandler extends AbsAlarmHandler {
         // Refresh UI of the existing instance.
         setLabelFromIntent();
         setWindowTitleFromIntent();
+
+        // The ringtone uri might be different and timeout of
+        // playback needs to be recounted.
+        if (prepareMediaPlayer()) {
+            mMediaPlayer.start();
+        }
+
+        startVibration();
     }
 
     /**
@@ -330,7 +291,7 @@ public class AlarmHandler extends AbsAlarmHandler {
                                  final String extra) {
         // Vibrate
         CheckBoxPreference vibratePref = new CheckBoxPreference(context);
-        vibratePref.setKey(KEY_VIBRATE);
+        vibratePref.setKey(EXTRA_KEY_VIBRATE);
         vibratePref.setPersistent(true);
         vibratePref.setTitle(R.string.alarm_handler_vibrate_title);
         vibratePref.setSummaryOn(R.string.alarm_handler_vibrate_summary_on);
@@ -342,7 +303,7 @@ public class AlarmHandler extends AbsAlarmHandler {
         ringtonePref.setShowDefault(false);
         ringtonePref.setShowSilent(false);
         ringtonePref.setTitle(R.string.alarm_handler_ringtone_title);
-        ringtonePref.setKey(KEY_RINGTONE);
+        ringtonePref.setKey(EXTRA_KEY_RINGTONE);
         ringtonePref.setPersistent(true);
         ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALL);
         category.addPreference(ringtonePref);
@@ -351,7 +312,7 @@ public class AlarmHandler extends AbsAlarmHandler {
         EditTextPreference snoozeDurationPref = new EditTextPreference(context);
         snoozeDurationPref.setPersistent(true);
         snoozeDurationPref.setTitle(R.string.alarm_handler_snooze_duration_title);
-        snoozeDurationPref.setKey(KEY_SNOOZE_DURATION);
+        snoozeDurationPref.setKey(EXTRA_KEY_SNOOZE_DURATION);
         snoozeDurationPref.setDefaultValue("2");
         snoozeDurationPref.getEditText().setKeyListener(
             DigitsKeyListener.getInstance(false, false));
@@ -370,10 +331,10 @@ public class AlarmHandler extends AbsAlarmHandler {
         if(!TextUtils.isEmpty(extra)) {
             Bundle result = getBundleFromExtra(extra);
 
-            boolean vibrate = result.getBoolean(KEY_VIBRATE, false);
+            boolean vibrate = result.getBoolean(EXTRA_KEY_VIBRATE, false);
             vibratePref.setChecked(vibrate);
 
-            String rtString = result.getString(KEY_RINGTONE);
+            String rtString = result.getString(EXTRA_KEY_RINGTONE);
             if(rtString != null) {
                 Uri rtUri = Uri.parse(rtString);
                 ringtonePref.setRingtoneUri(rtUri);
@@ -382,7 +343,7 @@ public class AlarmHandler extends AbsAlarmHandler {
                 ringtonePref.setSummary(ringtone.getTitle(context));
             }
 
-            int snoozeDuration = result.getInt(KEY_SNOOZE_DURATION, -1);
+            int snoozeDuration = result.getInt(EXTRA_KEY_SNOOZE_DURATION, -1);
             if (snoozeDuration != -1) {
                 snoozeDurationPref.setSummary(
                     Integer.toString(snoozeDuration) + " minutes");
@@ -391,16 +352,16 @@ public class AlarmHandler extends AbsAlarmHandler {
     }
 
     private void putBundleIntoIntent(Intent intent, Bundle bundle) {
-        final Boolean vibrate = bundle.getBoolean(KEY_VIBRATE, false);
-        intent.putExtra(KEY_VIBRATE, vibrate);
+        final Boolean vibrate = bundle.getBoolean(EXTRA_KEY_VIBRATE, false);
+        intent.putExtra(EXTRA_KEY_VIBRATE, vibrate);
 
-        final String uriString = bundle.getString(KEY_RINGTONE);
+        final String uriString = bundle.getString(EXTRA_KEY_RINGTONE);
         if (!TextUtils.isEmpty(uriString)) {
-            intent.putExtra(KEY_RINGTONE, uriString);
+            intent.putExtra(EXTRA_KEY_RINGTONE, uriString);
         }
 
-        final int ringtoneDuration = bundle.getInt(KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
-        intent.putExtra(KEY_SNOOZE_DURATION, ringtoneDuration);
+        final int ringtoneDuration = bundle.getInt(EXTRA_KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
+        intent.putExtra(EXTRA_KEY_SNOOZE_DURATION, ringtoneDuration);
     }
 
     private Bundle getBundleFromExtra(String extra) {
@@ -414,19 +375,19 @@ public class AlarmHandler extends AbsAlarmHandler {
                 }
 
                 String[] elems = value.split("=");
-                if (elems[0].equals(KEY_VIBRATE)) {
+                if (elems[0].equals(EXTRA_KEY_VIBRATE)) {
                     boolean vibrate = false;
                     if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
                         vibrate = Boolean.parseBoolean(elems[1]);
                     }
-                    result.putBoolean(KEY_VIBRATE, vibrate);
-                } else if (elems[0].equals(KEY_RINGTONE)) {
+                    result.putBoolean(EXTRA_KEY_VIBRATE, vibrate);
+                } else if (elems[0].equals(EXTRA_KEY_RINGTONE)) {
                     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                        result.putString(KEY_RINGTONE, elems[1]);
+                        result.putString(EXTRA_KEY_RINGTONE, elems[1]);
                     }
-                } else if (elems[0].equals(KEY_SNOOZE_DURATION)) {
+                } else if (elems[0].equals(EXTRA_KEY_SNOOZE_DURATION)) {
                     if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                        result.putInt(KEY_SNOOZE_DURATION,
+                        result.putInt(EXTRA_KEY_SNOOZE_DURATION,
                                       Integer.parseInt(elems[1]));
                     }
                 }
@@ -459,13 +420,12 @@ public class AlarmHandler extends AbsAlarmHandler {
         final int repeatOnDays = i.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
         final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
         final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        final int snoozeDuration = i.getIntExtra(KEY_SNOOZE_DURATION, -1);
+        final int snoozeDuration = i.getIntExtra(EXTRA_KEY_SNOOZE_DURATION, -1);
 
         Alarms.snoozeAlarm(AlarmHandler.this, alarmId, label, repeatOnDays,
                            handlerClassName, extraData, snoozeDuration);
 
-        // Disable vibrator
-        vibrate(false);
+        stopVibration();
     }
 
     private void dismissAlarm() {
@@ -504,22 +464,22 @@ public class AlarmHandler extends AbsAlarmHandler {
         // Notify the system that this alarm is changed.
         Alarms.setNotification(this, true);
 
-        // Disable vibrator
-        vibrate(false);
+        stopVibration();
     }
 
-    private void vibrate(boolean enabled) {
+    private void startVibration() {
         Intent intent = getIntent();
-        if (intent.hasExtra("vibrate") &&
-            intent.getBooleanExtra("vibrate", false)) {
+        if (intent.getBooleanExtra("vibrate", false)) {
             if (mVibrator == null) {
                 mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
             }
-            if (enabled) {
-                mVibrator.vibrate(new long[]{500, 500}, 0);
-            } else {
-                mVibrator.cancel();
-            }
+            mVibrator.vibrate(new long[]{500, 500}, 0);
+        }
+    }
+
+    private void stopVibration() {
+        if (mVibrator != null) {
+            mVibrator.cancel();
         }
     }
 
@@ -551,5 +511,62 @@ public class AlarmHandler extends AbsAlarmHandler {
             mKeyguardLock = mKeyguardManager.newKeyguardLock(TAG);
         }
         mKeyguardLock.disableKeyguard();
+    }
+
+    private boolean prepareMediaPlayer() {
+        if (mMediaPlayer == null) {
+            mMediaPlayer = new MediaPlayer();
+        } else {
+            mMediaPlayer.stop();
+            mMediaPlayer.reset();
+        }
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(EXTRA_KEY_RINGTONE)) {
+            String uriString = intent.getStringExtra(EXTRA_KEY_RINGTONE);
+
+            Log.d(TAG, "===> Play ringtone: " + uriString);
+
+            try {
+                // Detects if we are in a call when this alarm goes off.
+                if (mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
+                    mMediaPlayer.setDataSource(this, Uri.parse(uriString));
+                } else {
+                    Log.d(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
+
+                    // This raw media must be supported by Android
+                    // and no errors thrown from it.
+                    AssetFileDescriptor afd =
+                        getResources().openRawResourceFd(R.raw.in_call_ringtone);
+                    mMediaPlayer.setDataSource(afd.getFileDescriptor(),
+                                               afd.getStartOffset(),
+                                               afd.getLength());
+                    afd.close();
+                    mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+                }
+            } catch (java.io.IOException e) {
+                return false;
+            }
+
+            mMediaPlayer.setLooping(true);
+
+            // Prepare MediaPlayer into Prepared state and
+            // MediaPlayer is ready to play.
+            try {
+                mMediaPlayer.prepare();
+            } catch (java.io.IOException e) {
+                return false;
+            }
+
+            // Setup a one-shot message to stop playing of
+            // ringtone after TIMEOUT minutes. If it is
+            // established successfully, start playing
+            // ringtone and vibrate if necessary.
+            mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, this);
+            Message message = mHandler.obtainMessage(MESSAGE_ID_STOP_PLAYBACK, this);
+            return mHandler.sendMessageDelayed(message, PLAYBACK_TIMEOUT);
+        }
+
+        return false;
     }
 }
