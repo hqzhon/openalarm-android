@@ -1,5 +1,5 @@
 /**
- * @file   FireAlarm.java
+ * @file   AlarmHandler.java
  * @author josh <yenliangl at gmail dot com>
  * @date   Tue Nov  3 20:33:08 2009
  *
@@ -16,13 +16,22 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.Vibrator;
-import android.net.Uri;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
+import android.preference.PreferenceCategory;
+import android.preference.RingtonePreference;
 import android.telephony.TelephonyManager;
+import android.text.method.DigitsKeyListener;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -33,7 +42,7 @@ import java.io.IOException;
 import java.io.FileDescriptor;
 import java.util.Calendar;
 
-public class FireAlarm extends Activity {
+public class AlarmHandler extends AbsAlarmHandler {
     // MediaPlayer enters Prepared state and now a
     // Handler should be setup to stop playback of
     // ringtone after some period of time.
@@ -44,9 +53,9 @@ public class FireAlarm extends Activity {
             case STOP_PLAYBACK:
                 // This callback is executed because user doesn't
                 // tell me what to do, i.e., dimiss or snooze. I decide
-                // to snooze it or when the FireAlarm is paused.
-                FireAlarm.this.snoozeAlarm();
-                FireAlarm.this.finish();
+                // to snooze it or when the AlarmHandler is paused.
+                AlarmHandler.this.snoozeAlarm();
+                AlarmHandler.this.finish();
                 return true;
             default:
                 break;
@@ -63,7 +72,56 @@ public class FireAlarm extends Activity {
         }
     }
 
-    private static final String TAG = "FireAlarm";
+    interface IRingtoneChangedListener {
+        public void onRingtoneChanged(Uri uri);
+    }
+
+    private static class MyRingtonePreference extends RingtonePreference {
+        IRingtoneChangedListener mRingtoneChangedListener;
+
+        public MyRingtonePreference(Context context) {
+            super(context);
+
+            setShowDefault(true);
+            setShowSilent(true);
+        }
+
+        @SuppressWarnings("unused")
+		public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
+            mRingtoneChangedListener = listener;
+        }
+
+        public Uri getRingtoneUri() {
+            return Uri.parse(getPersistedString(""));
+        }
+
+        public void setRingtoneUri(Uri ringtoneUri) {
+            persistString(ringtoneUri.toString());
+            Ringtone ringtone =
+                RingtoneManager.getRingtone(getContext(), ringtoneUri);
+            setSummary(ringtone.getTitle(getContext()));
+        }
+
+        protected void onSaveRingtone(Uri ringtoneUri) {
+            setRingtoneUri(ringtoneUri);
+            if(mRingtoneChangedListener != null) {
+                mRingtoneChangedListener.onRingtoneChanged(ringtoneUri);
+            }
+        }
+
+        protected Uri onRestoreRingtone() {
+            return getRingtoneUri();
+        }
+    }
+
+    private static final String TAG = "AlarmHandler";
+
+    private static final String KEY_VIBRATE = "vibrate";
+    private static final String KEY_RINGTONE = "ringtone";
+    private static final String KEY_SNOOZE_DURATION = "snooze_duration";
+
+    //
+    private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
 
     /// An ID used to identify the Message sent to stop the playback of ringtone in the Handler.Callback.
     private static final int STOP_PLAYBACK = 1;
@@ -107,8 +165,8 @@ public class FireAlarm extends Activity {
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FireAlarm.this.snoozeAlarm();
-                    FireAlarm.this.finish();
+                    AlarmHandler.this.snoozeAlarm();
+                    AlarmHandler.this.finish();
                 }
             });
 
@@ -119,14 +177,22 @@ public class FireAlarm extends Activity {
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FireAlarm.this.dismissAlarm();
-                    FireAlarm.this.finish();
+                    AlarmHandler.this.dismissAlarm();
+                    AlarmHandler.this.finish();
                 }
             });
 
-        // Start playing ringtone loop.
+        // Parse extra data in the Intent and create   from Intent extra
         Intent intent = getIntent();
-        if(intent.hasExtra("ringtone")) {
+        final String extra = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
+        putBundleIntoIntent(intent, getBundleFromExtra(extra));
+
+        // Setup ringtone
+        if (intent.hasExtra(KEY_RINGTONE)) {
+            String ringtoneUriString = intent.getStringExtra(KEY_RINGTONE);
+
+            Log.d(TAG, "===> Play ringtone: " + ringtoneUriString);
+
             mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setOnErrorListener(new OnPlaybackErrorListener());
 
@@ -135,9 +201,7 @@ public class FireAlarm extends Activity {
                 TelephonyManager tm = (TelephonyManager)getSystemService(
                     Context.TELEPHONY_SERVICE);
                 if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
-                    String rtUri = intent.getStringExtra("ringtone");
-                    Log.d(TAG, "Play ringtone: " + rtUri);
-                    mMediaPlayer.setDataSource(this, Uri.parse(rtUri));
+                    mMediaPlayer.setDataSource(this, Uri.parse(ringtoneUriString));
                 } else {
                     Log.d(TAG, "We're in a call. Lower volume and use fallback ringtone!");
                     // This raw media must be supported by
@@ -208,14 +272,14 @@ public class FireAlarm extends Activity {
         releaseWakeLock();
     }
 
-    // FireAlarm comes to the foreground
+    // AlarmHandler comes to the foreground
     @Override
     public void onResume() {
         super.onResume();
 
         Log.d(TAG, "===> onResume()");
 
-        // FireAlarm goes back to interact to user. But, Keyguard
+        // AlarmHandler goes back to interact to user. But, Keyguard
         // may be in front.
         disableKeyguard();
     }
@@ -243,11 +307,132 @@ public class FireAlarm extends Activity {
         // Dismiss the old alarm.
         dismissAlarm();
 
+        // New intent comes. Replace the old one.
+        final String extra = newIntent.getStringExtra(Alarms.AlarmColumns.EXTRA);
+        putBundleIntoIntent(newIntent, getBundleFromExtra(extra));
         setIntent(newIntent);
 
         // Refresh UI of the existing instance.
         setLabelFromIntent();
         setWindowTitleFromIntent();
+    }
+
+    /**
+     * Add preferences of this handler into Extra Settings.
+     *
+     * @param context
+     * @param category
+     * @param extra
+     */
+    @Override
+    public void addMyPreferences(final Context context,
+                                 final PreferenceCategory category,
+                                 final String extra) {
+        // Vibrate
+        CheckBoxPreference vibratePref = new CheckBoxPreference(context);
+        vibratePref.setKey(KEY_VIBRATE);
+        vibratePref.setPersistent(true);
+        vibratePref.setTitle(R.string.alarm_handler_vibrate_title);
+        vibratePref.setSummaryOn(R.string.alarm_handler_vibrate_summary_on);
+        vibratePref.setSummaryOff(R.string.alarm_handler_vibrate_summary_off);
+        category.addPreference(vibratePref);
+
+        // Ringtone;
+        MyRingtonePreference ringtonePref = new MyRingtonePreference(context);
+        ringtonePref.setShowDefault(false);
+        ringtonePref.setShowSilent(false);
+        ringtonePref.setTitle(R.string.alarm_handler_ringtone_title);
+        ringtonePref.setKey(KEY_RINGTONE);
+        ringtonePref.setPersistent(true);
+        ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALL);
+        category.addPreference(ringtonePref);
+
+        // Snooze duration
+        EditTextPreference snoozeDurationPref = new EditTextPreference(context);
+        snoozeDurationPref.setPersistent(true);
+        snoozeDurationPref.setTitle(R.string.alarm_handler_snooze_duration_title);
+        snoozeDurationPref.setKey(KEY_SNOOZE_DURATION);
+        snoozeDurationPref.setDefaultValue("2");
+        snoozeDurationPref.getEditText().setKeyListener(
+            DigitsKeyListener.getInstance(false, false));
+        snoozeDurationPref.setDialogTitle(R.string.alarm_handler_snooze_duration_dialog_title);
+        snoozeDurationPref.setOnPreferenceChangeListener(
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference p, Object newValue) {
+                    ((EditTextPreference)p).setSummary(
+                        Integer.parseInt((String)newValue) + " minutes");
+                    return true;
+                }
+            });
+        category.addPreference(snoozeDurationPref);
+
+        if(!TextUtils.isEmpty(extra)) {
+            Bundle result = getBundleFromExtra(extra);
+
+            boolean vibrate = result.getBoolean(KEY_VIBRATE, false);
+            vibratePref.setChecked(vibrate);
+
+            String rtString = result.getString(KEY_RINGTONE);
+            if(rtString != null) {
+                Uri rtUri = Uri.parse(rtString);
+                ringtonePref.setRingtoneUri(rtUri);
+                Ringtone ringtone =
+                    RingtoneManager.getRingtone(context, rtUri);
+                ringtonePref.setSummary(ringtone.getTitle(context));
+            }
+
+            int snoozeDuration = result.getInt(KEY_SNOOZE_DURATION, -1);
+            if (snoozeDuration != -1) {
+                snoozeDurationPref.setSummary(
+                    Integer.toString(snoozeDuration) + " minutes");
+            }
+        }
+    }
+
+    private void putBundleIntoIntent(Intent intent, Bundle bundle) {
+        final Boolean vibrate = bundle.getBoolean(KEY_VIBRATE, false);
+        intent.putExtra(KEY_VIBRATE, vibrate);
+
+        final String uriString = bundle.getString(KEY_RINGTONE);
+        if (!TextUtils.isEmpty(uriString)) {
+            intent.putExtra(KEY_RINGTONE, uriString);
+        }
+
+        final int ringtoneDuration = bundle.getInt(KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
+        intent.putExtra(KEY_SNOOZE_DURATION, ringtoneDuration);
+    }
+
+    private Bundle getBundleFromExtra(String extra) {
+        Bundle result = new Bundle();
+        if (!TextUtils.isEmpty(extra)) {
+            String[] values = TextUtils.split(extra, ";");
+            for (String value : values) {
+                if (TextUtils.isEmpty(value) ||
+                    !value.matches("(\\w+)=.*")) {
+                    continue;
+                }
+
+                String[] elems = value.split("=");
+                if (elems[0].equals(KEY_VIBRATE)) {
+                    boolean vibrate = false;
+                    if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                        vibrate = Boolean.parseBoolean(elems[1]);
+                    }
+                    result.putBoolean(KEY_VIBRATE, vibrate);
+                } else if (elems[0].equals(KEY_RINGTONE)) {
+                    if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                        result.putString(KEY_RINGTONE, elems[1]);
+                    }
+                } else if (elems[0].equals(KEY_SNOOZE_DURATION)) {
+                    if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                        result.putInt(KEY_SNOOZE_DURATION,
+                                      Integer.parseInt(elems[1]));
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private void setWindowTitleFromIntent() {
@@ -274,11 +459,9 @@ public class FireAlarm extends Activity {
         final int repeatOnDays = i.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
         final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
         final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
+        final int snoozeDuration = i.getIntExtra(KEY_SNOOZE_DURATION, -1);
 
-        // This is defined in AlarmHandler.java
-        final int snoozeDuration = i.getIntExtra("snooze_duration", -1);
-
-        Alarms.snoozeAlarm(FireAlarm.this, alarmId, label, repeatOnDays,
+        Alarms.snoozeAlarm(AlarmHandler.this, alarmId, label, repeatOnDays,
                            handlerClassName, extraData, snoozeDuration);
 
         // Disable vibrator

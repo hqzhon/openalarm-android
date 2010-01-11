@@ -52,9 +52,15 @@
               android:label="@string/app_name">
     </activity>
 
-    <activity android:name=".FireAlarm"
+    <activity android:name=".AlarmHandler"
+              android:label="Alarm"
+              android:icon="@drawable/alarm_handler"
               android:launchMode="singleTop"
               android:theme="@android:style/Theme.Dialog">
+      <intent-filter>
+        <action android:name="org.startsmall.openalarm.HANDLE_ALARM"/>
+        <category android:name="android.intent.category.ALTERNATIVE"/>
+      </intent-filter>
     </activity>
 
     <receiver android:name=".BootReceiver"
@@ -65,15 +71,5 @@
         <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
       </intent-filter>
     </receiver>
-
-    <receiver android:name=".AlarmHandler"
-              android:label="Alarm"
-              android:icon="@drawable/alarm_handler">
-      <intent-filter>
-        <action android:name="org.startsmall.openalarm.HANDLE_ALARM"/>
-        <category android:name="android.intent.category.ALTERNATIVE"/>
-      </intent-filter>
-    </receiver>
-
   </application>
 </manifest>

@@ -599,6 +599,7 @@ public class Alarms {
             return;
         }
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_NO_USER_ACTION);
 
         // Alarm ID is always necessary for its operations.
         i.putExtra(AlarmColumns._ID, alarmId);
@@ -625,9 +626,15 @@ public class Alarms {
         AlarmManager alarmManager =
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 
+        // alarmManager.set(AlarmManager.RTC_WAKEUP,
+        //                  atTimeInMillis,
+        //                  PendingIntent.getBroadcast(
+        //                      context, 0, i,
+        //                      PendingIntent.FLAG_CANCEL_CURRENT));
+
         alarmManager.set(AlarmManager.RTC_WAKEUP,
                          atTimeInMillis,
-                         PendingIntent.getBroadcast(
+                         PendingIntent.getActivity(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
 
@@ -842,8 +849,10 @@ public class Alarms {
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
         // Search all receivers that can handle my alarms.
+        // Iterator<ResolveInfo> infoObjs =
+        //     pm.queryBroadcastReceivers(i, 0).iterator();
         Iterator<ResolveInfo> infoObjs =
-            pm.queryBroadcastReceivers(i, 0).iterator();
+            pm.queryIntentActivities(i, 0).iterator();
         while (infoObjs.hasNext()) {
             ActivityInfo activityInfo = infoObjs.next().activityInfo;
             if (activityInfo.name.equals(handlerClassName)) {
@@ -852,6 +861,13 @@ public class Alarms {
         }
         throw new PackageManager.NameNotFoundException(
             "BroadcastReceiver " + handlerClassName + " not found");
+    }
+
+    public static List<ResolveInfo> queryAlarmHandlers(final PackageManager pm) {
+        Intent i = new Intent(HANDLE_ALARM);
+        i.addCategory(Intent.CATEGORY_ALTERNATIVE);
+
+        return pm.queryIntentActivities(i, 0);
     }
 
     private synchronized static int getNumberOfEnabledAlarms(Context context) {

@@ -92,27 +92,19 @@ public class AlarmActionPreference extends ListPreference {
     @Override
     protected void generateListItems(ArrayList<CharSequence> entries,
                                      ArrayList<CharSequence> entryValues) {
-        Intent queryIntent = prepareQueryHandlerIntent();
-
         PackageManager pm = getContext().getPackageManager();
-        List<ResolveInfo> actions =
-            pm.queryBroadcastReceivers(queryIntent, 0);
+        List<ResolveInfo> handlers = Alarms.queryAlarmHandlers(pm);
+        final int numberOfHandlers = handlers.size();
 
-        final int numberOfHandlers = actions.size();
         if(numberOfHandlers > 0) {
             entries.ensureCapacity(numberOfHandlers);
             entryValues.ensureCapacity(numberOfHandlers);
-            for(int i = 0; i < numberOfHandlers; i++) {
-                ActivityInfo info = actions.get(i).activityInfo;
-                entries.add(info.loadLabel(pm));
-                entryValues.add(info.name);
+
+            for (ResolveInfo i : handlers) {
+                ActivityInfo activityInfo = i.activityInfo;
+                entries.add(activityInfo.loadLabel(pm));
+                entryValues.add(activityInfo.name);
             }
         }
-    }
-
-    protected Intent prepareQueryHandlerIntent() {
-        Intent intent = new Intent(Alarms.HANDLE_ALARM);
-        intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
-        return intent;
     }
 }
