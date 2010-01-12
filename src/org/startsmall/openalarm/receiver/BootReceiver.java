@@ -17,20 +17,22 @@ import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Intent;
-//import android.text.TextUtils;
 import android.util.Log;
+import java.util.Calendar;
 
 public class BootReceiver extends BroadcastReceiver {
     // All enabled alarms should be rescheduled if system time
     // changed, time zone changed or machine rebooted.
-    private class ScheduleEnabledAlarm implements Alarms.OnVisitListener {
+    private static class ScheduleEnabledAlarm implements Alarms.OnVisitListener {
+        public static long nearestAlarmTime = Long.MAX_VALUE;
+
         @Override
         public void onVisit(final Context context,
                             final int id,
                             final String label,
                             final int hour,
                             final int minutes,
-                            final int oldAtTimeInMillis,
+                            final long oldAtTimeInMillis,
                             final int repeatOnDaysCode,
                             final boolean enabled,
                             final String handler,
@@ -57,6 +59,10 @@ public class BootReceiver extends BroadcastReceiver {
             if (enabled) {
                 Alarms.enableAlarm(context, id, label, atTimeInMillis,
                                    repeatOnDaysCode, handler, extra);
+
+                if (atTimeInMillis < nearestAlarmTime) {
+                    nearestAlarmTime = atTimeInMillis;
+                }
             }
 
             ContentValues newValues = new ContentValues();
@@ -72,15 +78,20 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // Log.d(TAG, "===> BootReceiver.onReceive() at " +
-        //       Alarms.formatTime("yyyy:HH:mm",
-        //                         Alarms.getCalendarInstance()));
+        Log.d(TAG, "===> BootReceiver.onReceive()");
 
-        // // Cancel any alert that was snoozed into preference.
-        // Alarms.cancelSnoozedAlarm(context, -1);
+        // Cancel any alert that was snoozed into preference.
+        Alarms.cancelSnoozedAlarm(context, -1);
 
-        // // Iterate all alarms and re-schedule all enabled alarms.
-        // ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
-        // Alarms.forEachAlarm(context, Alarms.getAlarmUri(-1), scheduleAlarm);
+        // Iterate all alarms and re-schedule all enabled alarms.
+        ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
+        Alarms.forEachAlarm(context, Alarms.getAlarmUri(-1), scheduleAlarm);
+
+        // Set system settings with
+        if (scheduleAlarm.nearestAlarmTime != Long.MAX_VALUE) {
+            Calendar calendar = Alarms.getCalendarInstance();
+            calendar.setTimeInMillis(scheduleAlarm.nearestAlarmTime);
+            Alarms.setAlarmInSystemSettings(context, calendar);
+        }
     }
 }

@@ -65,7 +65,7 @@
   <string name="alarm_settings_extra_category_key">extra_settings</string>
 
   <!-- Alarm activation toast format -->
-  <string name="alarm_notification_toast_text">Alarm will go off at %s</string>
+  <string name="alarm_notification_toast_text">Alarm actions @ %s</string>
   <string name="alarm_notification_ticker_text">Alarm %s @ %s</string>
   <string name="alarm_notification_content_text">%s</string>
   <string name="alarm_handler_unset_message">Don\'t know how to handle this alarm. Please choose Action.</string>

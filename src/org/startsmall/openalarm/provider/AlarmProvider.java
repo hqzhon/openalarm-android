@@ -120,7 +120,7 @@ public class AlarmProvider extends ContentProvider {
                         String[] selectionArgs,
                         String sortOrder) {
         int matchId = sURIMatcher.match(uri);
-        if(matchId != MATCH_CODE_SINGLE_ALARM &&
+        if (matchId != MATCH_CODE_SINGLE_ALARM &&
            matchId != MATCH_CODE_ALL_ALARMS) {
             throw new IllegalArgumentException("Unknown alarm URI");
         }
@@ -128,7 +128,7 @@ public class AlarmProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(DatabaseOpenHelper.DATABASE_TABLE_NAME);
 
-        if(matchId == MATCH_CODE_SINGLE_ALARM) {
+        if (matchId == MATCH_CODE_SINGLE_ALARM) {
             long rowId = ContentUris.parseId(uri);
             qb.appendWhere(Alarms.AlarmColumns._ID + "=" + rowId); // append _id=#
         }
@@ -139,7 +139,7 @@ public class AlarmProvider extends ContentProvider {
                             null, /* groupBy */
                             null, /* having */
                             sortOrder);
-        if(c == null) {
+        if (c == null) {
             Log.d(TAG, "AlarmProvider.query(): failed alarm query");
         } else {
             c.setNotificationUri(getContext().getContentResolver(), uri);
@@ -149,47 +149,47 @@ public class AlarmProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues initialValues) {
-        if(sURIMatcher.match(uri) != MATCH_CODE_ALL_ALARMS) {
+        if (sURIMatcher.match(uri) != MATCH_CODE_ALL_ALARMS) {
             throw new IllegalArgumentException(
                 "unable to insert into URL - " + uri);
         }
 
         ContentValues values;
-        if(initialValues == null) {
+        if (initialValues == null) {
             values = new ContentValues();
         } else {
             values = new ContentValues(initialValues);
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.HOUR)) {
+        if (!values.containsKey(Alarms.AlarmColumns.HOUR)) {
             values.put(Alarms.AlarmColumns.HOUR, 9);
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.MINUTES)) {
+        if (!values.containsKey(Alarms.AlarmColumns.MINUTES)) {
             values.put(Alarms.AlarmColumns.MINUTES, 0);
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.AT_TIME_IN_MILLIS)) {
-            values.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, 0);
+        if (!values.containsKey(Alarms.AlarmColumns.AT_TIME_IN_MILLIS)) {
+            values.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, 0L);
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.REPEAT_DAYS)) {
+        if (!values.containsKey(Alarms.AlarmColumns.REPEAT_DAYS)) {
             values.put(Alarms.AlarmColumns.REPEAT_DAYS, 0);
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.ENABLED)) {
+        if (!values.containsKey(Alarms.AlarmColumns.ENABLED)) {
             values.put(Alarms.AlarmColumns.ENABLED, 0);
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.LABEL)) {
+        if (!values.containsKey(Alarms.AlarmColumns.LABEL)) {
             values.put(Alarms.AlarmColumns.LABEL, "My Alarm");
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.HANDLER)) {
+        if (!values.containsKey(Alarms.AlarmColumns.HANDLER)) {
             values.put(Alarms.AlarmColumns.HANDLER, "");
         }
 
-        if(!values.containsKey(Alarms.AlarmColumns.EXTRA)) {
+        if (!values.containsKey(Alarms.AlarmColumns.EXTRA)) {
             values.put(Alarms.AlarmColumns.EXTRA, "");
         }
 
@@ -197,7 +197,6 @@ public class AlarmProvider extends ContentProvider {
         long rowId = db.insertOrThrow(DatabaseOpenHelper.DATABASE_TABLE_NAME,
                                       Alarms.AlarmColumns.LABEL,
                                       values);
-        Log.d(TAG, "Trying to insert a row into " + uri);
 
         Uri insertedUri = Alarms.getAlarmUri(rowId);
         Log.d(TAG, "Added alarm - " + insertedUri);
@@ -209,7 +208,7 @@ public class AlarmProvider extends ContentProvider {
     public int update(Uri uri,
                       ContentValues values,
                       String selection, String[] selectionArgs) {
-        if(sURIMatcher.match(uri) != MATCH_CODE_SINGLE_ALARM) {
+        if (sURIMatcher.match(uri) != MATCH_CODE_SINGLE_ALARM) {
             throw new IllegalArgumentException(
                 "unsupported content provider operation");
         }

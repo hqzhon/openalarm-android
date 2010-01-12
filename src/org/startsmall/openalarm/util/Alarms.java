@@ -296,7 +296,7 @@ public class Alarms {
                      final String label,
                      final int hour,
                      final int minutes,
-                     final int atTimeInMillis,
+                     final long atTimeInMillis,
                      final int repeatOnDaysCode,
                      final boolean enabled,
                      final String handler,
@@ -313,7 +313,7 @@ public class Alarms {
         public String label;
         public int hour;
         public int minutes;
-        public int atTimeInMillis;
+        public long atTimeInMillis;
         public int repeatOnDaysCode;
         public boolean enabled;
         public String handler;
@@ -325,7 +325,7 @@ public class Alarms {
                             final String label,
                             final int hour,
                             final int minutes,
-                            final int atTimeInMillis,
+                            final long atTimeInMillis,
                             final int repeatOnDaysCode,
                             final boolean enabled,
                             final String handler,
@@ -363,8 +363,8 @@ public class Alarms {
                     cursor.getInt(AlarmColumns.PROJECTION_HOUR_INDEX);
                 final int minutes =
                     cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
-                final int atTimeInMillis =
-                    cursor.getInt(AlarmColumns.PROJECTION_AT_TIME_IN_MILLIS_INDEX);
+                final long atTimeInMillis =
+                    cursor.getLong(AlarmColumns.PROJECTION_AT_TIME_IN_MILLIS_INDEX);
                 final int repeatOnDaysCode =
                     cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
                 final boolean enabled =
@@ -475,6 +475,8 @@ public class Alarms {
         // Update settings of an alarm (enabled and newTimeInMillis)
         updateAlarm(context, alarmUri, newValues);
 
+        // Show notification on the status bar to indicate that
+        // an alarm is setup or cancel notification if no alarms are setup.
         if (enabled) {
             setNotification(context, true);
         } else {
@@ -487,6 +489,9 @@ public class Alarms {
                 setNotification(context, false);
             }
         }
+
+        // Update alarm in system settings
+        updateSystemSetting(context);
 
         return 0;
     }
@@ -631,10 +636,6 @@ public class Alarms {
                          PendingIntent.getActivity(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
-
-        Calendar calendar = getCalendarInstance();
-        calendar.setTimeInMillis(atTimeInMillis);
-        setAlarmInSystemSettings(context, calendar);
     }
 
     /**
@@ -659,19 +660,17 @@ public class Alarms {
         alarmManager.cancel(PendingIntent.getBroadcast(
                                     context, 0, i,
                                     PendingIntent.FLAG_CANCEL_CURRENT));
-
-        setAlarmInSystemSettings(context, null);
     }
 
-    private static void setAlarmInSystemSettings(final Context context,
-                                                 final Calendar calendar) {
+    public static void setAlarmInSystemSettings(final Context context,
+                                                final Calendar calendar) {
         String timeString = "";
         if (calendar != null) {
             timeString =
                 DateUtils.formatDateTime(
                     context,
                     calendar.getTimeInMillis(),
-                    DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY);
+                    DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
         }
 
         Settings.System.putString(context.getContentResolver(),
@@ -721,18 +720,6 @@ public class Alarms {
         return calendar.getTimeInMillis();
     }
 
-    private static void showToast(final Context context,
-                                  final long atTimeInMillis) {
-        DateFormat dateFormat =
-            DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
-        String text =
-            context.getString(
-                R.string.alarm_notification_toast_text,
-                android.text.format.DateFormat.format(
-                    "E hh:mm", atTimeInMillis));
-        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-    }
-
     public static void setNotification(final Context context,
                                        final boolean enabled) {
         if (enabled) {
@@ -749,62 +736,6 @@ public class Alarms {
             }
         }
     }
-
-    private static void broadcastAlarmChanged(Context context,
-                                              boolean enabled) {
-        final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
-        Intent i = new Intent(ACTION_ALARM_CHANGED);
-        i.putExtra("alarmSet", enabled);
-        context.sendBroadcast(i);
-    }
-
-    // public static void cancelNotification(final Context context,
-    //                                       final int alarmId) {
-    //     NotificationManager nm =
-    //         (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-    //     nm.cancel(alarmId);
-    // }
-
-    // public static void setNotification(final Context context,
-    //                                    final int alarmId,
-    //                                    final String alarmLabel,
-    //                                    final long atTimeInMillis) {
-    //     NotificationManager nm =
-    //         (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-    //     Calendar calendar = getCalendarInstance();
-    //     calendar.setTimeInMillis(atTimeInMillis);
-    //     Date date = calendar.getTime();
-
-    //     DateFormat timeFormatter =
-    //         android.text.format.DateFormat.getTimeFormat(context);
-
-    //     String tickerText =
-    //         context.getString(R.string.alarm_notification_ticker_text,
-    //                           alarmLabel,
-    //                           timeFormatter.format(calendar.getTime()));
-    //     Notification notification =
-    //         new Notification(R.drawable.alarm_handler, tickerText, System.currentTimeMillis());
-    //     notification.flags = Notification.FLAG_NO_CLEAR;
-
-    //     Intent notificationIntent = new Intent(context, OpenAlarm.class);
-    //     PendingIntent contentIntent =
-    //         PendingIntent.getActivity(context, 0, notificationIntent,
-    //                                   PendingIntent.FLAG_CANCEL_CURRENT);
-
-    //     DateFormat dateFormatter =
-    //         android.text.format.DateFormat.getLongDateFormat(context);
-    //     String contentText =
-    //         context.getString(R.string.alarm_notification_content_text,
-    //                           alarmLabel,
-    //                           dateFormatter.format(new Date(atTimeInMillis)));
-
-    //     notification.setLatestEventInfo(context,
-    //                                     tickerText,
-    //                                     contentText,
-    //                                     contentIntent);
-    //     nm.notify(alarmId, notification);
-    // }
 
     public static Class<?> getHandlerClass(final String handlerClassName)
         throws ClassNotFoundException {
@@ -864,5 +795,61 @@ public class Alarms {
         final int count = c.getCount();
         c.close();
         return count;
+    }
+
+    private static void broadcastAlarmChanged(Context context,
+                                              boolean enabled) {
+        final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
+        Intent i = new Intent(ACTION_ALARM_CHANGED);
+        i.putExtra("alarmSet", enabled);
+        context.sendBroadcast(i);
+    }
+
+    private static void showToast(final Context context,
+                                  final long atTimeInMillis) {
+        String dateTimeString =
+            DateUtils.formatDateTime(
+                context,
+                atTimeInMillis,
+                DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY);
+
+        String text =
+            context.getString(R.string.alarm_notification_toast_text, dateTimeString);
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+    }
+
+    // Iterate all alarms and find out the nearest alarm.
+    private static void updateSystemSetting(final Context context) {
+        class GetNearestAlarmTime implements OnVisitListener {
+            public long timeInMillis = Long.MAX_VALUE;
+
+            @Override
+            public void onVisit(final Context context,
+                                final int id,
+                                final String label,
+                                final int hour,
+                                final int minutes,
+                                final long atTimeInMillis,
+                                final int repeatOnDaysCode,
+                                final boolean enabled,
+                                final String handler,
+                                final String extra) {
+                if (enabled &&
+                    atTimeInMillis < timeInMillis) {
+                    timeInMillis = atTimeInMillis;
+                }
+            }
+        }
+
+        GetNearestAlarmTime getNearestAlarm = new GetNearestAlarmTime();
+        forEachAlarm(context, getAlarmUri(-1), getNearestAlarm);
+
+        if (getNearestAlarm.timeInMillis != Long.MAX_VALUE) {
+            Calendar calendar = getCalendarInstance();
+            calendar.setTimeInMillis(getNearestAlarm.timeInMillis);
+            setAlarmInSystemSettings(context, calendar);
+        } else {
+            setAlarmInSystemSettings(context, null);
+        }
     }
 }
