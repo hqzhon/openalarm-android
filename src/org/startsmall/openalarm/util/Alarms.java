@@ -29,6 +29,8 @@
 package org.startsmall.openalarm;
 
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
@@ -474,13 +476,11 @@ public class Alarms {
         updateAlarm(context, alarmUri, newValues);
 
         if (enabled) {
-            // setNotification(context, id, handler, mEnabled);
             setNotification(context, true);
         } else {
             // If there are more than two alarms enabled, don't
             // remove notification
-            final int numberOfEnabledAlarms =
-                getNumberOfEnabledAlarms(context);
+            final int numberOfEnabledAlarms = getNumberOfEnabledAlarms(context);
             Log.d(TAG, "===> there are still " + numberOfEnabledAlarms + " alarms enabled");
 
             if (numberOfEnabledAlarms == 0) {
@@ -626,12 +626,6 @@ public class Alarms {
         AlarmManager alarmManager =
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 
-        // alarmManager.set(AlarmManager.RTC_WAKEUP,
-        //                  atTimeInMillis,
-        //                  PendingIntent.getBroadcast(
-        //                      context, 0, i,
-        //                      PendingIntent.FLAG_CANCEL_CURRENT));
-
         alarmManager.set(AlarmManager.RTC_WAKEUP,
                          atTimeInMillis,
                          PendingIntent.getActivity(
@@ -674,8 +668,10 @@ public class Alarms {
         String timeString = "";
         if (calendar != null) {
             timeString =
-                formatTime(is24HourMode(context) ? "E HH:mm" : "E hh:mm aa",
-                           calendar);
+                DateUtils.formatDateTime(
+                    context,
+                    calendar.getTimeInMillis(),
+                    DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY);
         }
 
         Settings.System.putString(context.getContentResolver(),
@@ -687,22 +683,6 @@ public class Alarms {
                                     Calendar calendar) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
         return dateFormatter.format(calendar.getTime());
-    }
-
-    public static String formatTime(final boolean is24HourMode,
-                                    final int hourOfDay,
-                                    final int minutes,
-                                    boolean isAmPmEnabled) {
-        Calendar calendar = Alarms.getCalendarInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        calendar.set(Calendar.MINUTE, minutes);
-
-        if (is24HourMode) {
-            return formatTime("HH:mm", calendar);
-        }
-        return formatTime(
-            isAmPmEnabled ? "hh:mm aa" : "hh:mm",
-            calendar);
     }
 
     public static long calculateAlarmAtTimeInMillis(final int hourOfDay,
@@ -778,49 +758,52 @@ public class Alarms {
         context.sendBroadcast(i);
     }
 
+    // public static void cancelNotification(final Context context,
+    //                                       final int alarmId) {
+    //     NotificationManager nm =
+    //         (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+    //     nm.cancel(alarmId);
+    // }
+
     // public static void setNotification(final Context context,
     //                                    final int alarmId,
-    //                                    final String handlerClassName,
-    //                                    boolean enabled) {
-    //     Context appContext = context.getApplicationContext();
+    //                                    final String alarmLabel,
+    //                                    final long atTimeInMillis) {
     //     NotificationManager nm =
-    //         (NotificationManager)appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+    //         (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-    //     if (enabled) {
-    //         String tickerText = appContext.getString(R.string.alarm_notification_ticker_text);
-    //         Notification notification =
-    //             new Notification(
-    //                 R.drawable.alarm_handler,
-    //                 tickerText,
-    //                 System.currentTimeMillis());
-    //         notification.flags = Notification.FLAG_NO_CLEAR;
+    //     Calendar calendar = getCalendarInstance();
+    //     calendar.setTimeInMillis(atTimeInMillis);
+    //     Date date = calendar.getTime();
 
-    //         Intent notificationIntent = new Intent(appContext,
-    //                                                OpenAlarm.class);
-    //         PendingIntent contentIntent =
-    //             PendingIntent.getActivity(appContext, 0, notificationIntent, 0);
+    //     DateFormat timeFormatter =
+    //         android.text.format.DateFormat.getTimeFormat(context);
 
-    //         PackageManager pm = appContext.getPackageManager();
-    //         String handlerLabel;
-    //         try {
-    //             ActivityInfo handlerInfo =
-    //                 getHandlerInfo(pm, handlerClassName);
-    //             handlerLabel = handlerInfo.loadLabel(pm).toString();
-    //         } catch(PackageManager.NameNotFoundException e) {
-    //             Log.d(TAG, e.getMessage());
-    //             return;
-    //         }
+    //     String tickerText =
+    //         context.getString(R.string.alarm_notification_ticker_text,
+    //                           alarmLabel,
+    //                           timeFormatter.format(calendar.getTime()));
+    //     Notification notification =
+    //         new Notification(R.drawable.alarm_handler, tickerText, System.currentTimeMillis());
+    //     notification.flags = Notification.FLAG_NO_CLEAR;
 
-    //         String contentText =
-    //             String.format(appContext.getString(R.string.alarm_notification_content_text), handlerLabel + "(" + handlerClassName + ")");
-    //         notification.setLatestEventInfo(appContext,
-    //                                         tickerText,
-    //                                         contentText,
-    //                                         contentIntent);
-    //         nm.notify(alarmId, notification);
-    //     } else {
-    //         nm.cancel(alarmId);
-    //     }
+    //     Intent notificationIntent = new Intent(context, OpenAlarm.class);
+    //     PendingIntent contentIntent =
+    //         PendingIntent.getActivity(context, 0, notificationIntent,
+    //                                   PendingIntent.FLAG_CANCEL_CURRENT);
+
+    //     DateFormat dateFormatter =
+    //         android.text.format.DateFormat.getLongDateFormat(context);
+    //     String contentText =
+    //         context.getString(R.string.alarm_notification_content_text,
+    //                           alarmLabel,
+    //                           dateFormatter.format(new Date(atTimeInMillis)));
+
+    //     notification.setLatestEventInfo(context,
+    //                                     tickerText,
+    //                                     contentText,
+    //                                     contentIntent);
+    //     nm.notify(alarmId, notification);
     // }
 
     public static Class<?> getHandlerClass(final String handlerClassName)

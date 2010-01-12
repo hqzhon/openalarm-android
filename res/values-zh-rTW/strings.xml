@@ -64,9 +64,9 @@
   <!-- <string name="alarm_settings_extra_category_key">extra_settings</string> -->
 
   <!-- Alarm activation toast format -->
-  <string name="alarm_notification_toast_text">"鬧鈴設定在"%s"響喔"</string>
-  <string name="alarm_notification_ticker_text">Alarm is changed</string>
-  <string name="alarm_notification_content_text">Use %s</string>
+  <string name="alarm_notification_toast_text">"鬧鈴設定在"%s"動作喔"</string>
+  <string name="alarm_notification_ticker_text">"鬧鈴"%s"動作的時間改變了"</string>
+  <string name="alarm_notification_content_text">"鬧鈴"%s"設定在"%s"動作喔"</string>
   <string name="alarm_handler_unset_message">"未指定動作"</string>
   <string name="alarm_repeat_days_unset_message">"未指定重複日子"</string>
 

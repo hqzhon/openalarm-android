@@ -68,7 +68,22 @@ public class CompoundTimeTextView extends LinearLayout {
             }
         }
 
-        mTimeTextView.setText(
-            Alarms.formatTime(is24HourFormat, hourOfDay, minutes, false));
+        Calendar calendar = Alarms.getCalendarInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minutes);
+
+        mTimeTextView.setText(formatTime(hourOfDay, minutes, is24HourFormat));
+    }
+
+    private String formatTime(final int hourOfDay, final int minutes,
+                            final boolean is24HourMode) {
+        Calendar calendar = Alarms.getCalendarInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minutes);
+
+        if (is24HourMode) {
+            return Alarms.formatTime("HH:mm", calendar);
+        }
+        return Alarms.formatTime("hh:mm", calendar);
     }
 }

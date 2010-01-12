@@ -30,6 +30,7 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.RingtonePreference;
 import android.telephony.TelephonyManager;
+import android.text.format.DateUtils;
 import android.text.method.DigitsKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
@@ -130,7 +131,6 @@ public class AlarmHandler extends AbsAlarmHandler {
     private static final int MESSAGE_ID_STOP_PLAYBACK = 1;
     private static final int PLAYBACK_TIMEOUT = 120000; // 2 minutes
     private static final float IN_CALL_VOLUME = 0.125f;
-
 
     private MediaPlayer mMediaPlayer;
     private Vibrator mVibrator;
@@ -404,11 +404,17 @@ public class AlarmHandler extends AbsAlarmHandler {
 
     private void setLabelFromIntent() {
         Intent i = getIntent();
-        // Recalculate the new time of the alarm.
         final int hourOfDay = i.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
         final int minutes = i.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
+
+        Calendar calendar = Alarms.getCalendarInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minutes);
+
         final String label =
-            Alarms.formatTime(Alarms.is24HourMode(this), hourOfDay, minutes, true);
+            DateUtils.formatDateTime(this,
+                                     calendar.getTimeInMillis(),
+                                     DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_CAP_AMPM);
         TextView labelView = (TextView)findViewById(R.id.label);
         labelView.setText(label);
     }

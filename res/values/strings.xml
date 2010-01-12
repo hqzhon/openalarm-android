@@ -66,8 +66,8 @@
 
   <!-- Alarm activation toast format -->
   <string name="alarm_notification_toast_text">Alarm will go off at %s</string>
-  <string name="alarm_notification_ticker_text">Alarm is changed</string>
-  <string name="alarm_notification_content_text">Use %s</string>
+  <string name="alarm_notification_ticker_text">Alarm %s @ %s</string>
+  <string name="alarm_notification_content_text">%s</string>
   <string name="alarm_handler_unset_message">Don\'t know how to handle this alarm. Please choose Action.</string>
   <string name="alarm_repeat_days_unset_message">No repeat days set. Please choose some days for this alarm.</string>
 
