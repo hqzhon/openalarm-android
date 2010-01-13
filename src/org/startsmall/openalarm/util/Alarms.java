@@ -69,7 +69,10 @@ public class Alarms {
      * Alarm alert action string.
      * <p>Value: org.startsmall.openalarm.HANDLE_ALARM</p>
      */
-    public static final String HANDLE_ALARM = CONTENT_URI_AUTH + ".HANDLE_ALARM";
+    public static final String ACTION_HANDLE_ALARM = CONTENT_URI_AUTH + ".HANDLE_ALARM";
+
+    public static final String ACTION_GET_NEW_TIME = CONTENT_URI_AUTH + ".GET_NEW_TIME";
+
 
     /**
      * Action used to launch ActionDispatcher receiver.
@@ -588,7 +591,7 @@ public class Alarms {
                                    final int repeatOnDays,
                                    final String handlerClassName,
                                    final String extraData) {
-        Intent i = new Intent(HANDLE_ALARM, getAlarmUri(alarmId));
+        Intent i = new Intent(ACTION_HANDLE_ALARM, getAlarmUri(alarmId));
         try {
             Class<?> handlerClass = getHandlerClass(handlerClassName);
 
@@ -633,7 +636,7 @@ public class Alarms {
 
         alarmManager.set(AlarmManager.RTC_WAKEUP,
                          atTimeInMillis,
-                         PendingIntent.getActivity(
+                         PendingIntent.getBroadcast(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
     }
@@ -650,7 +653,7 @@ public class Alarms {
                                     final String handlerClassName) {
         Uri alarmUri = getAlarmUri(alarmId);
 
-        Intent i = new Intent(HANDLE_ALARM, alarmUri);
+        Intent i = new Intent(ACTION_HANDLE_ALARM, alarmUri);
         i.setClassName(context, handlerClassName);
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
@@ -658,8 +661,8 @@ public class Alarms {
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 
         alarmManager.cancel(PendingIntent.getBroadcast(
-                                    context, 0, i,
-                                    PendingIntent.FLAG_CANCEL_CURRENT));
+                                context, 0, i,
+                                PendingIntent.FLAG_CANCEL_CURRENT));
     }
 
     public static void setAlarmInSystemSettings(final Context context,
@@ -756,17 +759,15 @@ public class Alarms {
     public static ActivityInfo getHandlerInfo(final PackageManager pm,
                                               final String handlerClassName)
         throws PackageManager.NameNotFoundException {
-        // Make sure the handlerClass really exists
-        // Class<?> handlerClass = getHandlerClass(handlerClassName);
 
-        Intent i = new Intent(HANDLE_ALARM);
+        Intent i = new Intent(ACTION_HANDLE_ALARM);
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
         // Search all receivers that can handle my alarms.
         // Iterator<ResolveInfo> infoObjs =
-        //     pm.queryBroadcastReceivers(i, 0).iterator();
+        //     pm.queryIntentActivities(i, 0).iterator();
         Iterator<ResolveInfo> infoObjs =
-            pm.queryIntentActivities(i, 0).iterator();
+            pm.queryBroadcastReceivers(i, 0).iterator();
         while (infoObjs.hasNext()) {
             ActivityInfo activityInfo = infoObjs.next().activityInfo;
             if (activityInfo.name.equals(handlerClassName)) {
@@ -778,10 +779,9 @@ public class Alarms {
     }
 
     public static List<ResolveInfo> queryAlarmHandlers(final PackageManager pm) {
-        Intent i = new Intent(HANDLE_ALARM);
+        Intent i = new Intent(ACTION_HANDLE_ALARM);
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
-
-        return pm.queryIntentActivities(i, 0);
+        return pm.queryBroadcastReceivers(i, 0);
     }
 
     private synchronized static int getNumberOfEnabledAlarms(Context context) {
@@ -811,7 +811,8 @@ public class Alarms {
             DateUtils.formatDateTime(
                 context,
                 atTimeInMillis,
-                DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY);
+                DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
+                DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
 
         String text =
             context.getString(R.string.alarm_notification_toast_text, dateTimeString);

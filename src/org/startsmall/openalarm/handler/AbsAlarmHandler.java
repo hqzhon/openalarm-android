@@ -10,11 +10,11 @@
 
 package org.startsmall.openalarm;
 
-import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.preference.PreferenceCategory;
 
-abstract class AbsAlarmHandler extends Activity {
+abstract class AbsAlarmHandler extends BroadcastReceiver {
     public abstract void addMyPreferences(final Context context,
                                           final PreferenceCategory category,
                                           final String defaultValue);

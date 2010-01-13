@@ -34,13 +34,11 @@ public class AlarmSettings extends PreferenceActivity {
     private static final int DIALOG_ID_PICKUP_HANDLER = 3;
     private static final int DIALOG_ID_PICKUP_REPEAT_DAYS = 4;
 
-    AlarmLabelPreference mLabelPreference;
-    AlarmTimePreference mTimePreference;
-    AlarmActionPreference mActionPreference;
-    AlarmRepeatOnPreference mRepeatOnPreference;
-    PreferenceCategory mExtraSettingsCategory;
-
-    private int mDebugCounter;
+    private AlarmLabelPreference mLabelPreference;
+    private AlarmTimePreference mTimePreference;
+    private AlarmActionPreference mActionPreference;
+    private AlarmRepeatOnPreference mRepeatOnPreference;
+    private PreferenceCategory mExtraSettingsCategory;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -74,6 +72,14 @@ public class AlarmSettings extends PreferenceActivity {
                 getString(R.string.alarm_settings_extra_category_key));
     }
 
+    /**
+     * Pop up appropriate dialog of the clicked Preference.
+     *
+     * @param preferenceScreen a PreferenceScreen object.
+     * @param preference Preference object that was clicked.
+     *
+     * @return true/false. True if click event is handled.
+     */
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
                                          Preference preference) {
         int id = -1;
@@ -98,7 +104,6 @@ public class AlarmSettings extends PreferenceActivity {
     // Save the current state of this activity into Bundle. It
     // will be restored in onCreate() with saved state passed in.
     // protected void onSaveInstanceState(Bundle outState) {
-    //     Log.d(TAG, "===> AlarmSettings.onSaveInstanceState()" + (mDebugCounter++) );
     //     super.onSaveInstanceState(outState);
     // }
 
@@ -155,8 +160,6 @@ public class AlarmSettings extends PreferenceActivity {
      */
     @Override
     protected void onPause() {
-        Log.d(TAG, "===> AlarmSettings.onPause(): " + (mDebugCounter++));
-
         super.onPause();
 
         Intent i = getIntent();
@@ -174,13 +177,13 @@ public class AlarmSettings extends PreferenceActivity {
         Alarms.GetAlarmSettings dbSettings = new Alarms.GetAlarmSettings();
         Alarms.forEachAlarm(this, alarmUri, dbSettings);
 
-        Log.d(TAG, "===> Get alarm settings in SQL database: id=" + alarmId +
-              ", label=" + dbSettings.label +
-              ", enabled=" + dbSettings.enabled +
-              ", time=" + dbSettings.hour + ":" + dbSettings.minutes +
-              ", repeat on='" + Alarms.RepeatWeekdays.toString(dbSettings.repeatOnDaysCode, getString(R.string.repeat_on_everyday), getString(R.string.no_repeat_days)) + "'" +
-              ", handler=" + dbSettings.handler +
-              ", extra=" + dbSettings.extra);
+        // Log.d(TAG, "===> Get alarm settings in SQL database: id=" + alarmId +
+        //       ", label=" + dbSettings.label +
+        //       ", enabled=" + dbSettings.enabled +
+        //       ", time=" + dbSettings.hour + ":" + dbSettings.minutes +
+        //       ", repeat on='" + Alarms.RepeatWeekdays.toString(dbSettings.repeatOnDaysCode, getString(R.string.repeat_on_everyday), getString(R.string.no_repeat_days)) + "'" +
+        //       ", handler=" + dbSettings.handler +
+        //       ", extra=" + dbSettings.extra);
 
         ContentValues newValues = new ContentValues();
         if (!newLabel.equals(dbSettings.label)) {
@@ -282,7 +285,6 @@ public class AlarmSettings extends PreferenceActivity {
         } else {
             inflateExtraSettings(dbSettings.handler, valueOfExtraSettings);
         }
-        Log.d(TAG, "===> valueOfExtraSettings='" + valueOfExtraSettings + "', dbSettings.extra=" + dbSettings.extra);
     }
 
     /**
