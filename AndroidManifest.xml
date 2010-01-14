@@ -62,7 +62,7 @@
               android:label="Alarm"
               android:icon="@drawable/alarm_handler">
       <intent-filter>
-        <action android:name="org.startsmall.openalarm.HANDLE_ALARM"/>
+        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
       </intent-filter>
     </receiver>
@@ -73,6 +73,16 @@
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
         <action android:name="android.intent.action.TIME_SET"/>
         <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+      </intent-filter>
+    </receiver>
+
+    <receiver android:name=".ScheduleAlarmReceiver"
+              android:label="OpenAlarm"
+              android:exported="true">
+      <intent-filter>
+        <action android:name="org.startsmall.openalarm.action.SCHEDULE_ALARM"/>
+        <category android:name="android.intent.category.ALTERNATIVE"/>
+        <data android:mimeType="vnd.android.cursor.item/vnd.startsmall.alarms"/>
       </intent-filter>
     </receiver>
   </application>

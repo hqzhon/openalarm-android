@@ -69,9 +69,9 @@ public class Alarms {
      * Alarm alert action string.
      * <p>Value: org.startsmall.openalarm.HANDLE_ALARM</p>
      */
-    public static final String ACTION_HANDLE_ALARM = CONTENT_URI_AUTH + ".HANDLE_ALARM";
+    public static final String ACTION_HANDLE_ALARM = CONTENT_URI_AUTH + ".action.HANDLE_ALARM";
 
-    public static final String ACTION_GET_NEW_TIME = CONTENT_URI_AUTH + ".GET_NEW_TIME";
+    public static final String ACTION_SCHEDULE_ALARM = CONTENT_URI_AUTH + ".action.SCHEDULE_ALARM";
 
 
     /**
