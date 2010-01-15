@@ -35,12 +35,7 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
 
         // Reschedule this alarm.
         final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
-
-        // If user clicks dimiss button in the same minute as
-        // this alarm, the calculateAlarmAtTimeInMillis() will
-        // return the same hour and minutes which causes this
-        // Activity to show up continuously.
-        final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1) - 1;
+        final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
         final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
         final long atTimeInMillis =
             Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes, repeatOnDaysCode);
@@ -53,7 +48,8 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
 
         final String label = intent.getStringExtra(Alarms.AlarmColumns.LABEL);
         final String extraData = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        Alarms.enableAlarm(context, alarmId, label, atTimeInMillis, repeatOnDaysCode, handlerClassName, extraData);
+        Alarms.enableAlarm(context, alarmId, label, atTimeInMillis,
+                           repeatOnDaysCode, handlerClassName, extraData);
 
         // Update the new time into database.
         ContentValues newValues = new ContentValues();

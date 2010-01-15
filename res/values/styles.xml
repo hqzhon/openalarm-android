@@ -20,7 +20,7 @@
      will be used in multiple tags. -->
 
 <resources>
-    <style name="Theme" parent="android:Theme"></style>
+    <!-- <style name="Theme" parent="android:Theme"></style> -->
 
     <style name="RepeatDaysTextAppearance" parent="android:TextAppearance.Small.Inverse">
       <item name="android:background">@drawable/label_blue</item>
@@ -29,13 +29,13 @@
       <item name="android:textSize">12sp</item>
     </style>
 
-    <style name="ActionTextAppearance" parent="android:TextAppearance.Small.Inverse">
-      <item name="android:background">?android:attr/textColorSecondaryInverse</item>
-      <item name="android:textColor">?android:attr/textColorPrimary</item>
-    </style>
+    <!-- <style name="ActionTextAppearance" parent="android:TextAppearance.Small.Inverse"> -->
+    <!--   <item name="android:background">?android:attr/textColorSecondaryInverse</item> -->
+    <!--   <item name="android:textColor">?android:attr/textColorPrimary</item> -->
+    <!-- </style> -->
 
-    <style name="Theme.Dialog.NoTitle" parent="@android:style/Theme.Dialog">
-        <item name="android:windowNoTitle">false</item>
-    </style>
+    <!-- <style name="Theme.Dialog.NoTitle" parent="@android:style/Theme.Dialog"> -->
+    <!--     <item name="android:windowNoTitle">false</item> -->
+    <!-- </style> -->
 </resources>
 

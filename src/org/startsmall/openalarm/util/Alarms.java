@@ -692,13 +692,13 @@ public class Alarms {
                                                     final int repeatOnCode) {
         // Start with current date and time.
         Calendar calendar = getCalendarInstance();
-
         int nowHourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int nowMinutes = calendar.get(Calendar.MINUTE);
 
-        // If alarm is set at the past, move calendar to the same
-        // time tomorrow and then calculate the next time of
-        // alarm's going off.
+        // If (hourOfDay, minutes) points to a time at the past,
+        // we move calendar to the (hourOfDay, minutes)
+        // tomorrow. The worst case is that (hourOfDay, minutes)
+        // is the next time of the alarm.
         if((hourOfDay < nowHourOfDay) ||
            ((hourOfDay == nowHourOfDay) && (minutes < nowMinutes))) {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
