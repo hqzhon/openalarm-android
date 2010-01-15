@@ -367,7 +367,7 @@ public class FireAlarm extends Activity {
         if (intent.hasExtra(EXTRA_KEY_RINGTONE)) {
             String uriString = intent.getStringExtra(EXTRA_KEY_RINGTONE);
             if (TextUtils.isEmpty(uriString)) {
-                return;
+                return false;
             }
 
             Log.d(TAG, "===> Play ringtone: " + uriString);
