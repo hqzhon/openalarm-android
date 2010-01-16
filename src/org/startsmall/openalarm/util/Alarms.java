@@ -434,7 +434,9 @@ public class Alarms {
     }
 
     /**
-     * Enable/disable the alarm pointed by @c alarmUri.
+     * Enable/disable an alarm by activating/disactivating this
+     * alarm in AlarmManager and update its enabled state in
+     * database.
      *
      * @param context Context this method is called.
      * @param alarmUri Alarm uri.
@@ -468,7 +470,7 @@ public class Alarms {
             enableAlarm(context, settings.id, settings.label, timeInMillis,
                         settings.repeatOnDaysCode, settings.handler,
                         settings.extra);
-            showToast(context, timeInMillis);
+            showToast(context, settings.label, timeInMillis);
 
             newValues.put(AlarmColumns.AT_TIME_IN_MILLIS, timeInMillis);
         } else {
@@ -480,18 +482,7 @@ public class Alarms {
 
         // Show notification on the status bar to indicate that
         // an alarm is setup or cancel notification if no alarms are setup.
-        if (enabled) {
-            setNotification(context, true);
-        } else {
-            // If there are more than two alarms enabled, don't
-            // remove notification
-            final int numberOfEnabledAlarms = getNumberOfEnabledAlarms(context);
-            Log.d(TAG, "===> there are still " + numberOfEnabledAlarms + " alarms enabled");
-
-            if (numberOfEnabledAlarms == 0) {
-                setNotification(context, false);
-            }
-        }
+        setNotification(context, enabled);
 
         // Update alarm in system settings
         updateSystemSetting(context);
@@ -500,15 +491,8 @@ public class Alarms {
     }
 
     /**
+     * Snooze an alarm
      *
-     *
-     * @param context
-     * @param alarmId
-     * @param label
-     * @param repeatOnDays
-     * @param handlerClassName
-     * @param extraData
-     * @param minutesLater
      */
     public static void snoozeAlarm(final Context context,
                                    final int alarmId,
@@ -526,9 +510,6 @@ public class Alarms {
         calendar.add(Calendar.MINUTE, minutesLater);
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int minutes = calendar.get(Calendar.MINUTE);
-
-        Log.d(TAG, "===> Snoozed alarm with id " + alarmId +
-              " will go off at " + hourOfDay + ":" + minutes);
 
         long newAtTimeInMillis = calendar.getTimeInMillis();
         enableAlarm(context, alarmId, label, newAtTimeInMillis, repeatOnDays,
@@ -552,19 +533,13 @@ public class Alarms {
     /**
      * Cancel an snoozed alarm.
      *
-     * @param context Application context.
-     * @param alarmId Alarm id that may be snoozed. An non -1 value for this method to cancel any alarm snoozed.
      */
     public static void cancelSnoozedAlarm(final Context context,
                                           final int alarmId) {
 
         SharedPreferences preferences =
-            context.getSharedPreferences(
-                PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
-        final int persistedAlarmId =
-            preferences.getInt(AlarmColumns._ID, -1);
-
-        Log.d(TAG, "===> Cancel alarm with id " + alarmId + ", persisted alarm id = " + persistedAlarmId);
+            context.getSharedPreferences(PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
+        final int persistedAlarmId = preferences.getInt(AlarmColumns._ID, -1);
 
         if (alarmId != -1 &&     // no checking on alarmId
             persistedAlarmId != alarmId) {
@@ -584,6 +559,10 @@ public class Alarms {
         }
     }
 
+    /**
+     * Enable an alarm in AlarmManager.
+     *
+     */
     public static void enableAlarm(final Context context,
                                    final int alarmId,
                                    final String label,
@@ -621,10 +600,6 @@ public class Alarms {
         i.putExtra(AlarmColumns.HOUR, hourOfDay);
         i.putExtra(AlarmColumns.MINUTES, minutes);
         i.putExtra(AlarmColumns.REPEAT_DAYS, repeatOnDays);
-
-        // Intent might be provided different class to associate,
-        // like FireAlarm. We need to cache the handlerClass in
-        // the Intent for latter use.
         i.putExtra(AlarmColumns.HANDLER, handlerClassName);
 
         if (!TextUtils.isEmpty(extraData)) {
@@ -633,7 +608,6 @@ public class Alarms {
 
         AlarmManager alarmManager =
             (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-
         alarmManager.set(AlarmManager.RTC_WAKEUP,
                          atTimeInMillis,
                          PendingIntent.getBroadcast(
@@ -648,6 +622,10 @@ public class Alarms {
         return android.text.format.DateFormat.is24HourFormat(context);
     }
 
+    /**
+     * Disable an alarm in AlarmManager.
+     *
+     */
     public static void disableAlarm(final Context context,
                                     final int alarmId,
                                     final String handlerClassName) {
@@ -665,6 +643,10 @@ public class Alarms {
                                 PendingIntent.FLAG_CANCEL_CURRENT));
     }
 
+    /**
+     * Set the nearest alarm in system settings.
+     *
+     */
     public static void setAlarmInSystemSettings(final Context context,
                                                 final Calendar calendar) {
         String timeString = "";
@@ -681,12 +663,20 @@ public class Alarms {
                                   timeString);
     }
 
+    /**
+     * Return the formatted date and time string.
+     *
+     */
     public static String formatTime(String pattern,
                                     Calendar calendar) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
         return dateFormatter.format(calendar.getTime());
     }
 
+    /*
+     * Calculate the next alarm time.
+     *
+     */
     public static long calculateAlarmAtTimeInMillis(final int hourOfDay,
                                                     final int minutes,
                                                     final int repeatOnCode) {
@@ -723,23 +713,23 @@ public class Alarms {
         return calendar.getTimeInMillis();
     }
 
+    // Put an notification on the status bar or remove
+    // notification if no alarm are enabled.
     public static void setNotification(final Context context,
                                        final boolean enabled) {
         if (enabled) {
             broadcastAlarmChanged(context, true);
         } else {
-            // If there are more than 2 alarms enabled, don't
-            // remove notification
-            final int numberOfEnabledAlarms =
-                getNumberOfEnabledAlarms(context);
-            Log.d(TAG, "===> there are still " + numberOfEnabledAlarms + " alarms enabled");
-
+            // If there are more than 2 alarms are still enabled,
+            // don't remove notification
+            final int numberOfEnabledAlarms = getNumberOfEnabledAlarms(context);
             if (numberOfEnabledAlarms == 0) {
                 broadcastAlarmChanged(context, false);
             }
         }
     }
 
+    // Return the handler class object.
     public static Class<?> getHandlerClass(final String handlerClassName)
         throws ClassNotFoundException {
         final int lastDotPos = handlerClassName.lastIndexOf('.');
@@ -756,6 +746,7 @@ public class Alarms {
         return Class.forName(handlerClassName, true, classLoader);
     }
 
+    // Get ActivityInfo object of a handler.
     public static ActivityInfo getHandlerInfo(final PackageManager pm,
                                               final String handlerClassName)
         throws PackageManager.NameNotFoundException {
@@ -764,10 +755,7 @@ public class Alarms {
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
         // Search all receivers that can handle my alarms.
-        // Iterator<ResolveInfo> infoObjs =
-        //     pm.queryIntentActivities(i, 0).iterator();
-        Iterator<ResolveInfo> infoObjs =
-            pm.queryBroadcastReceivers(i, 0).iterator();
+        Iterator<ResolveInfo> infoObjs = queryAlarmHandlers(pm).iterator();
         while (infoObjs.hasNext()) {
             ActivityInfo activityInfo = infoObjs.next().activityInfo;
             if (activityInfo.name.equals(handlerClassName)) {
@@ -783,6 +771,7 @@ public class Alarms {
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
         return pm.queryBroadcastReceivers(i, 0);
     }
+
 
     private synchronized static int getNumberOfEnabledAlarms(Context context) {
         Cursor c =
@@ -806,6 +795,7 @@ public class Alarms {
     }
 
     private static void showToast(final Context context,
+                                  final String label,
                                   final long atTimeInMillis) {
         String dateTimeString =
             DateUtils.formatDateTime(
@@ -815,7 +805,7 @@ public class Alarms {
                 DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
 
         String text =
-            context.getString(R.string.alarm_notification_toast_text, dateTimeString);
+            context.getString(R.string.alarm_notification_toast_text, label, dateTimeString);
         Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
 

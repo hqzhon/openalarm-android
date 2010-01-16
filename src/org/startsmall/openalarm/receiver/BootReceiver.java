@@ -24,6 +24,7 @@ public class BootReceiver extends BroadcastReceiver {
     // All enabled alarms should be rescheduled if system time
     // changed, time zone changed or machine rebooted.
     private static class ScheduleEnabledAlarm implements Alarms.OnVisitListener {
+        public static int numberOfEnabledAlarms = 0;
         public static long nearestAlarmTime = Long.MAX_VALUE;
 
         @Override
@@ -41,21 +42,14 @@ public class BootReceiver extends BroadcastReceiver {
             // for AdapterView.bindView to update am/pm label
             // whether or not an alarm is enabled.
             if (enabled) {
-                Log.d(TAG, "Alarm " + label
-                      + ",id=" + id
-                      + ",hour=" + hour + ", minutes=" + minutes
-                      + ",handler=" + handler
-                      + ",extra=" + extra);
-
                 // Cancel old alarm because it might be incorrect due
                 // to the change of system time.
                 Alarms.disableAlarm(context, id, handler);
             }
 
-            // Re-schedule new time.
+            // Schedule a new time for this alarm.
             long atTimeInMillis =
-                Alarms.calculateAlarmAtTimeInMillis(hour, minutes,
-                                                    repeatOnDaysCode);
+                Alarms.calculateAlarmAtTimeInMillis(hour, minutes, repeatOnDaysCode);
             if (enabled) {
                 Alarms.enableAlarm(context, id, label, atTimeInMillis,
                                    repeatOnDaysCode, handler, extra);
@@ -69,7 +63,7 @@ public class BootReceiver extends BroadcastReceiver {
             newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
             Alarms.updateAlarm(context, Alarms.getAlarmUri(id), newValues);
             if (enabled) {
-                Alarms.setNotification(context, true);
+                numberOfEnabledAlarms++;
             }
         }
     }
@@ -87,7 +81,13 @@ public class BootReceiver extends BroadcastReceiver {
         ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
         Alarms.forEachAlarm(context, Alarms.getAlarmUri(-1), scheduleAlarm);
 
-        // Set system settings with
+        // If there is any enabled, an notification should be put
+        // on the status bar.
+        if (scheduleAlarm.numberOfEnabledAlarms > 0) {
+            Alarms.setNotification(context, true);
+        }
+
+        // Put the nearest alarm in the system settings.
         if (scheduleAlarm.nearestAlarmTime != Long.MAX_VALUE) {
             Calendar calendar = Alarms.getCalendarInstance();
             calendar.setTimeInMillis(scheduleAlarm.nearestAlarmTime);

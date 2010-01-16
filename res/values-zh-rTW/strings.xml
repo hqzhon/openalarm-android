@@ -2,20 +2,6 @@
 <resources>
   <string name="app_name">OpenAlarm</string>
 
-  <!-- <string name="about_me">about_me.html</string> -->
-
-  <string name="edit">"編輯"</string>
-  <string name="delete">"刪除"</string>
-  <string name="isee">"我了"</string>
-
-  <!-- Time unit -->
-  <string name="day">"天"</string>
-  <string name="hour">"小時"</string>
-  <string name="minute">"分"</string>
-  <string name="minutes">"分"</string>
-  <string name="second">"秒"</string>
-  <string name="millisecond">"毫秒"</string>
-
   <!-- Options menu item -->
   <string name="menu_item_add">"增加"</string>
   <!-- <string name="menu_item_preferences">Preferences</string> -->
@@ -31,19 +17,11 @@
   <string name="confirm_alarm_deletion_title">"刪除確認"</string>
   <string name="delete_alarm_message">"您確定要刪除她嗎？"</string>
 
-  <!-- Application settings -->
-  <!-- <string name="application_settings_set_theme_key">theme</string> -->
-  <!-- <string name="application_settings_set_theme_title">Theme</string> -->
-  <!-- <string name="application_settings_light_theme_title">Light</string> -->
-  <!-- <string name="application_settings_dark_theme_title">Black</string> -->
-  <!-- <string name="application_settings_theme_changed_message">New theme settings will be applied after restart</string> -->
-
   <!-- Alarm settings -->
   <string name="alarm_basic_settings_title">"基本設定"</string>
   <string name="alarm_extra_settings_title">"進階設定"</string>
 
   <string name="alarm_settings_label_title">"名稱"</string>
-  <!-- <string name="alarm_settings_label_key">label</string> -->
   <string name="alarm_settings_label_dialog_title">"名稱"</string>
 
   <string name="alarm_settings_time_title">"時間"</string>
@@ -51,17 +29,13 @@
 
   <string name="alarm_settings_action_title">"動作"</string>
   <string name="alarm_settings_action_summary">"選擇動作"</string>
-  <!-- <string name="alarm_settings_action_key">action</string> -->
   <string name="alarm_settings_action_dialog_title">"使用那一個動作"</string>
 
   <string name="alarm_settings_repeat_days_title">"重複"</string>
   <string name="alarm_settings_repeat_days_summary">"每天"</string>
-  <!-- <string name="alarm_settings_repeat_days_key">repeat_days</string> -->
   <string name="alarm_settings_repeat_days_dialog_title">"哪幾天啊？"</string>
   <string name="repeat_on_everyday">"每天"</string>
   <string name="no_repeat_days">"未定"</string>
-
-  <!-- <string name="alarm_settings_extra_category_key">extra_settings</string> -->
 
   <!-- Alarm activation toast format -->
   <string name="alarm_notification_toast_text">"鬧鈴設定在"%s"動作喔"</string>

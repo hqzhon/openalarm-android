@@ -366,8 +366,7 @@ public class OpenAlarm extends ListActivity {
 
     private void showAboutThisAppDialog() {
         WebView helpWebView = new WebView(this);
-        helpWebView.loadUrl("file:///android_asset/" +
-                            getString(R.string.about_me));
+        helpWebView.loadUrl("file:///android_asset/about.html");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.
             setTitle("About this application").

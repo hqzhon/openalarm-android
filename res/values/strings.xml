@@ -3,20 +3,6 @@
   <!--  -->
   <string name="app_name">OpenAlarm</string>
 
-  <string name="about_me">about_me.html</string>
-
-  <string name="edit">Edit</string>
-  <string name="delete">Delete</string>
-  <string name="isee">I see</string>
-
-  <!-- Time unit -->
-  <string name="day">day</string>
-  <string name="hour">hour</string>
-  <string name="minute">minute</string>
-  <string name="minutes">minutes</string>
-  <string name="second">second</string>
-  <string name="millisecond">millisecond</string>
-
   <!-- Options menu item -->
   <string name="menu_item_add">Add</string>
   <string name="menu_item_preferences">Preferences</string>
@@ -31,13 +17,6 @@
   <!-- Delete alarm message -->
   <string name="confirm_alarm_deletion_title">Confirm deletion</string>
   <string name="delete_alarm_message">Do you want to delete this alarm?</string>
-
-  <!-- Application settings -->
-  <string name="application_settings_set_theme_key">theme</string>
-  <string name="application_settings_set_theme_title">Theme</string>
-  <string name="application_settings_light_theme_title">Light</string>
-  <string name="application_settings_dark_theme_title">Black</string>
-  <string name="application_settings_theme_changed_message">New theme settings will be applied after restart</string>
 
   <!-- Alarm settings -->
   <string name="alarm_basic_settings_title">Basic Settings</string>
@@ -65,7 +44,7 @@
   <string name="alarm_settings_extra_category_key">extra_settings</string>
 
   <!-- Alarm activation toast format -->
-  <string name="alarm_notification_toast_text">Alarm actions @ %s</string>
+  <string name="alarm_notification_toast_text">Alarm \'%s\' will action at %s</string>
   <string name="alarm_notification_ticker_text">Alarm %s @ %s</string>
   <string name="alarm_notification_content_text">%s</string>
   <string name="alarm_handler_unset_message">Don\'t know how to handle this alarm. Please choose Action.</string>
