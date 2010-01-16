@@ -680,21 +680,26 @@ public class Alarms {
     public static long calculateAlarmAtTimeInMillis(final int hourOfDay,
                                                     final int minutes,
                                                     final int repeatOnCode) {
-        // Start with current date and time.
+        // Get alarm's time in milliseconds.
         Calendar calendar = getCalendarInstance();
-        int nowHourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
-        int nowMinutes = calendar.get(Calendar.MINUTE);
 
-        // If (hourOfDay, minutes) points to a time at the past,
-        // we move calendar to the (hourOfDay, minutes)
-        // tomorrow. The worst case is that (hourOfDay, minutes)
-        // is the next time of the alarm.
-        if((hourOfDay < nowHourOfDay) ||
-           ((hourOfDay == nowHourOfDay) && (minutes < nowMinutes))) {
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minutes);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        long timeInMillis = calendar.getTimeInMillis();
+
+        // Start with current date and time.
+        calendar = getCalendarInstance();
+        long nowTimeInMillis = calendar.getTimeInMillis();
+
+        // If alarm's time is a time in the past, we move
+        // calendar to the (hourOfDay, minutes) tomorrow. The
+        // worst case is that (hourOfDay, minutes) is the next
+        // time of the alarm.
+        if (timeInMillis <= nowTimeInMillis) {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
-
-        // Align calendar's time with this alarm.
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
         calendar.set(Calendar.SECOND, 0);
