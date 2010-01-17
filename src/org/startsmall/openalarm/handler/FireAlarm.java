@@ -267,38 +267,6 @@ public class FireAlarm extends Activity {
     }
 
     private void dismissAlarm() {
-        // final Intent intent = getIntent();
-        // final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        // final Uri alarmUri = Alarms.getAlarmUri(alarmId);
-
-        // // Disable the old alert. The explicit class field of
-        // // the Intent was set to this activity when setting alarm
-        // // in AlarmManager..
-        // final String handlerClassName =
-        //     intent.getStringExtra(Alarms.AlarmColumns.HANDLER);
-        // Alarms.disableAlarm(this, alarmId, handlerClassName);
-
-        // // Recalculate the new time of the alarm.
-        // final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
-
-        // // If user clicks dimiss button in the same minute as
-        // // this alarm, the calculateAlarmAtTimeInMillis() will
-        // // return the same hour and minutes which causes this
-        // // Activity to show up continuously.
-        // final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1) - 1;
-        // final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
-        // final long atTimeInMillis =
-        //     Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes, repeatOnDaysCode);
-
-        // final String label = intent.getStringExtra(Alarms.AlarmColumns.LABEL);
-        // final String extraData = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        // Alarms.enableAlarm(this, alarmId, label, atTimeInMillis, repeatOnDaysCode, handlerClassName, extraData);
-
-        // // Update the new time into database.
-        // ContentValues newValues = new ContentValues();
-        // newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-        // Alarms.updateAlarm(this, alarmUri, newValues);
-
         Intent rescheduleIntent = new Intent(getIntent());
         rescheduleIntent.setAction(Alarms.ACTION_SCHEDULE_ALARM);
         sendBroadcast(rescheduleIntent);

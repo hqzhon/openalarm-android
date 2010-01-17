@@ -45,6 +45,8 @@
   <string name="alarm_repeat_days_unset_message">"未指定重複日子"</string>
 
   <!-- Alarm handler -->
+  <string name="alarm_handler">"鬧鈴"</string>
+
   <string name="alarm_handler_ringtone_title">"鈴聲"</string>
 
   <string name="alarm_handler_snooze_duration_title">"貪睡間隔"</string>

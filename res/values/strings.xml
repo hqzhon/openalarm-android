@@ -51,6 +51,7 @@
   <string name="alarm_repeat_days_unset_message">No repeat days set. Please choose some days for this alarm.</string>
 
   <!-- Alarm handler -->
+  <string name="alarm_handler">Alarm</string>
   <string name="alarm_handler_ringtone_title">Ringtone</string>
 
   <string name="alarm_handler_snooze_duration_title">Snooze duration</string>

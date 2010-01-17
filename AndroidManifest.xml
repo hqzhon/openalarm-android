@@ -42,11 +42,6 @@
       </intent-filter>
     </activity>
 
-    <activity android:name=".ApplicationSettings"
-              android:theme="@android:style/Theme.NoTitleBar"
-              android:label="@string/app_name">
-    </activity>
-
     <activity android:name=".AlarmSettings"
               android:theme="@android:style/Theme.NoTitleBar"
               android:label="@string/app_name">
@@ -57,9 +52,8 @@
               android:theme="@android:style/Theme.Dialog">
     </activity>
 
-
     <receiver android:name=".AlarmHandler"
-              android:label="Alarm"
+              android:label="@string/alarm_handler"
               android:icon="@drawable/alarm_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>

@@ -236,7 +236,12 @@ public class AlarmSettings extends PreferenceActivity {
             // cancel all alarm triggered by this kind of
             // Intent, same as snoozed alert.
 
-            // Disable the alert enabled by dbSettings.handler;
+            // Disable the alert enabled by
+            // dbSettings.handler. Note that the component name
+            // of this intent may be differen than the one it was
+            // given (dbSettings.handler). This means these two
+            // Intent objects are different. The new alarm will
+            // not override this previous one.
             Alarms.disableAlarm(this, alarmId, dbSettings.handler);
 
             Alarms.updateAlarm(this, alarmUri, newValues);

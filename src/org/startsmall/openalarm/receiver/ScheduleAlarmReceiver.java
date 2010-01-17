@@ -29,9 +29,8 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
         // Disable old alarm
         final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
         final Uri alarmUri = Alarms.getAlarmUri(alarmId);
-        final String handlerClassName =
-            intent.getStringExtra(Alarms.AlarmColumns.HANDLER);
-        Alarms.disableAlarm(context, alarmId, handlerClassName);
+        final String handlerClassName = intent.getStringExtra(Alarms.AlarmColumns.HANDLER);
+        // Alarms.disableAlarm(context, alarmId, handlerClassName);
 
         // Reschedule this alarm.
         final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
