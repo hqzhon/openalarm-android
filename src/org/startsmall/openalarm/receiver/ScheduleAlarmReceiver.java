@@ -1,13 +1,3 @@
-/**
- * @file   ScheduleAlarmReceiver.java
- * @author josh <yenliangl at gmail dot com>
- * @date   Tue Nov 10 17:47:36 2009
- *
- * A receiver that is usually called when user wants to reshedule
- * an alarm.
- *
- */
-
 package org.startsmall.openalarm;
 
 import android.content.Context;
@@ -24,35 +14,28 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "===> ScheduleAlarmReceiver.onReceive()");
+        Log.d(TAG, "===> onReceive() ");
 
-        // Disable old alarm
-        final int alarmId = intent.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        final Uri alarmUri = Alarms.getAlarmUri(alarmId);
-        final String handlerClassName = intent.getStringExtra(Alarms.AlarmColumns.HANDLER);
-        // Alarms.disableAlarm(context, alarmId, handlerClassName);
+        final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
 
-        // Reschedule this alarm.
-        final int hourOfDay = intent.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
-        final int minutes = intent.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
-        final int repeatOnDaysCode = intent.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
-        final long atTimeInMillis =
-            Alarms.calculateAlarmAtTimeInMillis(hourOfDay, minutes, repeatOnDaysCode);
+        // It is not impossible that some task manager killed
+        // OpenAlarm and an installed alarm calls this receiver.
+        // In this case, we should get alarm from DB not from
+        // cache because cache was gone with killed OpenAlarm.
+        Alarm alarm = Alarm.getInstance(context, alarmId);
 
-        Log.d(TAG, "===> Reschedule alarm " + alarmId + " to " +
-              DateUtils.formatDateTime(
-                  context,
-                  atTimeInMillis,
-                  DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR));
+        Log.d(TAG, "===> 1: " + alarm);
 
-        final String label = intent.getStringExtra(Alarms.AlarmColumns.LABEL);
-        final String extraData = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        Alarms.enableAlarm(context, alarmId, label, atTimeInMillis,
-                           repeatOnDaysCode, handlerClassName, extraData);
+        // Schedule the alarm.
+        alarm.schedule();
 
-        // Update the new time into database.
-        ContentValues newValues = new ContentValues();
-        newValues.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, atTimeInMillis);
-        Alarms.updateAlarm(context, alarmUri, newValues);
+        alarm.set(context);
+
+        // // Update the new time into database.
+        // ContentValues newValues = new ContentValues();
+        // newValues.put(AlarmColumns.TIME_IN_MILLIS, atTimeInMillis);
+        // Alarms.updateAlarm(context, alarmUri, newValues);
+
+        Log.d(TAG, "===> scheduled alarm: " + Alarms.formatDateTime(context, alarm));
     }
 }

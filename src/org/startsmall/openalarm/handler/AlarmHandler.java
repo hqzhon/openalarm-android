@@ -100,7 +100,7 @@ public class AlarmHandler extends AbsAlarmHandler {
         // Wakeup the device and release keylock.
 
         // Parse extra data in the Intent and put them into Intent.
-        final String extra = intent.getStringExtra(Alarms.AlarmColumns.EXTRA);
+        final String extra = intent.getStringExtra(AlarmColumns.EXTRA);
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
 
         // Start an activity to play ringtone.

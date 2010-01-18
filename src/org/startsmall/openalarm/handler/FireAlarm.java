@@ -1,23 +1,11 @@
-/**
- * @file   FireAlarm.java
- * @author josh <yenliangl at gmail dot com>
- * @date   Tue Nov  3 20:33:08 2009
- *
- * @brief An activity that is launched when an alarm goes off.
- *
- *
- */
 package org.startsmall.openalarm;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,10 +16,8 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
-import android.preference.RingtonePreference;
 import android.telephony.TelephonyManager;
 import android.text.format.DateUtils;
-import android.text.method.DigitsKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -50,11 +36,11 @@ public class FireAlarm extends Activity {
     private static class StopPlayback implements Handler.Callback {
         @Override
         public boolean handleMessage(Message msg) {
-            FireAlarm handler;
+            FireAlarm app;
             if (msg.obj instanceof FireAlarm) {
-                handler = (FireAlarm)msg.obj;
+                app = (FireAlarm)msg.obj;
             } else {
-                return false;
+                return true;
             }
 
             switch (msg.what) {
@@ -62,8 +48,8 @@ public class FireAlarm extends Activity {
                 // This callback is executed because user doesn't
                 // tell me what to do, i.e., dimiss or snooze. I decide
                 // to snooze it or when the FireAlarm is paused.
-                handler.snoozeAlarm();
-                handler.finish();
+                app.snoozeAlarm();
+                app.finish();
                 return true;
             default:
                 break;
@@ -158,7 +144,7 @@ public class FireAlarm extends Activity {
         Log.d(TAG, "===> onDestroy()");
 
         if (mHandler != null) {
-            mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, mMediaPlayer);
+            mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, this);
             mHandler = null;
         }
 
@@ -169,6 +155,8 @@ public class FireAlarm extends Activity {
             mMediaPlayer = null;
             Log.d(TAG, "===> MediaPlayer stopped and released");
         }
+
+        stopVibration();
 
         releaseWakeLock();
     }
@@ -211,6 +199,7 @@ public class FireAlarm extends Activity {
 
         // Dismiss the old alarm.
         dismissAlarm();
+        stopVibration();
 
         // New intent comes. Replace the old one.
         setIntent(newIntent);
@@ -230,14 +219,14 @@ public class FireAlarm extends Activity {
 
     private void setWindowTitleFromIntent() {
         Intent i = getIntent();
-        final String label = i.getStringExtra(Alarms.AlarmColumns.LABEL);
+        final String label = i.getStringExtra(AlarmColumns.LABEL);
         setTitle(label);
     }
 
     private void setLabelFromIntent() {
         Intent i = getIntent();
-        final int hourOfDay = i.getIntExtra(Alarms.AlarmColumns.HOUR, -1);
-        final int minutes = i.getIntExtra(Alarms.AlarmColumns.MINUTES, -1);
+        final int hourOfDay = i.getIntExtra(AlarmColumns.HOUR_OF_DAY, -1);
+        final int minutes = i.getIntExtra(AlarmColumns.MINUTES, -1);
 
         Calendar calendar = Alarms.getCalendarInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
@@ -253,28 +242,29 @@ public class FireAlarm extends Activity {
 
     private void snoozeAlarm() {
         Intent i = getIntent();
-        final int alarmId = i.getIntExtra(Alarms.AlarmColumns._ID, -1);
-        final String label = i.getStringExtra(Alarms.AlarmColumns.LABEL);
-        final int repeatOnDays = i.getIntExtra(Alarms.AlarmColumns.REPEAT_DAYS, -1);
-        final String handlerClassName = i.getStringExtra(Alarms.AlarmColumns.HANDLER);
-        final String extraData = i.getStringExtra(Alarms.AlarmColumns.EXTRA);
-        final int snoozeDuration = i.getIntExtra(EXTRA_KEY_SNOOZE_DURATION, -1);
+        final int alarmId = i.getIntExtra(AlarmColumns._ID, -1);
+        final int snoozeDuration = i.getIntExtra(EXTRA_KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
 
-        Alarms.snoozeAlarm(this, alarmId, label, repeatOnDays,
-                           handlerClassName, extraData, snoozeDuration);
+        // It is not impossible that OpenAlarm is killed by task
+        // manager and FireAlam is brought up by an alarm. At
+        // this moment, there is no alarm in the cache map. We
+        // need to load it from DB.
+        Alarm alarm = Alarm.getInstance(this, alarmId);
 
-        stopVibration();
+        Log.d(TAG, "===> before snoozed: " + Alarms.formatDateTime(this, alarm));
+
+        alarm.snooze(this, snoozeDuration);
+
+        Log.d(TAG, "===> after snoozed: " + Alarms.formatDateTime(this, alarm));
     }
 
     private void dismissAlarm() {
-        Intent rescheduleIntent = new Intent(getIntent());
-        rescheduleIntent.setAction(Alarms.ACTION_SCHEDULE_ALARM);
-        sendBroadcast(rescheduleIntent);
+        Intent scheduleIntent = new Intent(getIntent());
+        scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
+        scheduleIntent.setComponent(null);
+        sendBroadcast(scheduleIntent);
 
-        // Notify the system that this alarm is changed.
-        Alarms.setNotification(this, true);
-
-        stopVibration();
+        Log.d(TAG, "===> dismissed alarm");
     }
 
     private void startVibration() {
@@ -376,8 +366,8 @@ public class FireAlarm extends Activity {
             // established successfully, start playing
             // ringtone and vibrate if necessary.
             mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, this);
-            Message message = mHandler.obtainMessage(MESSAGE_ID_STOP_PLAYBACK, this);
-            return mHandler.sendMessageDelayed(message, PLAYBACK_TIMEOUT);
+            Message msg = mHandler.obtainMessage(MESSAGE_ID_STOP_PLAYBACK, this);
+            return mHandler.sendMessageDelayed(msg, PLAYBACK_TIMEOUT);
         }
 
         return false;

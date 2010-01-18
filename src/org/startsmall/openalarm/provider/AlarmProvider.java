@@ -56,15 +56,15 @@ public class AlarmProvider extends ContentProvider {
 
         private static final String DATABASE_CREATE_CMD =
             "CREATE TABLE " + DATABASE_TABLE_NAME + "(" +
-            Alarms.AlarmColumns._ID   + " INTEGER PRIMARY KEY, " +
-            Alarms.AlarmColumns.LABEL + " TEXT, " +
-            Alarms.AlarmColumns.HOUR  + " INTEGER, " +
-            Alarms.AlarmColumns.MINUTES  + " INTEGER, " +
-            Alarms.AlarmColumns.AT_TIME_IN_MILLIS  + " INTEGER, " +
-            Alarms.AlarmColumns.REPEAT_DAYS + " INTEGER, " +
-            Alarms.AlarmColumns.ENABLED + " INTEGER, " +
-            Alarms.AlarmColumns.HANDLER + " TEXT, " +
-            Alarms.AlarmColumns.EXTRA + " TEXT);";
+            AlarmColumns._ID   + " INTEGER PRIMARY KEY, " +
+            AlarmColumns.LABEL + " TEXT, " +
+            AlarmColumns.HOUR_OF_DAY  + " INTEGER, " +
+            AlarmColumns.MINUTES  + " INTEGER, " +
+            AlarmColumns.TIME_IN_MILLIS  + " INTEGER, " +
+            AlarmColumns.REPEAT_DAYS + " INTEGER, " +
+            AlarmColumns.ENABLED + " INTEGER, " +
+            AlarmColumns.HANDLER + " TEXT, " +
+            AlarmColumns.EXTRA + " TEXT);";
 
         private static final String DATABASE_DROP_CMD =
             "DROP TABLE IF EXISTS " + DATABASE_TABLE_NAME;
@@ -91,14 +91,14 @@ public class AlarmProvider extends ContentProvider {
 
         private void insertDefaultAlarms(SQLiteDatabase db) {
             String cmd = "INSERT INTO " + DATABASE_TABLE_NAME + " (" +
-                         Alarms.AlarmColumns.LABEL + ", " +
-                         Alarms.AlarmColumns.HOUR + ", " +
-                         Alarms.AlarmColumns.MINUTES + ", " +
-                         Alarms.AlarmColumns.AT_TIME_IN_MILLIS + ", " +
-                         Alarms.AlarmColumns.REPEAT_DAYS + ", " +
-                         Alarms.AlarmColumns.ENABLED + ", " +
-                         Alarms.AlarmColumns.HANDLER + ", " +
-                         Alarms.AlarmColumns.EXTRA + ") VALUES ";
+                         AlarmColumns.LABEL + ", " +
+                         AlarmColumns.HOUR_OF_DAY + ", " +
+                         AlarmColumns.MINUTES + ", " +
+                         AlarmColumns.TIME_IN_MILLIS + ", " +
+                         AlarmColumns.REPEAT_DAYS + ", " +
+                         AlarmColumns.ENABLED + ", " +
+                         AlarmColumns.HANDLER + ", " +
+                         AlarmColumns.EXTRA + ") VALUES ";
             db.execSQL(cmd + "('Go to work', 7, 00, 0, 1, 0, '', '');");
             db.execSQL(cmd + "('Pick up kids', 8, 30, 0, 5, 0, '', '');");
             db.execSQL(cmd + "('See her mom', 9, 00, 0, 9, 0, '', '');");
@@ -130,7 +130,7 @@ public class AlarmProvider extends ContentProvider {
 
         if (matchId == MATCH_CODE_SINGLE_ALARM) {
             long rowId = ContentUris.parseId(uri);
-            qb.appendWhere(Alarms.AlarmColumns._ID + "=" + rowId); // append _id=#
+            qb.appendWhere(AlarmColumns._ID + "=" + rowId); // append _id=#
         }
 
         Cursor c = qb.query(mDbOpenHelper.getReadableDatabase(),
@@ -148,58 +148,61 @@ public class AlarmProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues initialValues) {
+    public Uri insert(Uri uri, ContentValues values) {
         if (sURIMatcher.match(uri) != MATCH_CODE_ALL_ALARMS) {
             throw new IllegalArgumentException(
-                "unable to insert into URL - " + uri);
+                "Unable to insert into URL - " + uri);
         }
 
-        ContentValues values;
-        if (initialValues == null) {
+        if (values == null) {
             values = new ContentValues();
-        } else {
-            values = new ContentValues(initialValues);
+        }
+        // ContentValues values;
+        // if (initialValues == null) {
+        //     values = new ContentValues();
+        // } else {
+        //     values = new ContentValues(initialValues);
+        // }
+
+        if (!values.containsKey(AlarmColumns.HOUR_OF_DAY)) {
+            values.put(AlarmColumns.HOUR_OF_DAY, 9);
         }
 
-        if (!values.containsKey(Alarms.AlarmColumns.HOUR)) {
-            values.put(Alarms.AlarmColumns.HOUR, 9);
+        if (!values.containsKey(AlarmColumns.MINUTES)) {
+            values.put(AlarmColumns.MINUTES, 0);
         }
 
-        if (!values.containsKey(Alarms.AlarmColumns.MINUTES)) {
-            values.put(Alarms.AlarmColumns.MINUTES, 0);
+        if (!values.containsKey(AlarmColumns.TIME_IN_MILLIS)) {
+            values.put(AlarmColumns.TIME_IN_MILLIS, 0L);
         }
 
-        if (!values.containsKey(Alarms.AlarmColumns.AT_TIME_IN_MILLIS)) {
-            values.put(Alarms.AlarmColumns.AT_TIME_IN_MILLIS, 0L);
+        if (!values.containsKey(AlarmColumns.REPEAT_DAYS)) {
+            values.put(AlarmColumns.REPEAT_DAYS, 0);
         }
 
-        if (!values.containsKey(Alarms.AlarmColumns.REPEAT_DAYS)) {
-            values.put(Alarms.AlarmColumns.REPEAT_DAYS, 0);
+        if (!values.containsKey(AlarmColumns.ENABLED)) {
+            values.put(AlarmColumns.ENABLED, 0);
         }
 
-        if (!values.containsKey(Alarms.AlarmColumns.ENABLED)) {
-            values.put(Alarms.AlarmColumns.ENABLED, 0);
+        if (!values.containsKey(AlarmColumns.LABEL)) {
+            values.put(AlarmColumns.LABEL, "My Alarm");
         }
 
-        if (!values.containsKey(Alarms.AlarmColumns.LABEL)) {
-            values.put(Alarms.AlarmColumns.LABEL, "My Alarm");
+        if (!values.containsKey(AlarmColumns.HANDLER)) {
+            values.put(AlarmColumns.HANDLER, "");
         }
 
-        if (!values.containsKey(Alarms.AlarmColumns.HANDLER)) {
-            values.put(Alarms.AlarmColumns.HANDLER, "");
-        }
-
-        if (!values.containsKey(Alarms.AlarmColumns.EXTRA)) {
-            values.put(Alarms.AlarmColumns.EXTRA, "");
+        if (!values.containsKey(AlarmColumns.EXTRA)) {
+            values.put(AlarmColumns.EXTRA, "");
         }
 
         SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
         long rowId = db.insertOrThrow(DatabaseOpenHelper.DATABASE_TABLE_NAME,
-                                      Alarms.AlarmColumns.LABEL,
+                                      AlarmColumns.LABEL,
                                       values);
 
-        Uri insertedUri = Alarms.getAlarmUri(rowId);
-        Log.d(TAG, "Added alarm - " + insertedUri);
+        Uri insertedUri = Alarms.getAlarmUri((int)rowId);
+        Log.d(TAG, "===> Added alarm - " + insertedUri);
         getContext().getContentResolver().notifyChange(insertedUri, null);
         return insertedUri;
     }
@@ -218,7 +221,7 @@ public class AlarmProvider extends ContentProvider {
             db.update(
                 DatabaseOpenHelper.DATABASE_TABLE_NAME,
                 values,
-                Alarms.AlarmColumns._ID + "=" + ContentUris.parseId(uri),
+                AlarmColumns._ID + "=" + ContentUris.parseId(uri),
                 null);
 
         getContext().getContentResolver().notifyChange(uri, null);
@@ -233,7 +236,7 @@ public class AlarmProvider extends ContentProvider {
         switch(matchId) {
         case MATCH_CODE_SINGLE_ALARM: // delete one specific row.
             String where =
-                Alarms.AlarmColumns._ID + "=" + ContentUris.parseId(uri) +
+                AlarmColumns._ID + "=" + ContentUris.parseId(uri) +
                 ((!TextUtils.isEmpty(selection)) ?
                  " AND (" + selection + ")" : "");
             count = db.delete(DatabaseOpenHelper.DATABASE_TABLE_NAME,

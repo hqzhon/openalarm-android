@@ -11,7 +11,6 @@ package org.startsmall.openalarm;
 
 import android.content.Context;
 import android.util.AttributeSet;
-
 import java.util.ArrayList;
 
 public abstract class ListPreference extends TextViewPreference {
@@ -76,7 +75,5 @@ public abstract class ListPreference extends TextViewPreference {
         return mEntries.get(mCheckedEntryIndex).toString();
     }
 
-    protected abstract void generateListItems(
-        ArrayList<CharSequence> entries,
-        ArrayList<CharSequence> entryValues);
+    protected abstract void generateListItems(ArrayList<CharSequence> entries, ArrayList<CharSequence> entryValues);
 }
