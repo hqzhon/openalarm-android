@@ -76,7 +76,7 @@ public class FireAlarm extends Activity {
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
     private static final int MESSAGE_ID_STOP_PLAYBACK = 1;
     private static final float IN_CALL_VOLUME = 0.125f;
-    private static final int PLAYBACK_TIMEOUT = 120000; // 2 minute
+    private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
 
     private MediaPlayer mMediaPlayer;
     private Vibrator mVibrator;
