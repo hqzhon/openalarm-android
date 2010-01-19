@@ -20,6 +20,8 @@ import android.telephony.TelephonyManager;
 import android.text.format.DateUtils;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.animation.AnimationUtils;
+import android.view.animation.Animation;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -74,7 +76,7 @@ public class FireAlarm extends Activity {
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
     private static final int MESSAGE_ID_STOP_PLAYBACK = 1;
     private static final float IN_CALL_VOLUME = 0.125f;
-    private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
+    private static final int PLAYBACK_TIMEOUT = 120000; // 2 minute
 
     private MediaPlayer mMediaPlayer;
     private Vibrator mVibrator;
@@ -171,6 +173,9 @@ public class FireAlarm extends Activity {
         // FireAlarm goes back to interact to user. But, Keyguard
         // may be in front.
         disableKeyguard();
+
+        Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
+        findViewById(R.id.icon).startAnimation(shake);
     }
 
     @Override

@@ -30,9 +30,10 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.widget.LinearLayout;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,10 +42,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
@@ -62,6 +65,8 @@ public class OpenAlarm extends ListActivity {
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
+
+        private Animation mScale;
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
@@ -285,6 +290,18 @@ public class OpenAlarm extends ListActivity {
 
         // startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, mAlarmsCursor));
+
+        getListView().setOnItemSelectedListener(
+            new AdapterView.OnItemSelectedListener() {
+                public void onNothingSelected(AdapterView<?> parent) {}
+                public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                    Animation scale =
+                        AnimationUtils.loadAnimation(
+                            OpenAlarm.this, R.anim.scale);
+                    v.startAnimation(scale);
+                }
+            });
+
     }
 
     @Override

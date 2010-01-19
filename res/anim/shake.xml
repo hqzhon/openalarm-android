@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+     android:repeatCount="infinite"
+     android:repeatMode="restart"
+     android:shareInterpolator="true"
+     android:interpolator="@anim/cycle_7">
+  <translate android:fromXDelta="0" android:toXDelta="10" android:duration="1000"/>
+  <!-- <translate android:fromYDelta="0" android:toYDelta="10" android:duration="1000"/> -->
+
+  <!-- <translate android:fromXDelta="50%" -->
+  <!--            android:toXDelta="-50%"/> -->
+  <!-- <translate android:fromXDelta="-50%" -->
+  <!--            android:toXDelta="0"/> -->
+  <!-- <translate android:fromYDelta="0" -->
+  <!--            android:toYDelta="50%"/> -->
+  <!-- <translate android:fromYDelta="50%" -->
+  <!--            android:toYDelta="-50%"/> -->
+  <!-- <translate android:fromYDelta="-50%" -->
+  <!--            android:toYDelta="0"/> -->
+</set>
