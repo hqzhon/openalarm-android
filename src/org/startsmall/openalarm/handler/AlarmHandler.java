@@ -178,6 +178,7 @@ public class AlarmHandler extends AbsAlarmHandler {
             if (snoozeDuration != -1) {
                 snoozeDurationPref.setSummary(
                     Integer.toString(snoozeDuration) + " minutes");
+                snoozeDurationPref.setText(String.valueOf(snoozeDuration));
             }
         }
     }

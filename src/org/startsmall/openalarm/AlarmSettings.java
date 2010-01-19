@@ -52,7 +52,7 @@ public class AlarmSettings extends PreferenceActivity {
         mActionPreference.setOnSelectActionListener(
             new AlarmActionPreference.IOnSelectActionListener() {
                 public void onSelectAction(String handlerClassName) {
-                    inflateExtraPreferences(handlerClassName, null);
+                    loadExtraPreferences(handlerClassName, null);
                 }
             });
         mRepeatOnPreference =
@@ -159,20 +159,17 @@ public class AlarmSettings extends PreferenceActivity {
         final int newMinutes = newTime % 100;
         final int newRepeatDays = (Integer)mRepeatOnPreference.getPreferenceValue();
         final String newHandler = (String)mActionPreference.getPreferenceValue();
-        final String newExtra = packValueOfExtraPreferences(mExtraSettingsCategory);
+
+        final String newExtra = getValueOfExtraPreferences(mExtraSettingsCategory);
 
         // Get alarm from cache.
         Alarm alarm = Alarm.getInstance(alarmId);
-        Log.d(TAG, "===> before update: " + alarm);
-        Log.d(TAG, "===> before update: newHandler=" + newHandler + ", newExtra=" + newExtra);
 
         // Update new values of the alarm.
         boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
         alarm.update(this,
                      enabled,
                      newLabel, newHourOfDay, newMinutes, newRepeatDays, newHandler, newExtra);
-
-        Log.d(TAG, "===> after update: " + alarm);
     }
 
     /**
@@ -200,13 +197,15 @@ public class AlarmSettings extends PreferenceActivity {
             alarm.getIntField(Alarm.FIELD_MINUTES));
         mRepeatOnPreference.setPreferenceValue(alarm.getIntField(Alarm.FIELD_REPEAT_DAYS));
 
-        String valueOfExtraSettings = packValueOfExtraPreferences(mExtraSettingsCategory);
+        // Get the value of extra preferences to see if they have
+        // local modifications that weren't persited.
+        String valueOfExtraSettings = getValueOfExtraPreferences(mExtraSettingsCategory);
         if (TextUtils.isEmpty(valueOfExtraSettings)) {
-            inflateExtraPreferences(alarm.getStringField(Alarm.FIELD_HANDLER),
-                                     alarm.getStringField(Alarm.FIELD_EXTRA));
+            loadExtraPreferences(alarm.getStringField(Alarm.FIELD_HANDLER),
+                                 alarm.getStringField(Alarm.FIELD_EXTRA));
         } else {
-            inflateExtraPreferences(alarm.getStringField(Alarm.FIELD_HANDLER),
-                                    valueOfExtraSettings);
+            loadExtraPreferences(alarm.getStringField(Alarm.FIELD_HANDLER),
+                                 valueOfExtraSettings);
         }
     }
 
@@ -217,7 +216,7 @@ public class AlarmSettings extends PreferenceActivity {
      * Settings category.
      *
      */
-    private void inflateExtraPreferences(String handlerClassName, String extraValue) {
+    private void loadExtraPreferences(String handlerClassName, String extraValue) {
         if(TextUtils.isEmpty(handlerClassName)) {
             return;
         }
@@ -236,7 +235,7 @@ public class AlarmSettings extends PreferenceActivity {
         }
     }
 
-    private String packValueOfExtraPreferences(PreferenceCategory category) {
+    private String getValueOfExtraPreferences(PreferenceCategory category) {
         SharedPreferences sharedPreferences = category.getSharedPreferences();
         StringBuilder sb = new StringBuilder();
         final int numberOfPreferences = category.getPreferenceCount();
