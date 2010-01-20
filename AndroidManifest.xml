@@ -70,6 +70,8 @@
       </intent-filter>
     </receiver>
 
+    <service android:name=".BootService"/>
+
     <receiver android:name=".ScheduleAlarmReceiver"
               android:label="OpenAlarm"
               android:exported="true">
