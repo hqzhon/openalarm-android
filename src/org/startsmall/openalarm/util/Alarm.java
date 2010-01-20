@@ -71,10 +71,19 @@ class Alarm {
     /**
      * Get an alarm instance with its settings obtained from
      * database. If no such alarm with id exists in the database,
-     * create a new one.
+     * create a new one. Note that this method should be called
+     * when OpenAlarm isn't existing and of course the static
+     * alarm cache hasn't had any alarm yet. But, if this alarm
+     * id exists in the cache, this should mean someone had
+     * called this method before and brough alarm into memory. We
+     * don't need to fetch it again.
      *
      */
     public static Alarm getInstance(Context context, final int id) {
+        if (sMap.containsKey(id)) {
+            return getInstance(id);
+        }
+
         Cursor cursor =
             Alarms.getAlarmCursor(context, Alarms.getAlarmUri(id));
         Alarm alarm;
@@ -295,8 +304,12 @@ class Alarm {
      * settings.
      *
      */
-    public void schedule() {
-        mTimeInMillis = calculateNextSchedule();
+    public boolean schedule() {
+        if (isValid()) {
+            mTimeInMillis = calculateNextSchedule();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -367,12 +380,12 @@ class Alarm {
         }
 
         // If alarm needs to be scheduled.
-        if (mEnabled && scheduleRequired && isValid()) {
+        if (mEnabled && scheduleRequired) {
             Log.d(TAG, "===> alarm " + mId + " should be scheduled");
-            schedule();
-            values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
-
-            set(context);
+            if (schedule()) {
+                values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
+                set(context);
+            }
         }
 
         // Update the alarm database.

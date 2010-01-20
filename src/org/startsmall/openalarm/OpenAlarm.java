@@ -128,6 +128,13 @@ public class OpenAlarm extends ListActivity {
                             Log.d(TAG, "===> scheduled alarm: " +
                                   Alarms.formatDateTime(context, alarm));
 
+                            if (isChecked) {
+                                String text =
+                                    context.getString(R.string.alarm_notification_toast_text,
+                                                      alarm.getStringField(Alarm.FIELD_LABEL),
+                                                      Alarms.formatSchedule(context, alarm));
+                                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+                            }
                         } else {
                             // Alarm can't be set because its
                             // settings are't good enough. Bring
@@ -144,14 +151,6 @@ public class OpenAlarm extends ListActivity {
                         }
 
                         Alarms.setNotification(context, isChecked);
-
-                        if (isChecked && alarm.isValid()) {
-                            String text =
-                                context.getString(R.string.alarm_notification_toast_text,
-                                                  alarm.getStringField(Alarm.FIELD_LABEL),
-                                                  Alarms.formatSchedule(context, alarm));
-                            Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-                        }
                     }
                 };
         }

@@ -14,7 +14,7 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "===> onReceive() ");
+        Log.d(TAG, "===> onReceive(" + intent.getAction() + ") start " + Calendar.getInstance());
 
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
 
@@ -24,18 +24,13 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
         // cache because cache was gone with killed OpenAlarm.
         Alarm alarm = Alarm.getInstance(context, alarmId);
 
-        Log.d(TAG, "===> 1: " + alarm);
+        // Try to schedule the alarm.
+        if (alarm.schedule()) {
+            alarm.set(context);
 
-        // Schedule the alarm.
-        alarm.schedule();
+            Log.d(TAG, "===> scheduled alarm: " + Alarms.formatDateTime(context, alarm));
+        }
 
-        alarm.set(context);
-
-        // // Update the new time into database.
-        // ContentValues newValues = new ContentValues();
-        // newValues.put(AlarmColumns.TIME_IN_MILLIS, atTimeInMillis);
-        // Alarms.updateAlarm(context, alarmUri, newValues);
-
-        Log.d(TAG, "===> scheduled alarm: " + Alarms.formatDateTime(context, alarm));
+        Log.d(TAG, "===> onReceive(" + intent.getAction() + ") end " + Calendar.getInstance());
     }
 }
