@@ -17,7 +17,7 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Calendar calendar = Calendar.getInstance();
-        Log.d(TAG, "onReceive(" + intent.getAction() + ")" + " Start " + calendar);
+        Log.i(TAG, "===> onReceive(" + intent.getAction() + ")" + " start: " + calendar);
 
         // Redirect time-consuming alarm scheduling to BootService.
         intent.setAction(null);
@@ -25,6 +25,6 @@ public class BootReceiver extends BroadcastReceiver {
         context.startService(intent);
 
         calendar = Calendar.getInstance();
-        Log.d(TAG, "onReceive(" + intent.getAction() + ") END " + calendar);
+        Log.i(TAG, "===> onReceive(" + intent.getAction() + ") end: " + calendar);
     }
 }

@@ -63,7 +63,7 @@ public class FireAlarm extends Activity {
     private static class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
         @Override
         public boolean onError(MediaPlayer mp, int what, int extra) {
-            Log.d(TAG, "===> onError(): " + what + "====> " + extra);
+            Log.e(TAG, "===> onError(): " + what + "====> " + extra);
             return true;
         }
     }
@@ -91,7 +91,7 @@ public class FireAlarm extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "===> onCreate()");
+        // Log.d(TAG, "===> onCreate()");
 
         // Wakeup the device and release keylock.
         mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
@@ -143,7 +143,7 @@ public class FireAlarm extends Activity {
     public void onDestroy() {
         super.onDestroy();
 
-        Log.d(TAG, "===> onDestroy()");
+        // Log.d(TAG, "===> onDestroy()");
 
         if (mHandler != null) {
             mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, this);
@@ -155,7 +155,7 @@ public class FireAlarm extends Activity {
             mMediaPlayer.stop();
             mMediaPlayer.release();
             mMediaPlayer = null;
-            Log.d(TAG, "===> MediaPlayer stopped and released");
+            // Log.d(TAG, "===> MediaPlayer stopped and released");
         }
 
         stopVibration();
@@ -168,7 +168,7 @@ public class FireAlarm extends Activity {
     public void onResume() {
         super.onResume();
 
-        Log.d(TAG, "===> onResume()");
+        // Log.d(TAG, "===> onResume()");
 
         // FireAlarm goes back to interact to user. But, Keyguard
         // may be in front.
@@ -182,7 +182,7 @@ public class FireAlarm extends Activity {
     public void onPause() {
         super.onPause();
 
-        Log.d(TAG, "===> onPause()");
+        // Log.d(TAG, "===> onPause()");
 
         // Returns to keyguarded mode if the phone was in this
         // mode.
@@ -200,7 +200,7 @@ public class FireAlarm extends Activity {
 
     @Override
     public void onNewIntent(Intent newIntent) {
-        Log.v(TAG, "===> onNewIntent()");
+        // Log.v(TAG, "===> onNewIntent()");
 
         // Dismiss the old alarm.
         dismissAlarm();
@@ -256,11 +256,7 @@ public class FireAlarm extends Activity {
         // need to load it from DB.
         Alarm alarm = Alarm.getInstance(this, alarmId);
 
-        Log.d(TAG, "===> before snoozed: " + Alarms.formatDateTime(this, alarm));
-
         alarm.snooze(this, snoozeDuration);
-
-        Log.d(TAG, "===> after snoozed: " + Alarms.formatDateTime(this, alarm));
     }
 
     private void dismissAlarm() {
@@ -268,8 +264,6 @@ public class FireAlarm extends Activity {
         scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
         scheduleIntent.setComponent(null);
         sendBroadcast(scheduleIntent);
-
-        Log.d(TAG, "===> dismissed alarm");
     }
 
     private void startVibration() {
@@ -333,14 +327,14 @@ public class FireAlarm extends Activity {
                 return false;
             }
 
-            Log.d(TAG, "===> Play ringtone: " + uriString);
+            // Log.d(TAG, "===> Play ringtone: " + uriString);
 
             try {
                 // Detects if we are in a call when this alarm goes off.
                 if (mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
                     mMediaPlayer.setDataSource(this, Uri.parse(uriString));
                 } else {
-                    Log.d(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
+                    Log.w(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
 
                     // This raw media must be supported by Android
                     // and no errors thrown from it.

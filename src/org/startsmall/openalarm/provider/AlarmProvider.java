@@ -75,7 +75,7 @@ public class AlarmProvider extends ContentProvider {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            Log.d(TAG, "onCreate(" + DATABASE_CREATE_CMD + ")");
+            // Log.d(TAG, "===> onCreate(" + DATABASE_CREATE_CMD + ")");
             db.execSQL(DATABASE_CREATE_CMD);
             insertDefaultAlarms(db);
         }
@@ -84,7 +84,7 @@ public class AlarmProvider extends ContentProvider {
         public void onUpgrade(SQLiteDatabase db,
                               int oldVersion,
                               int newVersion) {
-            Log.d(TAG, "Upgrading database from " + oldVersion + " to " + newVersion);
+            // Log.d(TAG, "===> Upgrading database from " + oldVersion + " to " + newVersion);
             db.execSQL(DATABASE_DROP_CMD);
             onCreate(db);
         }
@@ -107,7 +107,7 @@ public class AlarmProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Log.d(TAG, "onCreate()");
+        // Log.d(TAG, "===> onCreate()");
 
         mDbOpenHelper = new DatabaseOpenHelper(getContext());
         return true;
@@ -140,7 +140,7 @@ public class AlarmProvider extends ContentProvider {
                             null, /* having */
                             sortOrder);
         if (c == null) {
-            Log.d(TAG, "AlarmProvider.query(): failed alarm query");
+            Log.e(TAG, "===> AlarmProvider.query(): failed alarm query");
         } else {
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
@@ -202,7 +202,6 @@ public class AlarmProvider extends ContentProvider {
                                       values);
 
         Uri insertedUri = Alarms.getAlarmUri((int)rowId);
-        Log.d(TAG, "===> Added alarm - " + insertedUri);
         getContext().getContentResolver().notifyChange(insertedUri, null);
         return insertedUri;
     }
@@ -251,7 +250,6 @@ public class AlarmProvider extends ContentProvider {
             throw new IllegalArgumentException("cannot delete URI");
         }
 
-        Log.d(TAG, "Deleted alarm - " + uri);
         getContext().getContentResolver().notifyChange(uri, null);
         return count;
     }

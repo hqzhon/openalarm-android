@@ -14,7 +14,7 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "===> onReceive(" + intent.getAction() + ") start " + Calendar.getInstance());
+        Log.i(TAG, "===> onReceive(" + intent.getAction() + ") start: " + Calendar.getInstance());
 
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
 
@@ -27,10 +27,9 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
         // Try to schedule the alarm.
         if (alarm.schedule()) {
             alarm.set(context);
-
-            Log.d(TAG, "===> scheduled alarm: " + Alarms.formatDateTime(context, alarm));
+            Log.i(TAG, "===> scheduled alarm: " + Alarms.formatDateTime(context, alarm));
         }
 
-        Log.d(TAG, "===> onReceive(" + intent.getAction() + ") end " + Calendar.getInstance());
+        Log.d(TAG, "===> onReceive(" + intent.getAction() + ") end: " + Calendar.getInstance());
     }
 }

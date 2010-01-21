@@ -125,9 +125,6 @@ public class OpenAlarm extends ListActivity {
                                 alarm.getStringField(Alarm.FIELD_HANDLER),
                                 alarm.getStringField(Alarm.FIELD_EXTRA));
 
-                            Log.d(TAG, "===> scheduled alarm: " +
-                                  Alarms.formatDateTime(context, alarm));
-
                             if (isChecked) {
                                 String text =
                                     context.getString(R.string.alarm_set_toast_text,

@@ -56,7 +56,7 @@ public class BootService extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         Calendar calendar = Calendar.getInstance();
-        Log.d(TAG, "onReceive() Start " + calendar);
+        // Log.d(TAG, "onReceive() Start " + calendar);
 
         // Iterate all alarms in database and bring them into alive.
         ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
@@ -79,7 +79,7 @@ public class BootService extends Service {
         }
 
         calendar = Calendar.getInstance();
-        Log.d(TAG, "onReceive() END " + calendar);
+        // Log.d(TAG, "onReceive() END " + calendar);
 
         // Stop this service.
         stopSelf();

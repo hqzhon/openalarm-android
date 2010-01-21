@@ -35,7 +35,7 @@ public class AlarmSettings extends PreferenceActivity {
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
 
-        Log.d(TAG, "====> AlarmSettings.onCreate(" + bundle + ")");
+        // Log.d(TAG, "===> AlarmSettings.onCreate(" + bundle + ")");
 
         addPreferencesFromResource(R.xml.alarm_settings);
 
@@ -148,7 +148,7 @@ public class AlarmSettings extends PreferenceActivity {
      */
     @Override
     protected void onPause() {
-        Log.d(TAG, "======> onPause()");
+        // Log.d(TAG, "======> onPause()");
         super.onPause();
 
         Intent i = getIntent();
@@ -179,7 +179,6 @@ public class AlarmSettings extends PreferenceActivity {
      */
     @Override
     protected void onResume() {
-        Log.d(TAG, "======> onResume()");
         super.onResume();
 
         // Fetch alarm settings from persistent content
@@ -187,7 +186,7 @@ public class AlarmSettings extends PreferenceActivity {
         final int alarmId = i.getIntExtra(AlarmColumns._ID, -1);
         Alarm alarm = Alarm.getInstance(alarmId);
 
-        Log.d(TAG, "===> onResume(): get alarm " + alarm);
+        // Log.d(TAG, "===> onResume(): get alarm " + alarm);
 
         // Populate alarm settings into Preferences.
         mLabelPreference.setPreferenceValue(alarm.getStringField(Alarm.FIELD_LABEL));

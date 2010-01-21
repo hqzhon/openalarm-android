@@ -95,9 +95,7 @@ public class AlarmHandler extends AbsAlarmHandler {
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
 
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "===> onReceive()");
-
-        // Wakeup the device and release keylock.
+        // Log.d(TAG, "===> onReceive()");
 
         // Parse extra data in the Intent and put them into Intent.
         final String extra = intent.getStringExtra(AlarmColumns.EXTRA);

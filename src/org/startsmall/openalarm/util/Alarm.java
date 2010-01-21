@@ -268,7 +268,7 @@ class Alarm {
                          PendingIntent.getBroadcast(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
-        Log.d(TAG, "===> Alarm.set(): " + i);
+        // Log.d(TAG, "===> Alarm.set(): " + i);
     }
 
     /**
@@ -296,7 +296,7 @@ class Alarm {
         alarmManager.cancel(PendingIntent.getBroadcast(
                                 context, 0, i,
                                 PendingIntent.FLAG_CANCEL_CURRENT));
-        Log.d(TAG, "===> Alarm.cancel(): " + i);
+        // Log.d(TAG, "===> Alarm.cancel(): " + i);
     }
 
     /**
@@ -381,8 +381,10 @@ class Alarm {
 
         // If alarm needs to be scheduled.
         if (mEnabled && scheduleRequired) {
-            Log.d(TAG, "===> alarm " + mId + " should be scheduled");
             if (schedule()) {
+                Log.i(TAG, "===> scheduled: alarm: " +
+                      Alarms.formatDateTime(context, this));
+
                 values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
                 set(context);
             }
@@ -394,7 +396,7 @@ class Alarm {
             synchronized (cr) {
                 cr.update(getUri(), values, null, null);
             }
-            Log.d(TAG, "===> alarm " + mId + " is updated in DB");
+            // Log.d(TAG, "===> Alarm " + mId + " is updated in DB");
         }
     }
 

@@ -73,8 +73,7 @@
     <service android:name=".BootService"/>
 
     <receiver android:name=".ScheduleAlarmReceiver"
-              android:label="OpenAlarm"
-              android:exported="true">
+              android:label="OpenAlarm">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.SCHEDULE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
