@@ -61,8 +61,8 @@
   <string name="alarm_handler_vibrate_summary_off">"關閉"</string>
 
   <!-- FireAlarm -->
-  <string name="fire_alarm_snooze_text">"再睡一下"</string>
-  <string name="fire_alarm_dismiss_text">"我起來了啦"</string>
+  <string name="fire_alarm_snooze_text">"再瞇一下"</string>
+  <string name="fire_alarm_dismiss_text">"起來了"</string>
 
   <!-- MediaPlayer -->
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>
