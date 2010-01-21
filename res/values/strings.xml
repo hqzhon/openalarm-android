@@ -41,18 +41,16 @@
   <string name="alarm_settings_repeat_days_title">Repeat on</string>
   <string name="alarm_settings_repeat_days_summary">On everyday</string>
   <string name="alarm_settings_repeat_days_key">repeat_days</string>
-  <string name="alarm_settings_repeat_days_dialog_title">Repeat on these days</string>
+  <string name="alarm_settings_repeat_days_dialog_title">Repeat on</string>
   <string name="repeat_on_everyday">Everyday</string>
   <string name="no_repeat_days">Never</string>
 
   <string name="alarm_settings_extra_category_key">extra_settings</string>
 
-  <!-- Alarm activation toast format -->
-  <string name="alarm_notification_toast_text">Alarm \'%s\' will action at %s</string>
-  <string name="alarm_notification_ticker_text">Alarm %s @ %s</string>
-  <string name="alarm_notification_content_text">%s</string>
+  <!-- Alarm notifications -->
+  <string name="alarm_set_toast_text">Alarm %s will action at %s</string>
   <string name="alarm_handler_unset_message">What should I do? Please specify action for me</string>
-  <string name="alarm_repeat_days_unset_message">When should I actioin? Please specify repeat days</string>
+  <string name="alarm_repeat_days_unset_message">When should I action? Please specify repeat days for me</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">Alarm</string>

@@ -41,10 +41,8 @@
   <string name="repeat_on_everyday">"每天"</string>
   <string name="no_repeat_days">"未定"</string>
 
-  <!-- Alarm activation toast format -->
-  <string name="alarm_notification_toast_text">"鬧鈴設定在"%s"動作喔"</string>
-  <string name="alarm_notification_ticker_text">"鬧鈴"%s"動作的時間改變了"</string>
-  <string name="alarm_notification_content_text">"鬧鈴"%s"設定在"%s"動作喔"</string>
+  <!-- Alarm notifications -->
+  <string name="alarm_set_toast_text">"鬧鈴"%s"會在"%s"動作"</string>
   <string name="alarm_handler_unset_message">"請指定要我要做甚麼"</string>
   <string name="alarm_repeat_days_unset_message">"請指定哪幾天要動作"</string>
 

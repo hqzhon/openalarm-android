@@ -130,7 +130,7 @@ public class OpenAlarm extends ListActivity {
 
                             if (isChecked) {
                                 String text =
-                                    context.getString(R.string.alarm_notification_toast_text,
+                                    context.getString(R.string.alarm_set_toast_text,
                                                       alarm.getStringField(Alarm.FIELD_LABEL),
                                                       Alarms.formatSchedule(context, alarm));
                                 Toast.makeText(context, text, Toast.LENGTH_LONG).show();
