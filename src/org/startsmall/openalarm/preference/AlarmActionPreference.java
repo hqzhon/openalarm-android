@@ -73,7 +73,7 @@ public class AlarmActionPreference extends ListPreference {
     @Override
     protected void onBindView(View view) {
         if(TextUtils.isEmpty((String)getPreferenceValue())) {
-            setSummary("What do you want me to do?");
+            setSummary(R.string.alarm_handler_unset_message);
         }
         super.onBindView(view);
     }

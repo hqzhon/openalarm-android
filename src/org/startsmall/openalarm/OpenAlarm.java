@@ -378,10 +378,11 @@ public class OpenAlarm extends ListActivity {
 
     private void showAboutThisAppDialog() {
         WebView helpWebView = new WebView(this);
-        helpWebView.loadUrl("file:///android_asset/about.html");
+        helpWebView.loadUrl("file:///android_asset/" +
+                            getString(R.string.about_html));
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.
-            setTitle("About this application").
+            setTitle(R.string.about_this_application).
             setPositiveButton(android.R.string.ok,
                               new DialogInterface.OnClickListener() {
                                   @Override

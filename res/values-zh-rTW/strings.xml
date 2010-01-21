@@ -2,11 +2,15 @@
 <resources>
   <string name="app_name">OpenAlarm</string>
 
+  <!-- About HTML file name -->
+  <string name="about_this_application">關於此程式</string>
+  <string name="about_html">about_zh-rTW.html</string>
+
   <!-- Options menu item -->
   <string name="menu_item_add">"增加"</string>
   <!-- <string name="menu_item_preferences">Preferences</string> -->
   <string name="menu_item_set_theme_title">"主題"</string>
-  <string name="menu_item_send_feedback">"溝通意見"</string>
+  <string name="menu_item_send_feedback">"傳送意見"</string>
   <string name="menu_item_about">"關於"</string>
 
   <!-- Context menu item -->
@@ -41,8 +45,8 @@
   <string name="alarm_notification_toast_text">"鬧鈴設定在"%s"動作喔"</string>
   <string name="alarm_notification_ticker_text">"鬧鈴"%s"動作的時間改變了"</string>
   <string name="alarm_notification_content_text">"鬧鈴"%s"設定在"%s"動作喔"</string>
-  <string name="alarm_handler_unset_message">"未指定動作"</string>
-  <string name="alarm_repeat_days_unset_message">"未指定重複日子"</string>
+  <string name="alarm_handler_unset_message">"請指定要我要做甚麼"</string>
+  <string name="alarm_repeat_days_unset_message">"請指定哪幾天要動作"</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">"鬧鈴"</string>
