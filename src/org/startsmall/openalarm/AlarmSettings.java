@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 
 public class AlarmSettings extends PreferenceActivity {
     private static final String TAG = "AlarmSettings";
+    private int mAlarmId;
 
     // Dialog IDs
     private static final int DIALOG_ID_ENTER_LABEL = 1;
@@ -34,6 +35,9 @@ public class AlarmSettings extends PreferenceActivity {
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+
+        Intent i = getIntent();
+        mAlarmId = i.getIntExtra(AlarmColumns._ID, -1);
 
         // Log.d(TAG, "===> AlarmSettings.onCreate(" + bundle + ")");
 
@@ -103,11 +107,6 @@ public class AlarmSettings extends PreferenceActivity {
     //     super.onRestoreInstanceState(outState);
     // }
 
-    // protected void onDestroy() {
-    //     super.onDestroy();
-    //     Log.d(TAG, "======> AlarmSettings.onDestroy()");
-    // }
-
     /**
      * All dialogs are managed by this activity. Things on the
      * screen must be snapshot into a Bundle through their
@@ -148,11 +147,9 @@ public class AlarmSettings extends PreferenceActivity {
      */
     @Override
     protected void onPause() {
-        // Log.d(TAG, "======> onPause()");
         super.onPause();
 
         Intent i = getIntent();
-        final int alarmId = i.getIntExtra(AlarmColumns._ID, -1);
         final String newLabel = (String)mLabelPreference.getPreferenceValue();
         final int newTime = (Integer)mTimePreference.getPreferenceValue();
         final int newHourOfDay = newTime / 100;
@@ -163,16 +160,21 @@ public class AlarmSettings extends PreferenceActivity {
         final String newExtra = getValueOfExtraPreferences(mExtraSettingsCategory);
 
         // Get alarm from cache.
-        Alarm alarm = Alarm.getInstance(alarmId);
+        Alarm alarm = Alarm.getInstance(mAlarmId);
 
         // Update new values of the alarm.
         boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
         alarm.update(this,
                      enabled,
                      newLabel, newHourOfDay, newMinutes, newRepeatDays, newHandler, newExtra);
-
-        setResult(RESULT_FIRST_USER + alarm.getErrorCode());
     }
+
+    // @Override
+    // public void finish() {
+    //     Alarm alarm = Alarm.getInstance(mAlarmId);
+    //     setResult(RESULT_FIRST_USER + alarm.getErrorCode());
+    //     super.finish();
+    // }
 
     /**
      * Resume this activity and populate alarm settings from
@@ -184,11 +186,7 @@ public class AlarmSettings extends PreferenceActivity {
         super.onResume();
 
         // Fetch alarm settings from persistent content
-        Intent i = getIntent();
-        final int alarmId = i.getIntExtra(AlarmColumns._ID, -1);
-        Alarm alarm = Alarm.getInstance(alarmId);
-
-        // Log.d(TAG, "===> onResume(): get alarm " + alarm);
+        Alarm alarm = Alarm.getInstance(mAlarmId);
 
         // Populate alarm settings into Preferences.
         mLabelPreference.setPreferenceValue(alarm.getStringField(Alarm.FIELD_LABEL));

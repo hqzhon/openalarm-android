@@ -268,7 +268,7 @@ class Alarm {
                          PendingIntent.getBroadcast(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
-        // Log.d(TAG, "===> Alarm.set(): " + i);
+        Log.i(TAG, "===> Alarm " + mId + " is set with " + i);
     }
 
     /**
@@ -296,7 +296,7 @@ class Alarm {
         alarmManager.cancel(PendingIntent.getBroadcast(
                                 context, 0, i,
                                 PendingIntent.FLAG_CANCEL_CURRENT));
-        // Log.d(TAG, "===> Alarm.cancel(): " + i);
+        Log.i(TAG, "===> Alarm " + mId + " is cancelled with " + i);
     }
 
     /**
@@ -383,16 +383,21 @@ class Alarm {
         // If alarm needs to be scheduled.
         if (mEnabled && scheduleRequired) {
             if (schedule()) {
-                Log.i(TAG, "===> scheduled: alarm: " +
+                Log.i(TAG, "===> Alarm scheduled: " +
                       Alarms.formatDateTime(context, this));
 
                 values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
                 set(context);
             } else {
-                // This alarm was enabled, but updated to invalid
-                // state, cancel old schedule. In this case, this
-                // alarm should be unchecked.
+                // This alarm was enabled, but this update turns
+                // it into invalid state (for example, unset all
+                // repeat days). In this case, we need to cancel
+                // old schedule and uncheck this alarm
+                // automatically for user.
                 cancel(context);
+
+                mEnabled = false;
+                values.put(AlarmColumns.ENABLED, mEnabled);
             }
         }
 
@@ -402,7 +407,7 @@ class Alarm {
             synchronized (cr) {
                 cr.update(getUri(), values, null, null);
             }
-            // Log.d(TAG, "===> Alarm " + mId + " is updated in DB");
+            Log.i(TAG, "===> Alarm " + mId + " is updated in DB");
         }
     }
 

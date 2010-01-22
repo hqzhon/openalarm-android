@@ -48,6 +48,7 @@ import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
@@ -107,12 +108,7 @@ public class OpenAlarm extends ListActivity {
                         int alarmId = attachment.getInt(AlarmColumns._ID);
                         Alarm alarm = Alarm.getInstance(alarmId);
 
-                        // If this alarm is snoozed,
-                        // check/uncheck this button should
-                        // cancel it first because we need to
-                        // reshedule its time.
                         Context context = (Context)OpenAlarm.this;
-
                         if (alarm.isValid()) {
                             // Alarm looks good. Enable it or disable it.
                             alarm.update(
@@ -137,14 +133,16 @@ public class OpenAlarm extends ListActivity {
                             // settings are't good enough. Bring
                             // up its Settings activity
                             // automatically for user to chage.
-                            int errCode = alarm.getErrorCode();
-                            int errMsgResId = R.string.alarm_handler_unset_message;
-                            if (errCode == Alarm.ERROR_NO_REPEAT_DAYS) {
-                                errMsgResId = R.string.alarm_repeat_days_unset_message;
+                            if (isChecked) {
+                                int errCode = alarm.getErrorCode();
+                                int errMsgResId = R.string.alarm_handler_unset_message;
+                                if (errCode == Alarm.ERROR_NO_REPEAT_DAYS) {
+                                    errMsgResId = R.string.alarm_repeat_days_unset_message;
+                                }
+                                Toast.makeText(context, errMsgResId, Toast.LENGTH_LONG).show();
+                                parent.performClick();
+                                buttonView.setChecked(false);
                             }
-                            Toast.makeText(context, errMsgResId, Toast.LENGTH_LONG).show();
-                            parent.performClick();
-                            buttonView.setChecked(false);
                         }
 
                         Alarms.setNotification(context, isChecked);
@@ -269,9 +267,6 @@ public class OpenAlarm extends ListActivity {
             return view;
 
             // TODO: Cache all child views in the @p view.
-
-
-
         }
     }
 
@@ -284,13 +279,12 @@ public class OpenAlarm extends ListActivity {
         mAlarmsCursor =
             Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
 
-        // startManagingCursor(cursor);
         setListAdapter(new AlarmAdapter(this, mAlarmsCursor));
 
         getListView().setOnItemSelectedListener(
             new AdapterView.OnItemSelectedListener() {
                 public void onNothingSelected(AdapterView<?> parent) {}
-                public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                public void onItemSelected(AdapterView<?> parent, View v, int position, long rowId) {
                     Animation scale =
                         AnimationUtils.loadAnimation(
                             OpenAlarm.this, R.anim.scale);
@@ -373,34 +367,6 @@ public class OpenAlarm extends ListActivity {
         return false;
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_FIRST_USER + Alarm.ERROR_NO_REPEAT_DAYS) {
-            int alarmId = requestCode;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        }
-    }
-
     private void showAboutThisAppDialog() {
         WebView helpWebView = new WebView(this);
         helpWebView.loadUrl("file:///android_asset/" +
@@ -435,6 +401,6 @@ public class OpenAlarm extends ListActivity {
     private void editAlarm(int alarmId) {
         Intent intent = new Intent(this, AlarmSettings.class);
         intent.putExtra(AlarmColumns._ID, alarmId);
-        startActivityForResult(intent, alarmId);
+        startActivity(intent);
     }
 }
