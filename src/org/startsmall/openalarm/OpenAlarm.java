@@ -59,8 +59,6 @@ public class OpenAlarm extends ListActivity {
 
     private static final int MENU_ITEM_ID_DELETE = 0;
 
-    private Cursor mAlarmsCursor;
-
     private class AlarmAdapter extends CursorAdapter {
         private LayoutInflater mInflater;
         private View.OnClickListener mOnClickListener;
@@ -276,10 +274,10 @@ public class OpenAlarm extends ListActivity {
 
         setContentView(R.layout.main);
 
-        mAlarmsCursor =
+        Cursor c =
             Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
-
-        setListAdapter(new AlarmAdapter(this, mAlarmsCursor));
+        startManagingCursor(c);
+        setListAdapter(new AlarmAdapter(this, c));
 
         getListView().setOnItemSelectedListener(
             new AdapterView.OnItemSelectedListener() {
@@ -303,10 +301,10 @@ public class OpenAlarm extends ListActivity {
 
     @Override
     public void onDestroy() {
-        // Closing the cached cursor;
-        mAlarmsCursor.close();
-
         super.onDestroy();
+
+        Log.d(TAG, "=======> onDestroy()");
+
     }
 
     @Override
