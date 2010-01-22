@@ -170,6 +170,8 @@ public class AlarmSettings extends PreferenceActivity {
         alarm.update(this,
                      enabled,
                      newLabel, newHourOfDay, newMinutes, newRepeatDays, newHandler, newExtra);
+
+        setResult(RESULT_FIRST_USER + alarm.getErrorCode());
     }
 
     /**

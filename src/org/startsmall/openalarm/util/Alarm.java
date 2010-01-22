@@ -330,13 +330,14 @@ class Alarm {
         if (enabled != mEnabled) {
             values.put(AlarmColumns.ENABLED, enabled);
 
-            if (!enabled) {
-                // Cancel already set alarm. It was set  which might be installed
-                // by using the old handler.
+            if (enabled) {
+                // Need to make a new schedule for this alarm.
+                scheduleRequired = true;
+            } else {
+                // Cancel old schedule.
                 cancel(context);
             }
             mEnabled = enabled;
-            scheduleRequired = true;
         }
 
         if (!label.equals(mLabel)) {
@@ -387,6 +388,11 @@ class Alarm {
 
                 values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
                 set(context);
+            } else {
+                // This alarm was enabled, but updated to invalid
+                // state, cancel old schedule. In this case, this
+                // alarm should be unchecked.
+                cancel(context);
             }
         }
 

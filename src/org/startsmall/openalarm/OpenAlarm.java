@@ -373,6 +373,34 @@ public class OpenAlarm extends ListActivity {
         return false;
     }
 
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_FIRST_USER + Alarm.ERROR_NO_REPEAT_DAYS) {
+            int alarmId = requestCode;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+    }
+
     private void showAboutThisAppDialog() {
         WebView helpWebView = new WebView(this);
         helpWebView.loadUrl("file:///android_asset/" +
@@ -407,6 +435,6 @@ public class OpenAlarm extends ListActivity {
     private void editAlarm(int alarmId) {
         Intent intent = new Intent(this, AlarmSettings.class);
         intent.putExtra(AlarmColumns._ID, alarmId);
-        startActivity(intent);
+        startActivityForResult(intent, alarmId);
     }
 }
