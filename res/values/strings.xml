@@ -49,8 +49,8 @@
 
   <!-- Alarm notifications -->
   <string name="alarm_set_toast_text">Alarm %s will action at %s</string>
-  <string name="alarm_handler_unset_message">What should I do? Please specify action for me</string>
-  <string name="alarm_repeat_days_unset_message">When should I action? Please specify repeat days for me</string>
+  <string name="alarm_handler_unset_message">What do you want me to do? Please specify action!</string>
+  <string name="alarm_repeat_days_unset_message">When should I action? Please specify repeat days!</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">Alarm</string>
