@@ -65,4 +65,5 @@
   <!-- MediaPlayer -->
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
+
 </resources>

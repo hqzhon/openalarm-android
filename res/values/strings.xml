@@ -70,4 +70,29 @@
   <!-- MediaPlayer -->
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
+
+  <!-- Handler -->
+  <!-- WiFi -->
+  <string name="wifi_toggle_title">Toggle</string>
+  <string name="wifi_toggle_summary">On</string>
+  <string name="wifi_key">wifi_state</string>
+  <string name="wifi_toggle_dialog_title">Toggle Wi-Fi</string>
+
+  <!-- Airplane mode -->
+  <string name="airplanemode_title">Toggle</string>
+  <string name="airplanemode_summary">On</string>
+  <string name="airplanemode_key">airplanemode_state</string>
+  <string name="airplanemode_dialog_title">Toggle airplane mode</string>
+
+  <string name="airplanemode_notification_ticker">Airplane Mode %s</string>
+  <string name="airplanemode_notification_content">%s turned %s airplane mode</string>
+
+  <!-- APN -->
+  <string name="apn_toggle_title">Toggle</string>
+  <string name="apn_toggle_key">apn_state</string>
+  <string name="apn_toggle_dialog_title">Toggle mobile network</string>
+
+  <string name="apn_notification_ticker">Mobile Network %s</string>
+  <string name="apn_notification_content">%s turned %s mobile network</string>
+
 </resources>

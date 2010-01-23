@@ -326,7 +326,7 @@ public class Alarms {
     }
 
     /**
-     * Put an notification on the status bar or remove it from
+     * Put an notification icon on the status bar or remove it from
      * status bar if no enabled alarms.
      *
      */
