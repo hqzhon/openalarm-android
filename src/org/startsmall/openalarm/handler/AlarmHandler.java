@@ -1,12 +1,3 @@
-/**
- * @file   AlarmHandler.java
- * @author josh <yenliangl at gmail dot com>
- * @date   Tue Nov  3 20:33:08 2009
- *
- * @brief An activity that is launched when an alarm goes off.
- *
- *
- */
 package org.startsmall.openalarm;
 
 import android.app.Activity;
@@ -43,7 +34,7 @@ import java.io.IOException;
 import java.io.FileDescriptor;
 import java.util.Calendar;
 
-public class AlarmHandler extends AbsAlarmHandler {
+public class AlarmHandler extends AbsHandler {
     interface IRingtoneChangedListener {
         public void onRingtoneChanged(Uri uri);
     }
@@ -181,7 +172,8 @@ public class AlarmHandler extends AbsAlarmHandler {
         }
     }
 
-    private void putBundleIntoIntent(Intent intent, Bundle bundle) {
+    @Override
+    protected void putBundleIntoIntent(Intent intent, Bundle bundle) {
         final Boolean vibrate = bundle.getBoolean(EXTRA_KEY_VIBRATE, false);
         intent.putExtra(EXTRA_KEY_VIBRATE, vibrate);
 
@@ -194,10 +186,11 @@ public class AlarmHandler extends AbsAlarmHandler {
         intent.putExtra(EXTRA_KEY_SNOOZE_DURATION, ringtoneDuration);
     }
 
-    private Bundle getBundleFromExtra(String extra) {
+    @Override
+    protected Bundle getBundleFromExtra(String extra) {
         Bundle result = new Bundle();
         if (!TextUtils.isEmpty(extra)) {
-            String[] values = TextUtils.split(extra, ";");
+            String[] values = TextUtils.split(extra, SEPARATOR);
             for (String value : values) {
                 if (TextUtils.isEmpty(value) ||
                     !value.matches("(\\w+)=.*")) {

@@ -1,6 +1,5 @@
 package org.startsmall.openalarm;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.Preference;
@@ -13,7 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import java.util.Calendar;
 
-public class AirplaneModeHandler extends BroadcastReceiver {
+public class AirplaneModeHandler extends AbsHandler {
     private static final String TAG = "AirplaneModeHandler";
     private static final String KEY_TOGGLE = "airplanemode_state";
 
@@ -33,7 +32,7 @@ public class AirplaneModeHandler extends BroadcastReceiver {
 
         // Reshedule this alarm.
         Intent scheduleIntent = new Intent(intent);
-        scheduleIntent.setAction("org.startsmall.openalarm.action.SCHEDULE_ALARM");
+        scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
         // Clear previously defined component name so that this
         // BroadcastReceiver isn't called recursively.
         scheduleIntent.setComponent(null);
@@ -42,6 +41,7 @@ public class AirplaneModeHandler extends BroadcastReceiver {
         Log.v(TAG, "===> AirplaneModeHandler.onReceive() start:" + Calendar.getInstance());
     }
 
+    @Override
     public void addMyPreferences(final Context context,
                                  final PreferenceCategory category,
                                  final String defaultValue) {
@@ -120,15 +120,17 @@ public class AirplaneModeHandler extends BroadcastReceiver {
         return false;
     }
 
-    private void putBundleIntoIntent(Intent intent, Bundle bundle) {
+    @Override
+    protected void putBundleIntoIntent(Intent intent, Bundle bundle) {
         final Boolean toggle = bundle.getBoolean(KEY_TOGGLE, false);
         intent.putExtra(KEY_TOGGLE, toggle);
     }
 
-    private Bundle getBundleFromExtra(String extra) {
+    @Override
+    protected Bundle getBundleFromExtra(String extra) {
         Bundle result = new Bundle();
         if (!TextUtils.isEmpty(extra)) {
-            String[] values = TextUtils.split(extra, ";");
+            String[] values = TextUtils.split(extra, SEPARATOR);
             for (String value : values) {
                 if (TextUtils.isEmpty(value) ||
                     !value.matches("(\\w+)=.*")) {

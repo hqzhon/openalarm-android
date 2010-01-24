@@ -249,35 +249,35 @@ public class AlarmSettings extends PreferenceActivity {
 
                 try {
                     String value = sharedPreferences.getString(key, null);
-                    sb.append(key + "=" + value + ';');
+                    sb.append(key + "=" + value + AbsHandler.SEPARATOR);
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     boolean value = sharedPreferences.getBoolean(key, false);
-                    sb.append(key + "=" + value + ';');
+                    sb.append(key + "=" + value + AbsHandler.SEPARATOR);
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     float value = sharedPreferences.getFloat(key, -1.0f);
-                    sb.append(key + "=" + value + ';');
+                    sb.append(key + "=" + value + AbsHandler.SEPARATOR);
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     int value = sharedPreferences.getInt(key, -1);
-                    sb.append(key + "=" + value + ';');
+                    sb.append(key + "=" + value + AbsHandler.SEPARATOR);
                     continue;
                 } catch (ClassCastException e) {
                 }
 
                 try {
                     long value = sharedPreferences.getLong(key, -1);
-                    sb.append(key + "=" + value + ';');
+                    sb.append(key + "=" + value + AbsHandler.SEPARATOR);
                     continue;
                 } catch (ClassCastException e) {
                 }

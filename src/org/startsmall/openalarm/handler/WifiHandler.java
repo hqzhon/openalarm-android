@@ -1,6 +1,5 @@
 package org.startsmall.openalarm;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.Preference;
@@ -16,13 +15,12 @@ import android.widget.Toast;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class WifiHandler extends BroadcastReceiver {
+public class WifiHandler extends AbsHandler {
     private static final String TAG = "WifiHandler";
     private static final String KEY_TOGGLE = "wifi_state";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // Parse extra data in the Intent and create   from Intent extra
         final String extra = intent.getStringExtra("extra");
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
 
@@ -32,7 +30,7 @@ public class WifiHandler extends BroadcastReceiver {
         }
 
         Intent scheduleIntent = new Intent(intent);
-        scheduleIntent.setAction("org.startsmall.openalarm.action.SCHEDULE_ALARM");
+        scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
         // Clear explicitly defined component from this Intent to
         // prevent this receiver to be called recursively.
         scheduleIntent.setComponent(null);
@@ -93,15 +91,15 @@ public class WifiHandler extends BroadcastReceiver {
         }
     }
 
-    private void putBundleIntoIntent(Intent intent, Bundle bundle) {
+    protected void putBundleIntoIntent(Intent intent, Bundle bundle) {
         final Boolean toggle = bundle.getBoolean(KEY_TOGGLE, false);
         intent.putExtra(KEY_TOGGLE, toggle);
     }
 
-    private Bundle getBundleFromExtra(String extra) {
+    protected Bundle getBundleFromExtra(String extra) {
         Bundle result = new Bundle();
         if (!TextUtils.isEmpty(extra)) {
-            String[] values = TextUtils.split(extra, ";");
+            String[] values = TextUtils.split(extra, SEPARATOR);
             for (String value : values) {
                 if (TextUtils.isEmpty(value) ||
                     !value.matches("(\\w+)=.*")) {
