@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 
 class Alarm {
     /**
@@ -116,6 +117,17 @@ class Alarm {
             "Alarm ID must be greater than zero");
     }
 
+    public static void foreach(final Context context,
+                               final Alarms.OnVisitListener listener) {
+        Iterator<Alarm> alarms = sMap.values().iterator();
+        while (alarms.hasNext()) {
+            Alarm alarm = alarms.next();
+            if (listener != null) {
+                listener.onVisit(context, alarm);
+            }
+        }
+    }
+
     /**
      * Get an alarm instance from cursor.
      *
@@ -134,6 +146,10 @@ class Alarm {
         Alarm alarm;
         if (sMap.containsKey(id)) {
             alarm = sMap.get(id);
+
+            // @todo We can save more memory here.
+
+
         } else {
             alarm = new Alarm(id, label, hourOfDay, minutes, repeatDays, timeInMillis, enabled, handler, extra);
             sMap.put(id, alarm);

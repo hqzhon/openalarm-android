@@ -21,7 +21,8 @@ public class BootReceiver extends BroadcastReceiver {
 
         // Redirect time-consuming alarm scheduling to BootService.
         intent.setAction(null);
-        intent.setClassName("org.startsmall.openalarm", "org.startsmall.openalarm.BootService");
+        // intent.setClassName("org.startsmall.openalarm", "org.startsmall.openalarm.BootService");
+        intent.setClass(context, BootService.class);
         context.startService(intent);
 
         calendar = Calendar.getInstance();

@@ -66,20 +66,16 @@ public class BootService extends Service {
         // be put on the status bar and update system settings by
         // nearest alarm.
         if (scheduleAlarm.numberOfEnabledAlarms > 0) {
-            Alarms.setNotification(this, true);
-
             // Put the nearest alarm in the system settings.
             if (scheduleAlarm.nearestAlarmTime != Long.MAX_VALUE) {
                 calendar.setTimeInMillis(scheduleAlarm.nearestAlarmTime);
                 Alarms.postNextAlarmFormattedSetting(this, calendar);
             }
         } else {
-            Alarms.setNotification(this, false);
             Alarms.postNextAlarmFormattedSetting(this, null);
         }
 
-        calendar = Calendar.getInstance();
-        // Log.d(TAG, "onReceive() END " + calendar);
+        Notification.getInstance().set(this);
 
         // Stop this service.
         stopSelf();

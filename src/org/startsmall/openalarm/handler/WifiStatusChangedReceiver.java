@@ -30,13 +30,13 @@ public class WifiStatusChangedReceiver extends BroadcastReceiver {
             return;
         }
 
-        Notificator notificator = new Notificator(context);
-        notificator.set(0,
-                        R.drawable.ic_toggle_apn,
-                        context.getString(R.string.apn_notification_ticker,
-                                          stateString),
-                        context.getString(R.string.apn_notification_content,
-                                          label, stateString.toLowerCase()));
+        // Notificator notificator = new Notificator(context);
+        // notificator.set(0,
+        //                 R.drawable.ic_toggle_apn,
+        //                 context.getString(R.string.apn_notification_ticker,
+        //                                   stateString),
+        //                 context.getString(R.string.apn_notification_content,
+        //                                   label, stateString.toLowerCase()));
     }
 }
 

@@ -29,7 +29,5 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
             alarm.set(context);
             Log.i(TAG, "===> scheduled alarm: " + Alarms.formatDateTime(context, alarm));
         }
-
-        Log.d(TAG, "===> onReceive(" + intent.getAction() + ") end: " + Calendar.getInstance());
     }
 }

@@ -142,8 +142,6 @@ public class OpenAlarm extends ListActivity {
                                 buttonView.setChecked(false);
                             }
                         }
-
-                        Alarms.setNotification(context, isChecked);
                     }
                 };
         }
@@ -224,13 +222,7 @@ public class OpenAlarm extends ListActivity {
                 }
             }
 
-            // Log.d(TAG, "===> Bind these alarm settigs to view: id=" + id
-            //       + ", label=" + label
-            //       + ", time=" + hourOfDay + ":" + minutes
-            //       + ", enabled=" + enabledCheckBox.isChecked()
-            //       + ", repeat on='" + Alarms.RepeatWeekdays.toString(daysCode, getString(R.string.repeat_on_everyday), getString(R.string.no_repeat_days)) + "'"
-            //       + ", handler=" + handler
-            //       + ", extra=" + extra);
+            Notification.getInstance().set(context);
         }
 
         @Override
@@ -289,7 +281,6 @@ public class OpenAlarm extends ListActivity {
                     v.startAnimation(scale);
                 }
             });
-
     }
 
     @Override

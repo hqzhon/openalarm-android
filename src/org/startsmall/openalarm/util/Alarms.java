@@ -97,8 +97,6 @@ public class Alarms {
 
     private static final String USER_APK_DIR = "/data/app";
 
-    private static Alarm sSnoozedAlarm;
-
     /**
      * Constants used in content provider and SQLiteDatabase
      *
@@ -248,6 +246,21 @@ public class Alarms {
         cursor.close();
     }
 
+    public static class GetNextAlarm implements Alarms.OnVisitListener {
+        public Alarm alarm;
+
+        private long mWhen = Long.MAX_VALUE;
+
+        public void onVisit(final Context context, Alarm alarm) {
+            boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
+            long timeInMillis = alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
+            if (enabled && timeInMillis < mWhen) {
+                mWhen = timeInMillis;
+                this.alarm = alarm;
+            }
+        }
+    }
+
     /**
      * Update alarm's settings in content database
      *
@@ -330,19 +343,19 @@ public class Alarms {
      * status bar if no enabled alarms.
      *
      */
-    public static void setNotification(final Context context,
-                                       final boolean enabled) {
-        if (enabled) {
-            broadcastAlarmChanged(context, true);
-        } else {
-            // If there are more than 2 alarms are still enabled,
-            // we shouldn't remove notification from status bar.
-            final int numberOfEnabledAlarms = getNumberOfEnabledAlarms(context);
-            if (numberOfEnabledAlarms == 0) {
-                broadcastAlarmChanged(context, false);
-            }
-        }
-    }
+    // public static void setNotification(final Context context,
+    //                                    final boolean enabled) {
+    //     if (enabled) {
+    //         broadcastAlarmChanged(context, true);
+    //     } else {
+    //         // If there are more than 2 alarms are still enabled,
+    //         // we shouldn't remove notification from status bar.
+    //         final int numberOfEnabledAlarms = getNumberOfEnabledAlarms(context);
+    //         if (numberOfEnabledAlarms == 0) {
+    //             broadcastAlarmChanged(context, false);
+    //         }
+    //     }
+    // }
 
     /**
      * Return the class object of an alarm handler.
@@ -393,56 +406,25 @@ public class Alarms {
         return pm.queryBroadcastReceivers(i, 0);
     }
 
-    private synchronized static int getNumberOfEnabledAlarms(Context context) {
+    // private synchronized static int getNumberOfEnabledAlarms(Context context) {
+    //     Cursor c =
+    //         context.getContentResolver().query(
+    //             getAlarmUri(-1),
+    //             new String[]{AlarmColumns._ID, AlarmColumns.ENABLED},
+    //             AlarmColumns.ENABLED + "=1",
+    //             null,
+    //             AlarmColumns.DEFAULT_SORT_ORDER);
+    //     final int count = c.getCount();
+    //     c.close();
+    //     return count;
+    // }
 
-
-
-
-        Cursor c =
-            context.getContentResolver().query(
-                getAlarmUri(-1),
-                new String[]{AlarmColumns._ID, AlarmColumns.ENABLED},
-                AlarmColumns.ENABLED + "=1",
-                null,
-                AlarmColumns.DEFAULT_SORT_ORDER);
-        final int count = c.getCount();
-        c.close();
-        return count;
-    }
-
-    private static void broadcastAlarmChanged(Context context,
-                                              boolean enabled) {
-        final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
-        Intent i = new Intent(ACTION_ALARM_CHANGED);
-        i.putExtra("alarmSet", enabled);
-        context.sendBroadcast(i);
-    }
-
-    // Iterate all alarms and find out the nearest alarm.
-    // private static void updateSystemSetting(final Context context) {
-    //     class GetNearestAlarmTime implements OnVisitListener {
-    //         public long timeInMillis = Long.MAX_VALUE;
-
-    //         @Override
-    //         public void onVisit(final Context context, Alarm alarm) {
-    //             long temp = alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
-    //             boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
-    //             if (enabled && temp < timeInMillis) {
-    //                 timeInMillis = temp;
-    //             }
-    //         }
-    //     }
-
-    //     GetNearestAlarmTime getNearestAlarm = new GetNearestAlarmTime();
-    //     forEachAlarm(context, getAlarmUri(-1), getNearestAlarm);
-
-    //     if (getNearestAlarm.timeInMillis != Long.MAX_VALUE) {
-    //         Calendar calendar = getCalendarInstance();
-    //         calendar.setTimeInMillis(getNearestAlarm.timeInMillis);
-    //         postNextAlarmFormattedSetting(context, calendar);
-    //     } else {
-    //         postNextAlarmFormattedSetting(context, null);
-    //     }
+    // private static void broadcastAlarmChanged(Context context,
+    //                                           boolean enabled) {
+    //     final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
+    //     Intent i = new Intent(ACTION_ALARM_CHANGED);
+    //     i.putExtra("alarmSet", enabled);
+    //     context.sendBroadcast(i);
     // }
 
     /**

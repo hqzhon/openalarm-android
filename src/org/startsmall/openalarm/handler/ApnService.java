@@ -50,16 +50,16 @@ public class ApnService extends Service {
 
         if ((toggle != networkInfo.isConnectedOrConnecting()) &&
             toggleAllApns(toggle)) {
-            final String statusString = toggle ? "On" : "Off";
-            final String label = intent.getStringExtra("label");
+            // final String statusString = toggle ? "On" : "Off";
+            // final String label = intent.getStringExtra("label");
 
-            Notificator notificator = new Notificator(this);
-            notificator.set(0,
-                            R.drawable.stat_toggle_apn,
-                            getString(R.string.apn_notification_ticker,
-                                      statusString),
-                            getString(R.string.apn_notification_content,
-                                      label, statusString.toLowerCase()));
+            // Notificator notificator = new Notificator(this);
+            // notificator.set(0,
+            //                 R.drawable.stat_toggle_apn,
+            //                 getString(R.string.apn_notification_ticker,
+            //                           statusString),
+            //                 getString(R.string.apn_notification_content,
+            //                           label, statusString.toLowerCase()));
         }
 
         stopSelf();
