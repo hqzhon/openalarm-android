@@ -65,7 +65,7 @@ public class OpenAlarm extends ListActivity {
     // private static final int DIALOG_ID_CONFIRM_DELETION = 1;
 
     private class AlarmAdapter extends CursorAdapter {
-        // private Context mContext;
+        private Context mContext;
         private LayoutInflater mInflater;
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
@@ -76,7 +76,7 @@ public class OpenAlarm extends ListActivity {
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
 
-            // mContext = context;
+            mContext = context;
             mInflater = (LayoutInflater)context.getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
             mOnClickListener =
@@ -265,11 +265,13 @@ public class OpenAlarm extends ListActivity {
         }
 
         // Notify user only when an alarm is changed only in the
-        // case that cursor is not deactivated and invalidated.
-        // @Override
-        // public void onContentChanged() {
-        //     Notification.getInstance().set(mContext);
-        // }
+        // case that cursor is not deactivated and
+        // invalidated. In this case, only check/uncheck of
+        // CheckBox will ttrigger this method.
+        @Override
+        public void onContentChanged() {
+            Notification.getInstance().set(mContext);
+        }
     }
 
     @Override
