@@ -65,6 +65,7 @@ public class OpenAlarm extends ListActivity {
     // private static final int DIALOG_ID_CONFIRM_DELETION = 1;
 
     private class AlarmAdapter extends CursorAdapter {
+        // private Context mContext;
         private LayoutInflater mInflater;
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
@@ -75,6 +76,7 @@ public class OpenAlarm extends ListActivity {
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
 
+            // mContext = context;
             mInflater = (LayoutInflater)context.getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
             mOnClickListener =
@@ -226,7 +228,7 @@ public class OpenAlarm extends ListActivity {
                     Log.d(TAG, e.getMessage());
                 }
             }
-        }
+       }
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
@@ -259,24 +261,15 @@ public class OpenAlarm extends ListActivity {
 
             return view;
 
-            // TODO: Cache all child views in the @p view.
-        }
-    }
-
-    private static class AlarmChangedObserver extends DataSetObserver {
-        private Context mContext;
-
-        public AlarmChangedObserver(Context c) {
-            mContext = c;
+            // @todo: Cache all child views.
         }
 
-        public void onChanged() {
-            Notification.getInstance().set(mContext);
-        }
-
-        public void onInvalidated() {
-            Notification.getInstance().set(mContext);
-        }
+        // Notify user only when an alarm is changed only in the
+        // case that cursor is not deactivated and invalidated.
+        // @Override
+        // public void onContentChanged() {
+        //     Notification.getInstance().set(mContext);
+        // }
     }
 
     @Override
@@ -290,9 +283,25 @@ public class OpenAlarm extends ListActivity {
         startManagingCursor(c);
 
         AlarmAdapter adapter = new AlarmAdapter(this, c);
-        adapter.registerDataSetObserver(new AlarmChangedObserver(this));
+        // adapter.registerDataSetObserver(
+        //     new DataSetObserver() {
+        //         // For cursor is required (When OpenAlarm is
+        //         // restarted), for instance, the user exits
+        //         // AlarmSettings and goes back to OpenAlarm.
+        //         public void onChanged() {
+        //             Log.d(TAG, "===> onChanged()");
+        //             Notification.getInstance().set(OpenAlarm.this);
+        //         }
+
+        //         // For managed cursor is stopped (when OpenAlarm
+        //         // is stopped), for instance, AlarmSetting is
+        //         // talking to the user.
+        //         @Override
+        //         public void onInvalidated() {}
+        //     });
         setListAdapter(adapter);
 
+        // Do an bumping animation on item selected.
         getListView().setOnItemSelectedListener(
             new AdapterView.OnItemSelectedListener() {
                 public void onNothingSelected(AdapterView<?> parent) {}
@@ -312,12 +321,31 @@ public class OpenAlarm extends ListActivity {
         return true;
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onResume() {
+        super.onResume();
 
-        Log.d(TAG, "=======> onDestroy()");
+        // If there are still no alarms in the cache, try to
+        // bring them from content database. In fact, it is used
+        // here only for notification.
+        if (!Alarm.hasAlarms()) {
+            // Iterate alarm content with does-nothing visitor is
+            // enough. It is not required to re-schedule them
+            // because they should have been scheduled by
+            // ScheduleAlarmReceiver or if OpenAlarm was killed
+            // and the relaunched, scheduled alarms are still
+            // left in AlarmManagerService cache.
+            Alarm.foreach(this, Alarms.getAlarmUri(-1), new Alarm.AbsVisitor());
+        }
+
+        Notification.getInstance().set(this);
     }
+
+    // @Override
+    // public void onDestroy() {
+    //     super.onDestroy();
+
+    //     Log.d(TAG, "=======> onDestroy()");
+    // }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

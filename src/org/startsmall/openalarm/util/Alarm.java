@@ -138,6 +138,10 @@ class Alarm {
         return alarm;
     }
 
+    public static boolean hasAlarms() {
+        return !sMap.isEmpty();
+    }
+
     /**
      * Alarm visitor interface and default visitor which does nothing.
      *
@@ -308,7 +312,7 @@ class Alarm {
                          PendingIntent.getBroadcast(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
-        Log.i(TAG, "===> Alarm " + mId + " is set with " + i);
+        Log.i(TAG, "===> alarm " + mId + " set: " + i);
     }
 
     /**
@@ -330,7 +334,7 @@ class Alarm {
         alarmManager.cancel(PendingIntent.getBroadcast(
                                 context, 0, i,
                                 PendingIntent.FLAG_CANCEL_CURRENT));
-        Log.i(TAG, "===> Alarm " + mId + " is cancelled with " + i);
+        Log.i(TAG, "===> alarm " + mId + " cancelled: " + i);
     }
 
     /**
@@ -440,7 +444,7 @@ class Alarm {
             synchronized (cr) {
                 cr.update(getUri(), values, null, null);
             }
-            Log.i(TAG, "===> Alarm " + mId + " is updated in DB");
+            Log.i(TAG, "===> alarm " + mId + " is updated");
         }
     }
 
