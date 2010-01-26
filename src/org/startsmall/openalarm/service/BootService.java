@@ -8,9 +8,9 @@ import android.os.IBinder;
 // import java.util.Calendar;
 
 public class BootService extends Service {
-    private static class ScheduleEnabledAlarm implements Alarms.OnVisitListener {
+    private static class ScheduleEnabledAlarm extends Alarm.AbsVisitor {
         @Override
-        public void onVisit(final Context context, Alarm alarm) {
+        public void onVisit(final Context context, final Alarm alarm) {
             boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
 
             // If @p alarm was snoozed, unsnoozed it and disable its
@@ -48,7 +48,7 @@ public class BootService extends Service {
     public void onStart(Intent intent, int startId) {
         // Iterate all alarms in content DB and bring them into alive.
         ScheduleEnabledAlarm scheduleAlarm = new ScheduleEnabledAlarm();
-        Alarms.foreach(this, Alarms.getAlarmUri(-1), scheduleAlarm);
+        Alarm.foreach(this, Alarms.getAlarmUri(-1), scheduleAlarm);
 
         Notification.getInstance().set(this);
 

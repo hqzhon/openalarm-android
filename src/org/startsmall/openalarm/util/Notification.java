@@ -2,15 +2,9 @@ package org.startsmall.openalarm;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ActivityInfo;
-import android.os.Bundle;
 import android.provider.Settings;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.util.Log;
 
 class Notification {
@@ -25,18 +19,22 @@ class Notification {
         return sInstance;
     }
 
-    private Notification() {}
-
+    /**
+     * Notify user the next scheduled alarm on the status bar
+     *
+     */
     public void set(Context context) {
         if (sNotificationManager == null) {
             sNotificationManager =
                 (NotificationManager)context.getSystemService(
                     Context.NOTIFICATION_SERVICE);
         }
-        sNotificationManager.cancelAll();
+        sNotificationManager.cancel(0);
 
-        Alarms.GetNextAlarm getNextAlarm = new Alarms.GetNextAlarm();
-        Alarm.foreach(context, getNextAlarm);
+        // Iterate all enabled alarms and find out which one is
+        // the next.
+        GetNextAlarm getNextAlarm = new GetNextAlarm();
+        Alarm.foreach(getNextAlarm);
 
         if (getNextAlarm.alarm != null) {
             Alarm alarm = getNextAlarm.alarm;
@@ -65,16 +63,36 @@ class Notification {
                                             intentSender);
             sNotificationManager.notify(0, notification);
 
-
-            // Put next alarm in system settings,
-            String timeString =
-                DateUtils.formatDateTime(
-                    context,
-                    alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS),
-                    DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
+            // Put schedule of next alarm in system settings,
             Settings.System.putString(context.getContentResolver(),
                                       Settings.System.NEXT_ALARM_FORMATTED,
-                                      timeString);
+                                      alarm.formatSchedule(context));
+        }
+
+        // @todo should consider snoozed alarm.
+
+
+    }
+
+    private Notification() {}
+
+    /**
+     * A alarm visitor that finds the next schedule alarm from
+     * internal alarm cache map.
+     *
+     */
+    private static class GetNextAlarm extends Alarm.AbsVisitor {
+        public Alarm alarm;
+
+        private long mWhen = Long.MAX_VALUE;
+
+        public void onVisit(final Alarm alarm) {
+            boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
+            long timeInMillis = alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
+            if (enabled && timeInMillis < mWhen) {
+                mWhen = timeInMillis;
+                this.alarm = alarm;
+            }
         }
     }
 }

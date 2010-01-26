@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -225,8 +226,6 @@ public class OpenAlarm extends ListActivity {
                     Log.d(TAG, e.getMessage());
                 }
             }
-
-            Notification.getInstance().set(context);
         }
 
         @Override
@@ -264,6 +263,22 @@ public class OpenAlarm extends ListActivity {
         }
     }
 
+    private static class AlarmChangedObserver extends DataSetObserver {
+        private Context mContext;
+
+        public AlarmChangedObserver(Context c) {
+            mContext = c;
+        }
+
+        public void onChanged() {
+            Notification.getInstance().set(mContext);
+        }
+
+        public void onInvalidated() {
+            Notification.getInstance().set(mContext);
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -273,7 +288,10 @@ public class OpenAlarm extends ListActivity {
         Cursor c =
             Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
         startManagingCursor(c);
-        setListAdapter(new AlarmAdapter(this, c));
+
+        AlarmAdapter adapter = new AlarmAdapter(this, c);
+        adapter.registerDataSetObserver(new AlarmChangedObserver(this));
+        setListAdapter(adapter);
 
         getListView().setOnItemSelectedListener(
             new AdapterView.OnItemSelectedListener() {
@@ -362,6 +380,7 @@ public class OpenAlarm extends ListActivity {
         return false;
     }
 
+    @Override
     protected Dialog onCreateDialog(int id) {
         Dialog dialog;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

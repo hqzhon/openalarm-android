@@ -194,52 +194,6 @@ public class Alarms {
                 AlarmColumns.DEFAULT_SORT_ORDER);
     }
 
-    /**
-     * Listener interface that is used to report settings for every alarm
-     * existed on the database.
-     *
-     */
-    public static interface OnVisitListener {
-        void onVisit(final Context context, Alarm alarm);
-    }
-
-    /**
-     * A visitor class that calculates the enabled alarm
-     * scheduled next.
-     *
-     */
-    public static class GetNextAlarm implements Alarms.OnVisitListener {
-        public Alarm alarm;
-
-        private long mWhen = Long.MAX_VALUE;
-
-        public void onVisit(final Context context, Alarm alarm) {
-            boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
-            long timeInMillis = alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
-            if (enabled && timeInMillis < mWhen) {
-                mWhen = timeInMillis;
-                this.alarm = alarm;
-            }
-        }
-    }
-
-    /**
-     * Iterate alarms stored in the Uri path.
-     *
-     */
-    public static void foreach(final Context context, final Uri alarmUri, final OnVisitListener listener) {
-        Cursor cursor = getAlarmCursor(context, alarmUri);
-        if(cursor.moveToFirst()) {
-            do {
-                Alarm alarm = Alarm.getInstance(cursor);
-                if(listener != null) {
-                    listener.onVisit(context, alarm);
-                }
-            } while(cursor.moveToNext());
-        }
-        cursor.close();
-    }
-
     public static SharedPreferences getSharedPreferencesOfSnoozedAlarm(Context context) {
         return context.getSharedPreferences(PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
     }

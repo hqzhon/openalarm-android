@@ -57,7 +57,7 @@ class Alarm {
     private String mExtra;
 
     /**
-     * Get an brandnew alarm instance from database.
+     * Create a new alarm in content database and put it into cache.
      *
      */
     public static Alarm getInstance(Context context) {
@@ -71,14 +71,15 @@ class Alarm {
     }
 
     /**
-     * Get an alarm instance with its settings obtained from
-     * database. If no such alarm with id exists in the database,
-     * create a new one. Note that this method should be called
-     * when OpenAlarm isn't existing and of course the static
-     * alarm cache hasn't had any alarm yet. But, if this alarm
-     * id exists in the cache, this should mean someone had
-     * called this method before and brough alarm into memory. We
-     * don't need to fetch it again.
+     * Get an alarm with id from content database and if there is
+     * no such record in database, create a brand new one.
+     *
+     * A typical use of this static method is in
+     * ScheduleAlarmReceiver. When OpenAlarm is not running (may
+     * be killed by Task Manager), an scheduled alarm is
+     * triggered and ScheduleAlarmReceiver is running now. The
+     * alarm cache isn't existed yet, use this static method to
+     * bring alarm with id into alive.
      *
      */
     public static Alarm getInstance(Context context, final int id) {
@@ -86,8 +87,7 @@ class Alarm {
             return getInstance(id);
         }
 
-        Cursor cursor =
-            Alarms.getAlarmCursor(context, Alarms.getAlarmUri(id));
+        Cursor cursor = Alarms.getAlarmCursor(context, Alarms.getAlarmUri(id));
         Alarm alarm;
         if (cursor.moveToFirst()) {
             alarm = getInstance(cursor);
@@ -99,34 +99,16 @@ class Alarm {
     }
 
     /**
-     * Get an alarm instance from internal cache. If no alarm
-     * with such id exists in the cache, create a new one.
+     * Get an alarm instance from alarm cache. If no such alarm
+     * exists in the cache, throw an exception.
      *
      */
     public static Alarm getInstance(final int id) {
-        if (id > -1) {
-            Alarm alarm;
-            if (sMap.containsKey(id)) {
-                alarm = sMap.get(id);
-            } else {
-                alarm = new Alarm(id);
-                sMap.put(id, alarm);
-            }
-            return alarm;
+        if (sMap.containsKey(id)) {
+            return sMap.get(id);
         }
         throw new IllegalArgumentException(
-            "Alarm ID must be greater than zero");
-    }
-
-    public static void foreach(final Context context,
-                               final Alarms.OnVisitListener listener) {
-        Iterator<Alarm> alarms = sMap.values().iterator();
-        while (alarms.hasNext()) {
-            Alarm alarm = alarms.next();
-            if (listener != null) {
-                listener.onVisit(context, alarm);
-            }
-        }
+                    "no such alarm doesn't exist in the cache...");
     }
 
     /**
@@ -135,29 +117,76 @@ class Alarm {
      */
     public static Alarm getInstance(final Cursor cursor) {
         final int id = cursor.getInt(AlarmColumns.PROJECTION_ID_INDEX);
-        final String label = cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
-        final int hourOfDay = cursor.getInt(AlarmColumns.PROJECTION_HOUR_OF_DAY_INDEX);
-        final int minutes = cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
-        final int repeatDays = cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
-        final long timeInMillis = cursor.getLong(AlarmColumns.PROJECTION_TIME_IN_MILLIS_INDEX);
-        final boolean enabled = cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
-        final String handler = cursor.getString(AlarmColumns.PROJECTION_HANDLER_INDEX);
-        final String extra = cursor.getString(AlarmColumns.PROJECTION_EXTRA_INDEX);
 
         Alarm alarm;
         if (sMap.containsKey(id)) {
+            // Note that the settings in cache and content should have been in sync.
             alarm = sMap.get(id);
-
-            // @todo We can save more memory here.
-
-
         } else {
+            final String label = cursor.getString(AlarmColumns.PROJECTION_LABEL_INDEX);
+            final int hourOfDay = cursor.getInt(AlarmColumns.PROJECTION_HOUR_OF_DAY_INDEX);
+            final int minutes = cursor.getInt(AlarmColumns.PROJECTION_MINUTES_INDEX);
+            final int repeatDays = cursor.getInt(AlarmColumns.PROJECTION_REPEAT_DAYS_INDEX);
+            final long timeInMillis = cursor.getLong(AlarmColumns.PROJECTION_TIME_IN_MILLIS_INDEX);
+            final boolean enabled = cursor.getInt(AlarmColumns.PROJECTION_ENABLED_INDEX) == 1;
+            final String handler = cursor.getString(AlarmColumns.PROJECTION_HANDLER_INDEX);
+            final String extra = cursor.getString(AlarmColumns.PROJECTION_EXTRA_INDEX);
+
             alarm = new Alarm(id, label, hourOfDay, minutes, repeatDays, timeInMillis, enabled, handler, extra);
             sMap.put(id, alarm);
         }
         return alarm;
     }
 
+    /**
+     * Alarm visitor interface and default visitor which does nothing.
+     *
+     */
+    private static interface Visitor {
+        void onVisit(final Context context, Alarm alarm);
+        void onVisit(Alarm alarm);
+    }
+
+    public static class AbsVisitor implements Visitor {
+        public void onVisit(final Context context, Alarm alarm) {}
+        public void onVisit(final Alarm alarm) {}
+    }
+
+    /**
+     * Iterate alarms stored in the content database.
+     *
+     */
+    public static void foreach(final Context context, final Uri alarmUri, final AbsVisitor visitor) {
+        Cursor cursor = Alarms.getAlarmCursor(context, alarmUri);
+        if(cursor.moveToFirst()) {
+            do {
+                Alarm alarm = Alarm.getInstance(cursor);
+                if(visitor != null) {
+                    visitor.onVisit(context, alarm);
+                }
+            } while(cursor.moveToNext());
+        }
+        cursor.close();
+    }
+
+    /**
+     * Iterate alarms in the internal cache.
+     *
+     */
+    public static void foreach(final AbsVisitor visitor) {
+        Iterator<Alarm> alarms = sMap.values().iterator();
+        while (alarms.hasNext()) {
+            Alarm alarm = alarms.next();
+            if (visitor != null) {
+                visitor.onVisit(alarm);
+            }
+        }
+    }
+
+    /**
+     * Get Uri path.
+     *
+     */
     public Uri getUri() {
         return Alarms.getAlarmUri(mId);
     }
@@ -246,15 +275,9 @@ class Alarm {
     public void set(Context context) {
         Intent i = new Intent(ACTION_HANDLE, getUri());
         try {
-            // The context the handler class is in might be
-            // different than the one OpenAlarm is in. For
-            // instance, ApnHandler and AlarmHandler are in two
-            // different context.
-            Class<?> handlerClass = Alarms.getHandlerClass(mHandler);
-            String contextPackageName = handlerClass.getPackage().getName();
-            i.setClassName(contextPackageName, mHandler);
+            setComponent(i);
         } catch (ClassNotFoundException e) {
-            Log.d(TAG, "===> Handler is not set for this alarm");
+            Log.e(TAG, "Unable to find " + mHandler + " for alarm " + mLabel);
             return;
         }
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -295,15 +318,9 @@ class Alarm {
     public void cancel(Context context) {
         Intent i = new Intent(ACTION_HANDLE, getUri());
         try {
-            // The context the handler class is in might be
-            // different than the one OpenAlarm is in. For
-            // instance, ApnHandler and AlarmHandler are in two
-            // different context.
-            Class<?> handlerClass = Alarms.getHandlerClass(mHandler);
-            String contextPackageName = handlerClass.getPackage().getName();
-            i.setClassName(contextPackageName, mHandler);
+            setComponent(i);
         } catch (ClassNotFoundException e) {
-            Log.d(TAG, "===> Handler is not set for this alarm");
+            Log.e(TAG, "Unable to find " + mHandler + " for alarm " + mLabel);
             return;
         }
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -612,5 +629,15 @@ class Alarm {
         }
 
         return calendar.getTimeInMillis();
+    }
+
+    private void setComponent(Intent i) throws ClassNotFoundException {
+        // The context the handler class is in might be
+        // different than the one OpenAlarm is in. For
+        // instance, ApnHandler and AlarmHandler are in two
+        // different context.
+        Class<?> handlerClass = Alarms.getHandlerClass(mHandler);
+        String contextPackageName = handlerClass.getPackage().getName();
+        i.setClassName(contextPackageName, mHandler);
     }
 }
