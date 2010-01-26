@@ -51,6 +51,8 @@
   <string name="alarm_set_toast_text">Alarm %s will action at %s</string>
   <string name="alarm_handler_unset_message">What do you want me to do? Please specify action!</string>
   <string name="alarm_repeat_days_unset_message">When should I action? Please specify repeat days!</string>
+  <string name="alarm_set_notification_ticker">Next Alarm: %s</string>
+  <string name="alarm_set_notification_content">Scheduled at %s</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">Alarm</string>
@@ -84,15 +86,9 @@
   <string name="airplanemode_key">airplanemode_state</string>
   <string name="airplanemode_dialog_title">Toggle airplane mode</string>
 
-  <string name="airplanemode_notification_ticker">Airplane Mode %s</string>
-  <string name="airplanemode_notification_content">%s turned %s airplane mode</string>
-
   <!-- APN -->
   <string name="apn_toggle_title">Toggle</string>
   <string name="apn_toggle_key">apn_state</string>
   <string name="apn_toggle_dialog_title">Toggle mobile network</string>
-
-  <string name="apn_notification_ticker">Mobile Network %s</string>
-  <string name="apn_notification_content">%s turned %s mobile network</string>
 
 </resources>

@@ -45,6 +45,8 @@
   <string name="alarm_set_toast_text">"鬧鈴"%s"會在"%s"動作"</string>
   <string name="alarm_handler_unset_message">"請指定要我要做甚麼"</string>
   <string name="alarm_repeat_days_unset_message">"請指定哪幾天要動作"</string>
+  <string name="alarm_set_notification_ticker">"下個鬧鈴": %s</string>
+  <string name="alarm_set_notification_content">"動作時間在"%s</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">"鬧鈴"</string>

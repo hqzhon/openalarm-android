@@ -17,15 +17,6 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * @file   Alarms.java
- * @author  <yenliangl@gmail.com>
- * @date   Wed Sep 30 16:47:42 2009
- *
- * @brief  Utility class.
- *
- *
- */
 package org.startsmall.openalarm;
 
 import android.content.ContentValues;
@@ -36,7 +27,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
-import android.provider.Settings;
 import android.net.Uri;
 import android.util.Log;
 import android.text.format.DateUtils;
@@ -214,38 +204,10 @@ public class Alarms {
     }
 
     /**
-     * Helper class that stores settings of an alarm in public
-     * feilds for outsider to access.
+     * A visitor class that calculates the enabled alarm
+     * scheduled next.
      *
      */
-    public static class GetAlarm implements OnVisitListener {
-        public Alarm alarm;
-
-        @Override
-        public void onVisit(final Context context, Alarm alarm) {
-            this.alarm = alarm;
-        }
-    }
-
-    /**
-     * Iterate alarms stored in the Uri path.
-     *
-     */
-    public static void forEachAlarm(final Context context,
-                                    final Uri alarmUri,
-                                    final OnVisitListener listener) {
-        Cursor cursor = getAlarmCursor(context, alarmUri);
-        if(cursor.moveToFirst()) {
-            do {
-                Alarm alarm = Alarm.getInstance(cursor);
-                if(listener != null) {
-                    listener.onVisit(context, alarm);
-                }
-            } while(cursor.moveToNext());
-        }
-        cursor.close();
-    }
-
     public static class GetNextAlarm implements Alarms.OnVisitListener {
         public Alarm alarm;
 
@@ -262,19 +224,21 @@ public class Alarms {
     }
 
     /**
-     * Update alarm's settings in content database
+     * Iterate alarms stored in the Uri path.
      *
      */
-    // public synchronized static int updateAlarm(final Context context,
-    //                                            final Uri alarmUri,
-    //                                            final ContentValues newValues) {
-    //     if(newValues == null) {
-    //         return -1;
-    //     }
-
-    //     return context.getContentResolver().update(
-    //         alarmUri, newValues, null, null);
-    // }
+    public static void foreach(final Context context, final Uri alarmUri, final OnVisitListener listener) {
+        Cursor cursor = getAlarmCursor(context, alarmUri);
+        if(cursor.moveToFirst()) {
+            do {
+                Alarm alarm = Alarm.getInstance(cursor);
+                if(listener != null) {
+                    listener.onVisit(context, alarm);
+                }
+            } while(cursor.moveToNext());
+        }
+        cursor.close();
+    }
 
     public static SharedPreferences getSharedPreferencesOfSnoozedAlarm(Context context) {
         return context.getSharedPreferences(PREFERENCE_FILE_FOR_SNOOZED_ALARM, 0);
@@ -313,49 +277,6 @@ public class Alarms {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(pattern);
         return dateFormatter.format(calendar.getTime());
     }
-
-    public static String formatDateTime(Context context, Alarm alarm) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("id=").append(alarm.getIntField(Alarm.FIELD_ID))
-            .append(", enabled=").append(alarm.getBooleanField(Alarm.FIELD_ENABLED))
-            .append(", label=").append(alarm.getStringField(Alarm.FIELD_LABEL))
-            .append(", schedule=").append(
-                DateUtils.formatDateTime(
-                    context,
-                    alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS),
-                    DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
-                    DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR))
-            .append(", handler=").append(alarm.getStringField(Alarm.FIELD_HANDLER))
-            .append(", extra=").append(alarm.getStringField(Alarm.FIELD_EXTRA));
-        return sb.toString();
-    }
-
-    public static String formatSchedule(Context context, Alarm alarm) {
-        return DateUtils.formatDateTime(
-            context,
-            alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS),
-            DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
-            DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
-    }
-
-    /**
-     * Put an notification icon on the status bar or remove it from
-     * status bar if no enabled alarms.
-     *
-     */
-    // public static void setNotification(final Context context,
-    //                                    final boolean enabled) {
-    //     if (enabled) {
-    //         broadcastAlarmChanged(context, true);
-    //     } else {
-    //         // If there are more than 2 alarms are still enabled,
-    //         // we shouldn't remove notification from status bar.
-    //         final int numberOfEnabledAlarms = getNumberOfEnabledAlarms(context);
-    //         if (numberOfEnabledAlarms == 0) {
-    //             broadcastAlarmChanged(context, false);
-    //         }
-    //     }
-    // }
 
     /**
      * Return the class object of an alarm handler.
@@ -400,50 +321,13 @@ public class Alarms {
             "BroadcastReceiver " + handlerClassName + " not found");
     }
 
+    /**
+     * Return list of alarm handlers
+     *
+     */
     public static List<ResolveInfo> queryAlarmHandlers(final PackageManager pm) {
         Intent i = new Intent(Alarm.ACTION_HANDLE);
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
         return pm.queryBroadcastReceivers(i, 0);
-    }
-
-    // private synchronized static int getNumberOfEnabledAlarms(Context context) {
-    //     Cursor c =
-    //         context.getContentResolver().query(
-    //             getAlarmUri(-1),
-    //             new String[]{AlarmColumns._ID, AlarmColumns.ENABLED},
-    //             AlarmColumns.ENABLED + "=1",
-    //             null,
-    //             AlarmColumns.DEFAULT_SORT_ORDER);
-    //     final int count = c.getCount();
-    //     c.close();
-    //     return count;
-    // }
-
-    // private static void broadcastAlarmChanged(Context context,
-    //                                           boolean enabled) {
-    //     final String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
-    //     Intent i = new Intent(ACTION_ALARM_CHANGED);
-    //     i.putExtra("alarmSet", enabled);
-    //     context.sendBroadcast(i);
-    // }
-
-    /**
-     * Post next alarm in system settings provider.
-     *
-     */
-    public static void postNextAlarmFormattedSetting(final Context context,
-                                                     final Calendar calendar) {
-        String timeString = "";
-        if (calendar != null) {
-            timeString =
-                DateUtils.formatDateTime(
-                    context,
-                    calendar.getTimeInMillis(),
-                    DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
-        }
-
-        Settings.System.putString(context.getContentResolver(),
-                                  Settings.System.NEXT_ALARM_FORMATTED,
-                                  timeString);
     }
 }

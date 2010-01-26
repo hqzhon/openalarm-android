@@ -8,15 +8,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Log;
-import java.util.Iterator;
 
 class Notification {
     private static final String TAG = "Notification";
     private static Notification sInstance;
     private NotificationManager sNotificationManager;
-    private PackageManager sPackageManager;
 
     public static Notification getInstance() {
         if (sInstance == null) {
@@ -35,16 +35,10 @@ class Notification {
         }
         sNotificationManager.cancelAll();
 
-        // if (sPackageManager == null) {
-        //     sPackageManager = context.getPackageManager();
-        // }
-
         Alarms.GetNextAlarm getNextAlarm = new Alarms.GetNextAlarm();
         Alarm.foreach(context, getNextAlarm);
 
         if (getNextAlarm.alarm != null) {
-            Log.e(TAG, "===> should show notification");
-
             Alarm alarm = getNextAlarm.alarm;
 
             Intent intent = new Intent();
@@ -54,21 +48,12 @@ class Notification {
                                           intent,
                                           PendingIntent.FLAG_CANCEL_CURRENT);
 
-            // String handler = alarm.getStringField(Alarm.FIELD_HANDLER);
-            // String pkgName = handler.substring(0, handler.lastIndexOf('.'));
-            // ActivityInfo info;
-            // try {
-            //     info =
-            //         sPackageManager.getReceiverInfo(
-            //             new ComponentName(pkgName, handler), 0);
-            // } catch (PackageManager.NameNotFoundException e) {
-            //     Log.e(TAG, "===> unable to get handler's information");
-            //     return;
-            // }
-
-            // String tickerText = "Next alarm " + info.loadLabel(sPackageManager).toString();
-            String tickerText = "Next alarm " + alarm.getStringField(Alarm.FIELD_LABEL);
-            String contentText = "Scheduled at " + Alarms.formatSchedule(context, alarm);
+            String tickerText =
+                context.getString(R.string.alarm_set_notification_ticker,
+                                  alarm.getStringField(Alarm.FIELD_LABEL));
+            String contentText =
+                context.getString(R.string.alarm_set_notification_content,
+                                  alarm.formatSchedule(context));
 
             android.app.Notification notification =
                 new android.app.Notification(R.drawable.stat_notify_alarm,
@@ -79,11 +64,17 @@ class Notification {
                                             contentText,
                                             intentSender);
             sNotificationManager.notify(0, notification);
+
+
+            // Put next alarm in system settings,
+            String timeString =
+                DateUtils.formatDateTime(
+                    context,
+                    alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS),
+                    DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
+            Settings.System.putString(context.getContentResolver(),
+                                      Settings.System.NEXT_ALARM_FORMATTED,
+                                      timeString);
         }
     }
-
-    // public void cancel() {
-    //     mNotificationManager.cancel(alarmId);
-    // }
-
 }

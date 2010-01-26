@@ -19,8 +19,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
-          android:versionName="20100124-first-release"
-          android:versionCode="20100124">
+          android:versionName="20100131-first-release"
+          android:versionCode="20100131">
   <uses-sdk android:minSdkVersion="3"/>
 
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -29,7 +29,6 @@
   <uses-permission android:name="android.permission.WRITE_SETTINGS" />
   <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
-  <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>

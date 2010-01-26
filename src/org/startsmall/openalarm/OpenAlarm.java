@@ -123,7 +123,7 @@ public class OpenAlarm extends ListActivity {
                                 String text =
                                     context.getString(R.string.alarm_set_toast_text,
                                                       alarm.getStringField(Alarm.FIELD_LABEL),
-                                                      Alarms.formatSchedule(context, alarm));
+                                                      alarm.formatSchedule(context));
                                 Toast.makeText(context, text, Toast.LENGTH_LONG).show();
                             }
                         } else {
@@ -295,7 +295,6 @@ public class OpenAlarm extends ListActivity {
         super.onDestroy();
 
         Log.d(TAG, "=======> onDestroy()");
-
     }
 
     @Override

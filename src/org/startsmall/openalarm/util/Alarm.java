@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.text.format.DateUtils;
 import android.text.TextUtils;
 import android.util.Log;
+import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -399,8 +400,7 @@ class Alarm {
         // If alarm needs to be scheduled.
         if (mEnabled && scheduleRequired) {
             if (schedule()) {
-                Log.i(TAG, "===> Alarm scheduled: " +
-                      Alarms.formatDateTime(context, this));
+                Log.i(TAG, "===> scheduled alarm: " + format(context));
 
                 values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
                 set(context);
@@ -531,6 +531,25 @@ class Alarm {
             .append(", handler=").append(mHandler)
             .append(", extra=").append(mExtra);
         return sb.toString();
+    }
+
+    public String format(Context context) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("id=").append(mId)
+            .append(", enabled=").append(mEnabled)
+            .append(", label=").append(mLabel)
+            .append(", when=").append(formatSchedule(context))
+            .append(", handler=").append(mHandler)
+            .append(", extra=").append(mExtra);
+        return sb.toString();
+    }
+
+    public String formatSchedule(Context context) {
+        return DateUtils.formatDateTime(
+            context,
+            mTimeInMillis,
+            DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
+            DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
     }
 
     private Alarm(final int id) {
