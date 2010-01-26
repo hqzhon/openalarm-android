@@ -19,6 +19,7 @@
 
 package org.startsmall.openalarm;
 
+import android.app.Dialog;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
@@ -58,6 +59,9 @@ public class OpenAlarm extends ListActivity {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
+
+    private static final int DIALOG_ID_ABOUT = 0;
+    // private static final int DIALOG_ID_CONFIRM_DELETION = 1;
 
     private class AlarmAdapter extends CursorAdapter {
         private LayoutInflater mInflater;
@@ -309,7 +313,7 @@ public class OpenAlarm extends ListActivity {
             break;
 
         case R.id.menu_item_about:
-            showAboutThisAppDialog();
+            showDialog(DIALOG_ID_ABOUT);
             break;
         }
 
@@ -321,6 +325,9 @@ public class OpenAlarm extends ListActivity {
         final int alarmId = item.getGroupId();
         switch(item.getItemId()) {
         case MENU_ITEM_ID_DELETE:
+            // This dialog is not managed by Activity but I can't
+            // find a way to pass alarmId to the
+            // onCreateDialog().
             new AlertDialog.Builder(this)
                 .setMessage(R.string.delete_alarm_message)
                 .setTitle(R.string.confirm_alarm_deletion_title)
@@ -355,22 +362,31 @@ public class OpenAlarm extends ListActivity {
         return false;
     }
 
-    private void showAboutThisAppDialog() {
-        WebView helpWebView = new WebView(this);
-        helpWebView.loadUrl("file:///android_asset/" +
-                            getString(R.string.about_html));
+    protected Dialog onCreateDialog(int id) {
+        Dialog dialog;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.
-            setTitle(R.string.about_this_application).
-            setPositiveButton(android.R.string.ok,
-                              new DialogInterface.OnClickListener() {
-                                  @Override
-                                  public void onClick(DialogInterface dialog, int which) {
-                                      dialog.dismiss();
-                                  }
-                              }).
-            setView(helpWebView).
-            create().show();
+        switch (id) {
+        case DIALOG_ID_ABOUT:
+            WebView helpWebView = new WebView(this);
+            helpWebView.loadUrl("file:///android_asset/" +
+                                getString(R.string.about_html));
+            dialog = builder.
+                     setTitle(R.string.about_this_application).
+                     setPositiveButton(android.R.string.ok,
+                                       new DialogInterface.OnClickListener() {
+                                           @Override
+                                           public void onClick(DialogInterface dlg, int which) {
+                                               dlg.dismiss();
+                                           }
+                                       }).
+                     setView(helpWebView).
+                     create();
+            break;
+
+        default:
+            throw new IllegalArgumentException("illegal dialog id");
+        }
+        return dialog;
     }
 
     private void sendFeedback() {
