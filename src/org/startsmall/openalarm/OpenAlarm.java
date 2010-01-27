@@ -270,6 +270,7 @@ public class OpenAlarm extends ListActivity {
         // CheckBox will ttrigger this method.
         @Override
         public void onContentChanged() {
+            super.onContentChanged();
             Notification.getInstance().set(mContext);
         }
     }
@@ -326,17 +327,17 @@ public class OpenAlarm extends ListActivity {
     public void onResume() {
         super.onResume();
 
-        // If there are still no alarms in the cache, try to
-        // bring them from content database. In fact, it is used
-        // here only for notification.
+        // If there are no alarms in the cache (first start or
+        // killed), try to bring them from content database. In
+        // fact, it is used here only for notification.
         if (!Alarm.hasAlarms()) {
-            // Iterate alarm content with does-nothing visitor is
-            // enough. It is not required to re-schedule them
-            // because they should have been scheduled by
-            // ScheduleAlarmReceiver or if OpenAlarm was killed
-            // and the relaunched, scheduled alarms are still
-            // left in AlarmManagerService cache.
-            Alarm.foreach(this, Alarms.getAlarmUri(-1), new Alarm.AbsVisitor());
+            Log.i(TAG, "===> No alarms in cache.. read alarms from content database");
+
+            // If OpenAlarm is killed by task manager, all
+            // scheduled alarms are removed. It is now necessary
+            // to re-schedule all enabled alarms.
+            Alarm.foreach(this, Alarms.getAlarmUri(-1),
+                          new BootService.ScheduleEnabledAlarm());
         }
 
         Notification.getInstance().set(this);

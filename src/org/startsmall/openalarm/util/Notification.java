@@ -68,10 +68,6 @@ class Notification {
                                       Settings.System.NEXT_ALARM_FORMATTED,
                                       alarm.formatSchedule(context));
         }
-
-        // @todo should consider snoozed alarm.
-
-
     }
 
     private Notification() {}

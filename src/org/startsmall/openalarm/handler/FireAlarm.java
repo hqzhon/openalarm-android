@@ -35,23 +35,18 @@ public class FireAlarm extends Activity {
     // MediaPlayer enters Prepared state and now a
     // Handler should be setup to stop playback of
     // ringtone after some period of time.
-    private static class StopPlayback implements Handler.Callback {
+    private class StopPlayback implements Handler.Callback {
         @Override
         public boolean handleMessage(Message msg) {
-            FireAlarm app;
-            if (msg.obj instanceof FireAlarm) {
-                app = (FireAlarm)msg.obj;
-            } else {
-                return true;
-            }
-
             switch (msg.what) {
             case MESSAGE_ID_STOP_PLAYBACK:
+
+                Log.d(TAG, "===> handleMessage()");
+
                 // This callback is executed because user doesn't
-                // tell me what to do, i.e., dimiss or snooze. I decide
-                // to snooze it or when the FireAlarm is paused.
-                app.snoozeAlarm();
-                app.finish();
+                // tell me what to do, i.e., dimiss or snooze.
+                FireAlarm.this.autoSnoozeOrDismissAlarm();
+                FireAlarm.this.finish();
                 return true;
             default:
                 break;
@@ -78,26 +73,27 @@ public class FireAlarm extends Activity {
     private static final float IN_CALL_VOLUME = 0.125f;
     private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
 
-    private MediaPlayer mMediaPlayer;
+    private static final int AUTO_SNOOZE_COUNT_MAX = 3;
+    private static int sAutoSnoozeCount = 0;
+
+    private static MediaPlayer sMediaPlayer;
+    private static Handler sHandler;
     private Vibrator mVibrator;
-    private Handler mHandler;
     private PowerManager mPowerManager;
     private TelephonyManager mTelephonyManager;
-    private PowerManager.WakeLock mWakeLock;
     private KeyguardManager mKeyguardManager;
+    private PowerManager.WakeLock mWakeLock;
     private KeyguardManager.KeyguardLock mKeyguardLock;
+    private long[] mVibratePattern;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Log.d(TAG, "===> onCreate()");
-
-        // Wakeup the device and release keylock.
         mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
-        mKeyguardManager = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
         mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        mHandler = new Handler(new StopPlayback());
+        mKeyguardManager = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);;
+        mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
 
         acquireWakeLock();
 
@@ -132,8 +128,16 @@ public class FireAlarm extends Activity {
             });
 
         // Prepare MediaPlayer for playing ringtone.
-        if (prepareMediaPlayer()) {
-            mMediaPlayer.start();
+        boolean ok = prepareMediaPlayer();
+        if (savedInstanceState == null && ok) {
+            if (sHandler == null) {
+                sHandler = new Handler(new StopPlayback());
+            }
+            ok = sHandler.sendEmptyMessageDelayed(MESSAGE_ID_STOP_PLAYBACK, PLAYBACK_TIMEOUT);
+        }
+
+        if (ok) {
+            sMediaPlayer.start();
         }
 
         startVibration();
@@ -143,24 +147,27 @@ public class FireAlarm extends Activity {
     public void onDestroy() {
         super.onDestroy();
 
-        // Log.d(TAG, "===> onDestroy()");
+        releaseWakeLock();
+    }
 
-        if (mHandler != null) {
-            mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, this);
-            mHandler = null;
-        }
-
-        // Stop and release MediaPlayer object.
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-            // Log.d(TAG, "===> MediaPlayer stopped and released");
-        }
+    @Override
+    public void finish() {
+        super.finish();
 
         stopVibration();
 
-        releaseWakeLock();
+        // Stop and release MediaPlayer object.
+        if (sMediaPlayer != null) {
+            sMediaPlayer.stop();
+            sMediaPlayer.release();
+            sMediaPlayer = null;
+        }
+
+        // When this activity is intended to finish, remove all
+        // STOP_PLAYBACK messages from queue.
+        if (sHandler != null) {
+            sHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK);
+        }
     }
 
     // FireAlarm comes to the foreground
@@ -181,8 +188,6 @@ public class FireAlarm extends Activity {
     @Override
     public void onPause() {
         super.onPause();
-
-        // Log.d(TAG, "===> onPause()");
 
         // Returns to keyguarded mode if the phone was in this
         // mode.
@@ -216,7 +221,10 @@ public class FireAlarm extends Activity {
         // The ringtone uri might be different and timeout of
         // playback needs to be recounted.
         if (prepareMediaPlayer()) {
-            mMediaPlayer.start();
+            // A new TIME_OUT message
+            if (sHandler.sendEmptyMessageDelayed(MESSAGE_ID_STOP_PLAYBACK, PLAYBACK_TIMEOUT)) {
+                sMediaPlayer.start();
+            }
         }
 
         startVibration();
@@ -245,17 +253,28 @@ public class FireAlarm extends Activity {
         labelView.setText(label);
     }
 
+    private void autoSnoozeOrDismissAlarm() {
+        // Check to see if we have snoozed too many times!
+        final int alarmId = getIntent().getIntExtra(AlarmColumns._ID, -1);
+        Alarm alarm = Alarm.getInstance(alarmId);
+
+        if (sAutoSnoozeCount > AUTO_SNOOZE_COUNT_MAX) {
+            // have snooze too many times
+            dismissAlarm();
+            sAutoSnoozeCount = 0;
+            return;
+        }
+
+        snoozeAlarm();
+        sAutoSnoozeCount++;
+    }
+
     private void snoozeAlarm() {
         Intent i = getIntent();
         final int alarmId = i.getIntExtra(AlarmColumns._ID, -1);
         final int snoozeDuration = i.getIntExtra(EXTRA_KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
 
-        // It is not impossible that OpenAlarm is killed by task
-        // manager and FireAlam is brought up by an alarm. At
-        // this moment, there is no alarm in the cache map. We
-        // need to load it from DB.
-        Alarm alarm = Alarm.getInstance(this, alarmId);
-
+        Alarm alarm = Alarm.getInstance(alarmId);
         alarm.snooze(this, snoozeDuration);
     }
 
@@ -269,17 +288,15 @@ public class FireAlarm extends Activity {
     private void startVibration() {
         Intent intent = getIntent();
         if (intent.getBooleanExtra("vibrate", false)) {
-            if (mVibrator == null) {
-                mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+            if (mVibratePattern == null) {
+                mVibratePattern = new long[]{500, 500};
             }
-            mVibrator.vibrate(new long[]{500, 500}, 0);
+            mVibrator.vibrate(mVibratePattern, 0);
         }
     }
 
     private void stopVibration() {
-        if (mVibrator != null) {
-            mVibrator.cancel();
-        }
+        mVibrator.cancel();
     }
 
     private void acquireWakeLock() {
@@ -289,7 +306,10 @@ public class FireAlarm extends Activity {
                                           PowerManager.FULL_WAKE_LOCK,
                                           TAG);
         }
-        mWakeLock.acquire();
+
+        if (!mWakeLock.isHeld()) {
+            mWakeLock.acquire();
+        }
     }
 
     private void releaseWakeLock() {
@@ -313,11 +333,14 @@ public class FireAlarm extends Activity {
     }
 
     private boolean prepareMediaPlayer() {
-        if (mMediaPlayer == null) {
-            mMediaPlayer = new MediaPlayer();
+        if (sMediaPlayer == null) {
+            sMediaPlayer = new MediaPlayer();
         } else {
-            mMediaPlayer.stop();
-            mMediaPlayer.reset();
+            // Stop and reset MediaPlayer here is required
+            // because onNewIntent() might override the old
+            // settings. Use new settings for MediaPlayer.
+            sMediaPlayer.stop();
+            sMediaPlayer.reset();
         }
 
         Intent intent = getIntent();
@@ -332,7 +355,7 @@ public class FireAlarm extends Activity {
             try {
                 // Detects if we are in a call when this alarm goes off.
                 if (mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
-                    mMediaPlayer.setDataSource(this, Uri.parse(uriString));
+                    sMediaPlayer.setDataSource(this, Uri.parse(uriString));
                 } else {
                     Log.w(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
 
@@ -340,33 +363,27 @@ public class FireAlarm extends Activity {
                     // and no errors thrown from it.
                     AssetFileDescriptor afd =
                         getResources().openRawResourceFd(R.raw.in_call_ringtone);
-                    mMediaPlayer.setDataSource(afd.getFileDescriptor(),
+                    sMediaPlayer.setDataSource(afd.getFileDescriptor(),
                                                afd.getStartOffset(),
                                                afd.getLength());
                     afd.close();
-                    mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+                    sMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
                 }
             } catch (java.io.IOException e) {
                 return false;
             }
 
-            mMediaPlayer.setLooping(true);
+            sMediaPlayer.setLooping(true);
 
             // Prepare MediaPlayer into Prepared state and
             // MediaPlayer is ready to play.
             try {
-                mMediaPlayer.prepare();
+                sMediaPlayer.prepare();
             } catch (java.io.IOException e) {
                 return false;
             }
 
-            // Setup a one-shot message to stop playing of
-            // ringtone after TIMEOUT minutes. If it is
-            // established successfully, start playing
-            // ringtone and vibrate if necessary.
-            mHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK, this);
-            Message msg = mHandler.obtainMessage(MESSAGE_ID_STOP_PLAYBACK, this);
-            return mHandler.sendMessageDelayed(msg, PLAYBACK_TIMEOUT);
+            return true;
         }
 
         return false;

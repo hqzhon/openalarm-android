@@ -312,7 +312,7 @@ class Alarm {
                          PendingIntent.getBroadcast(
                              context, 0, i,
                              PendingIntent.FLAG_CANCEL_CURRENT));
-        Log.i(TAG, "===> alarm " + mId + " set: " + i);
+        Log.i(TAG, "===> alarm scheduled: " + format(context));
     }
 
     /**
@@ -334,7 +334,7 @@ class Alarm {
         alarmManager.cancel(PendingIntent.getBroadcast(
                                 context, 0, i,
                                 PendingIntent.FLAG_CANCEL_CURRENT));
-        Log.i(TAG, "===> alarm " + mId + " cancelled: " + i);
+        Log.i(TAG, "===> alarm cancelled: " + format(context));
     }
 
     /**
@@ -421,8 +421,6 @@ class Alarm {
         // If alarm needs to be scheduled.
         if (mEnabled && scheduleRequired) {
             if (schedule()) {
-                Log.i(TAG, "===> scheduled alarm: " + format(context));
-
                 values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
                 set(context);
             } else {
@@ -484,6 +482,9 @@ class Alarm {
 
         // Schedule a new time and set alarm in AlarmManager.
         mTimeInMillis = calendar.getTimeInMillis();
+
+        update(context, mTimeInMillis);
+
         set(context);
 
         // Persit alarm id in SharedPreferences.
@@ -491,6 +492,8 @@ class Alarm {
             Alarms.getSharedPreferencesOfSnoozedAlarm(context).edit();
         ed.putInt(AlarmColumns._ID, mId);
         ed.commit();
+
+        Log.d(TAG, "===> snoozed alarm: " + format(context));
     }
 
     /**

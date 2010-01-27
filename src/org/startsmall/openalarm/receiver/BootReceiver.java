@@ -16,16 +16,11 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Calendar calendar = Calendar.getInstance();
-        Log.i(TAG, "===> onReceive(" + intent.getAction() + ")" + " start: " + calendar);
+        Log.i(TAG, "===> onReceive(" + intent.getAction() + ")");
 
         // Redirect time-consuming alarm scheduling to BootService.
         intent.setAction(null);
-        // intent.setClassName("org.startsmall.openalarm", "org.startsmall.openalarm.BootService");
         intent.setClass(context, BootService.class);
         context.startService(intent);
-
-        calendar = Calendar.getInstance();
-        Log.i(TAG, "===> onReceive(" + intent.getAction() + ") end: " + calendar);
     }
 }

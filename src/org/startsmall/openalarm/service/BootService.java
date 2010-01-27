@@ -8,7 +8,7 @@ import android.os.IBinder;
 // import java.util.Calendar;
 
 public class BootService extends Service {
-    private static class ScheduleEnabledAlarm extends Alarm.AbsVisitor {
+    static class ScheduleEnabledAlarm extends Alarm.AbsVisitor {
         @Override
         public void onVisit(final Context context, final Alarm alarm) {
             boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
