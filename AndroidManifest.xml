@@ -19,8 +19,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
-          android:versionName="20100131-first-release"
-          android:versionCode="20100131">
+          android:versionName="20100127-beta"
+          android:versionCode="20100127">
   <uses-sdk android:minSdkVersion="3"/>
 
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
