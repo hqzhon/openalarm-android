@@ -39,8 +39,6 @@ public class AlarmSettings extends PreferenceActivity {
         Intent i = getIntent();
         mAlarmId = i.getIntExtra(AlarmColumns._ID, -1);
 
-        // Log.d(TAG, "===> AlarmSettings.onCreate(" + bundle + ")");
-
         addPreferencesFromResource(R.xml.alarm_settings);
 
         PreferenceManager preferenceManager = getPreferenceManager();
@@ -168,13 +166,6 @@ public class AlarmSettings extends PreferenceActivity {
                      enabled,
                      newLabel, newHourOfDay, newMinutes, newRepeatDays, newHandler, newExtra);
     }
-
-    // @Override
-    // public void finish() {
-    //     Alarm alarm = Alarm.getInstance(mAlarmId);
-    //     setResult(RESULT_FIRST_USER + alarm.getErrorCode());
-    //     super.finish();
-    // }
 
     /**
      * Resume this activity and populate alarm settings from
