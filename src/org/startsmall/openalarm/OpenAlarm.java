@@ -21,15 +21,17 @@ package org.startsmall.openalarm;
 
 import android.app.Dialog;
 import android.app.AlertDialog;
-import android.app.ListActivity;
+import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.animation.Animation;
@@ -51,229 +53,18 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
 import java.util.*;
 
-public class OpenAlarm extends ListActivity {
+public class OpenAlarm extends ExpandableListActivity {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
 
     private static final int DIALOG_ID_ABOUT = 0;
-    // private static final int DIALOG_ID_CONFIRM_DELETION = 1;
-
-    private class AlarmAdapter extends CursorAdapter {
-        private Context mContext;
-        private LayoutInflater mInflater;
-        private View.OnClickListener mOnClickListener;
-        private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
-        private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
-
-        private Animation mScale;
-
-        public AlarmAdapter(Context context, Cursor c) {
-            super(context, c);
-
-            mContext = context;
-            mInflater = (LayoutInflater)context.getSystemService(
-                Context.LAYOUT_INFLATER_SERVICE);
-            mOnClickListener =
-                new View.OnClickListener() {
-                    // @Override
-                    public void onClick(View view) {
-                        Bundle attachment = (Bundle)view.getTag();
-
-                        int alarmId = attachment.getInt(AlarmColumns._ID);
-                        editAlarm(alarmId);
-                    }
-                };
-            mOnCreateContextMenuListener =
-                new View.OnCreateContextMenuListener() {
-                    public void onCreateContextMenu(ContextMenu menu,
-                                                    View view,
-                                                    ContextMenu.ContextMenuInfo menuInfo) {
-                        Bundle attachment = (Bundle)view.getTag();
-
-                        int alarmId = attachment.getInt(AlarmColumns._ID);
-                        String label = Alarm.getInstance(alarmId).getStringField(Alarm.FIELD_LABEL);
-
-                        menu.setHeaderTitle(label);
-                        menu.add(alarmId, MENU_ITEM_ID_DELETE, 0, R.string.menu_item_delete_alarm);
-                    }
-                };
-
-            mOnCheckedChangeListener =
-                new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged(CompoundButton buttonView,
-                                                 boolean isChecked) {
-                        View parent = (View)buttonView.getParent();
-                        Bundle attachment = (Bundle)parent.getTag();
-                        int alarmId = attachment.getInt(AlarmColumns._ID);
-                        Alarm alarm = Alarm.getInstance(alarmId);
-
-                        Context context = (Context)OpenAlarm.this;
-                        if (alarm.isValid()) {
-                            // Alarm looks good. Enable it or disable it.
-                            alarm.update(
-                                context,
-                                isChecked,
-                                alarm.getStringField(Alarm.FIELD_LABEL),
-                                alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY),
-                                alarm.getIntField(Alarm.FIELD_MINUTES),
-                                alarm.getIntField(Alarm.FIELD_REPEAT_DAYS),
-                                alarm.getStringField(Alarm.FIELD_HANDLER),
-                                alarm.getStringField(Alarm.FIELD_EXTRA));
-
-                            if (isChecked) {
-                                String text =
-                                    context.getString(R.string.alarm_set_toast_text,
-                                                      alarm.getStringField(Alarm.FIELD_LABEL),
-                                                      alarm.formatSchedule(context));
-                                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-                            }
-                        } else {
-                            // Alarm can't be set because its
-                            // settings are't good enough. Bring
-                            // up its Settings activity
-                            // automatically for user to chage.
-                            if (isChecked) {
-                                int errCode = alarm.getErrorCode();
-                                int errMsgResId = R.string.alarm_handler_unset_message;
-                                if (errCode == Alarm.ERROR_NO_REPEAT_DAYS) {
-                                    errMsgResId = R.string.alarm_repeat_days_unset_message;
-                                }
-                                Toast.makeText(context, errMsgResId, Toast.LENGTH_LONG).show();
-                                parent.performClick();
-                                buttonView.setChecked(false);
-                            }
-                        }
-                    }
-                };
-        }
-
-        @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-            // note that this line is very important because it
-            // obtains alarm from content and cache it in the
-            // internal cache.
-            Alarm alarm = Alarm.getInstance(cursor);
-
-            Bundle attachment = (Bundle)view.getTag();
-            attachment.putInt(AlarmColumns._ID,
-                              alarm.getIntField(Alarm.FIELD_ID));
-
-            // Label
-            final TextView labelView =
-                (TextView)view.findViewById(R.id.label);
-            labelView.setText(alarm.getStringField(Alarm.FIELD_LABEL));
-
-            // Time of an alarm: hourOfDay and minutes
-            final CompoundTimeTextView timeTextView =
-                (CompoundTimeTextView)view.findViewById(R.id.time);
-            timeTextView.setTime(
-                alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY),
-                alarm.getIntField(Alarm.FIELD_MINUTES));
-
-            // Enabled?
-            final CheckBox enabledCheckBox =
-                (CheckBox)view.findViewById(R.id.enabled);
-            // Set checkbox's listener to null. If set, the
-            // defined listener will try to update the database
-            // and make bindView() called which enters an
-            // infinite loop.
-            enabledCheckBox.setOnCheckedChangeListener(null);
-            enabledCheckBox.setChecked(alarm.getBooleanField(Alarm.FIELD_ENABLED));
-            enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
-
-            // RepeatDays
-            final LinearLayout repeatDaysView =
-                (LinearLayout)view.findViewById(R.id.repeat_days);
-            repeatDaysView.removeAllViews();
-            Iterator<String> days =
-                Alarms.RepeatWeekdays.toStringList(
-                    alarm.getIntField(Alarm.FIELD_REPEAT_DAYS),
-                    context.getString(R.string.repeat_on_everyday),
-                    context.getString(R.string.no_repeat_days)).iterator();
-
-            LinearLayout.LayoutParams params =
-                new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            params.setMargins(2, 2, 2, 2);
-
-            while(days.hasNext()) {
-                TextView dayLabel = new TextView(context);
-                dayLabel.setClickable(false);
-                dayLabel.setBackgroundResource(R.drawable.rounded_background);
-                dayLabel.setTextAppearance(context, R.style.RepeatDaysTextAppearance);
-                dayLabel.setText(days.next());
-                repeatDaysView.addView(dayLabel, params);
-            }
-            repeatDaysView.setVisibility(View.VISIBLE);
-
-            // Handler
-            // Loads handler's icon
-            ImageView handlerIconView = (ImageView)view.findViewById(R.id.icon);
-            handlerIconView.setImageResource(R.drawable.null_handler);
-            String handler = alarm.getStringField(Alarm.FIELD_HANDLER);
-            if (!TextUtils.isEmpty(handler)) {
-                PackageManager pm = context.getPackageManager();
-                try {
-                    ActivityInfo info = Alarms.getHandlerInfo(pm, handler);
-                    Drawable handlerIcon = info.loadIcon(pm);
-                    handlerIconView.setImageDrawable(handlerIcon);
-                } catch(PackageManager.NameNotFoundException e) {
-                    Log.d(TAG, e.getMessage());
-                }
-            }
-       }
-
-        @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View view = mInflater.inflate(R.layout.alarm_list_item,
-                                          parent,
-                                          false);
-            Bundle attachment = new Bundle();
-            view.setTag(attachment);
-
-            /**
-             * Should follow Android's design. Click to go to
-             * item's default activity and long-click to go to
-             * item's extended activities. Here, the first-class
-             * activity is to edit item's settings.
-             */
-            view.setOnClickListener(mOnClickListener);
-
-            /**
-             * The context menu listener of the view must be set
-             * in order for its parent's onCreateMenu() to be
-             * called to create context menu. This should be a
-             * bug but I'm not very sure.
-             *
-             * The ContextMenu.ContextMenuInfo object is returned
-             * by getContextMenuInfo() overriden by
-             * clients. Here, it is null.
-             */
-            view.setOnCreateContextMenuListener(
-                mOnCreateContextMenuListener);
-
-            return view;
-
-            // @todo: Cache all child views.
-        }
-
-        // Notify user only when an alarm is changed only in the
-        // case that cursor is not deactivated and
-        // invalidated. In this case, only check/uncheck of
-        // CheckBox will ttrigger this method.
-        @Override
-        public void onContentChanged() {
-            super.onContentChanged();
-            Notification.getInstance().set(mContext);
-        }
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -281,40 +72,40 @@ public class OpenAlarm extends ListActivity {
 
         setContentView(R.layout.main);
 
-        Cursor c =
-            Alarms.getAlarmCursor(this, Alarms.getAlarmUri(-1));
-        startManagingCursor(c);
+        // Query currently installed action handlers and create a
+        // list of group data map.
+        PackageManager pm = getPackageManager();
+        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm);
+        List<HashMap<String, Object>> groupData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
+        Iterator<ResolveInfo> infoIter = infoList.iterator();
+        while (infoIter.hasNext()) {
+            ActivityInfo activityInfo = infoIter.next().activityInfo;
 
-        AlarmAdapter adapter = new AlarmAdapter(this, c);
-        // adapter.registerDataSetObserver(
-        //     new DataSetObserver() {
-        //         // For cursor is required (When OpenAlarm is
-        //         // restarted), for instance, the user exits
-        //         // AlarmSettings and goes back to OpenAlarm.
-        //         public void onChanged() {
-        //             Log.d(TAG, "===> onChanged()");
-        //             Notification.getInstance().set(OpenAlarm.this);
-        //         }
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            String label = activityInfo.loadLabel(pm).toString();
+            String className = activityInfo.name;
+            Drawable icon = activityInfo.loadIcon(pm);
 
-        //         // For managed cursor is stopped (when OpenAlarm
-        //         // is stopped), for instance, AlarmSetting is
-        //         // talking to the user.
-        //         @Override
-        //         public void onInvalidated() {}
-        //     });
+            map.put(AlarmAdapter.GROUP_DATA_KEY_LABEL, label);
+            map.put(AlarmAdapter.GROUP_DATA_KEY_HANDLER, className);
+            map.put(AlarmAdapter.GROUP_DATA_KEY_ICON, icon);
+
+            groupData.add(map);
+        }
+
+        // Null handler group
+        HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
+        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_LABEL, "Uncategorized");
+        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_HANDLER, "");
+        // @todo should inflate default R.drawable.null_handler,
+        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_ICON, new BitmapDrawable());
+        groupData.add(nullHandlerMap);
+
+        AlarmAdapter adapter = new AlarmAdapter(this, groupData,
+                                                new String[]{AlarmAdapter.GROUP_DATA_KEY_LABEL,
+                                                             AlarmAdapter.GROUP_DATA_KEY_ICON},
+                                                new int[]{R.id.label, R.id.icon});
         setListAdapter(adapter);
-
-        // Do an bumping animation on item selected.
-        getListView().setOnItemSelectedListener(
-            new AdapterView.OnItemSelectedListener() {
-                public void onNothingSelected(AdapterView<?> parent) {}
-                public void onItemSelected(AdapterView<?> parent, View v, int position, long rowId) {
-                    Animation scale =
-                        AnimationUtils.loadAnimation(
-                            OpenAlarm.this, R.anim.scale);
-                    v.startAnimation(scale);
-                }
-            });
     }
 
     @Override
@@ -405,11 +196,29 @@ public class OpenAlarm extends ListActivity {
             // event, we have to handle it in Activity.
         case KeyEvent.KEYCODE_ENTER:
         case KeyEvent.KEYCODE_DPAD_CENTER:
-            getListView().getSelectedView().performClick();
+            getExpandableListView().getSelectedView().performClick();
             return true;
         }
         return false;
     }
+
+    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        Log.d(TAG, "================> onChildClick()");
+        return false;
+    }
+
+    /**
+     * Notify user only when an alarm is changed only in the
+     * case that cursor is not deactivated and
+     * invalidated. In this case, only check/uncheck of
+     * CheckBox will trigger this method.
+     */
+    // @Override
+    // public void onContentChanged() {
+
+
+    //     Notification.getInstance().set(this);
+    // }
 
     @Override
     protected Dialog onCreateDialog(int id) {
@@ -456,5 +265,209 @@ public class OpenAlarm extends ListActivity {
         Intent intent = new Intent(this, AlarmSettings.class);
         intent.putExtra(AlarmColumns._ID, alarmId);
         startActivity(intent);
+    }
+
+
+
+
+
+
+
+
+    private class AlarmAdapter extends ExpandableAlarmAdapter {
+        private View.OnClickListener mOnClickListener;
+        private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
+        private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
+        private LayoutInflater mInflater;
+
+        AlarmAdapter(Context context,
+                     List<HashMap<String, Object>> groupData, String[] groupFrom, int[] groupTo) {
+            super(context, groupData, groupFrom, groupTo);
+
+            mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            mOnClickListener =
+                new View.OnClickListener() {
+                    // @Override
+                    public void onClick(View view) {
+                        Bundle attachment = (Bundle)view.getTag();
+
+                        int alarmId = attachment.getInt(AlarmColumns._ID);
+                        editAlarm(alarmId);
+                    }
+                };
+
+            mOnCreateContextMenuListener =
+                new View.OnCreateContextMenuListener() {
+                    public void onCreateContextMenu(ContextMenu menu,
+                                                    View view,
+                                                    ContextMenu.ContextMenuInfo menuInfo) {
+                        Bundle attachment = (Bundle)view.getTag();
+
+                        int alarmId = attachment.getInt(AlarmColumns._ID);
+                        String label = Alarm.getInstance(alarmId).getStringField(Alarm.FIELD_LABEL);
+
+                        menu.setHeaderTitle(label);
+                        menu.add(alarmId, MENU_ITEM_ID_DELETE, 0, R.string.menu_item_delete_alarm);
+                    }
+                };
+
+            mOnCheckedChangeListener =
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged(CompoundButton buttonView,
+                                                 boolean isChecked) {
+                        View parent = (View)buttonView.getParent();
+                        Bundle attachment = (Bundle)parent.getTag();
+                        int alarmId = attachment.getInt(AlarmColumns._ID);
+                        Alarm alarm = Alarm.getInstance(alarmId);
+
+                        Context context = (Context)OpenAlarm.this;
+                        if (alarm.isValid()) {
+                            // Alarm looks good. Enable it or disable it.
+                            alarm.update(
+                                context,
+                                isChecked,
+                                alarm.getStringField(Alarm.FIELD_LABEL),
+                                alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY),
+                                alarm.getIntField(Alarm.FIELD_MINUTES),
+                                alarm.getIntField(Alarm.FIELD_REPEAT_DAYS),
+                                alarm.getStringField(Alarm.FIELD_HANDLER),
+                                alarm.getStringField(Alarm.FIELD_EXTRA));
+
+                            if (isChecked) {
+                                String text =
+                                    context.getString(R.string.alarm_set_toast_text,
+                                                      alarm.getStringField(Alarm.FIELD_LABEL),
+                                                      alarm.formatSchedule(context));
+                                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            // Alarm can't be set because its
+                            // settings are't good enough. Bring
+                            // up its Settings activity
+                            // automatically for user to chage.
+                            if (isChecked) {
+                                int errCode = alarm.getErrorCode();
+                                int errMsgResId = R.string.alarm_handler_unset_message;
+                                if (errCode == Alarm.ERROR_NO_REPEAT_DAYS) {
+                                    errMsgResId = R.string.alarm_repeat_days_unset_message;
+                                }
+                                Toast.makeText(context, errMsgResId, Toast.LENGTH_LONG).show();
+                                parent.performClick();
+                                buttonView.setChecked(false);
+                            }
+                        }
+                    }
+                };
+        }
+
+        @Override
+        protected View newGroupView(ViewGroup parent) {
+            return mInflater.inflate(R.layout.group, parent, false);
+        }
+
+        @Override
+        protected void bindGroupView(View view, Map<String, ?> data, String[] from, int[] to) {
+            final int len = to.length;
+
+            for (int i = 0; i < len; i++) {
+                View v = view.findViewById(to[i]);
+                if (v instanceof TextView) {
+                    TextView tv = (TextView)v;
+                    tv.setText((String)data.get(from[i]));
+                } else if (v instanceof ImageView) {
+                    ImageView iv = (ImageView)v;
+                    iv.setImageDrawable((Drawable)data.get(from[i]));
+                }
+            }
+        }
+
+        @Override
+        protected View newChildView(Context context, Cursor childCursor, boolean isLastChild, ViewGroup parent) {
+            LayoutInflater inflater = getLayoutInflater();
+            View view = inflater.inflate(R.layout.alarm_list_item, parent, false);
+
+            Bundle attachment = new Bundle();
+            view.setTag(attachment);
+
+            // Should follow Android's design. Click to go to
+            // item's default activity and long-click to go to
+            // item's extended activities. Here, the first-class
+            // activity is to edit item's settings.
+            view.setOnClickListener(mOnClickListener);
+
+            // The context menu listener of the view must be set
+            // in order for its parent's onCreateMenu() to be
+            // called to create context menu. This should be a
+            // bug but I'm not very sure.
+
+            // The ContextMenu.ContextMenuInfo object is returned
+            // by getContextMenuInfo() overriden by
+            // clients. Here, it is null.
+            view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
+
+            return view;
+        }
+
+        @Override
+        protected void bindChildView(View view, Context context, Cursor childCursor, boolean isLastChild) {
+            // note that this line is very important because it
+            // obtains alarm from content and cache it in the
+            // internal cache.
+            Alarm alarm = Alarm.getInstance(childCursor);
+
+            Bundle attachment = (Bundle)view.getTag();
+            attachment.putInt(AlarmColumns._ID,
+                              alarm.getIntField(Alarm.FIELD_ID));
+
+            // Label
+            final TextView labelView =
+                (TextView)view.findViewById(R.id.label);
+            labelView.setText(alarm.getStringField(Alarm.FIELD_LABEL));
+
+            // Time of an alarm: hourOfDay and minutes
+            final CompoundTimeTextView timeTextView =
+                (CompoundTimeTextView)view.findViewById(R.id.time);
+            timeTextView.setTime(
+                alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY),
+                alarm.getIntField(Alarm.FIELD_MINUTES));
+
+            // Enabled?
+            final CheckBox enabledCheckBox =
+                (CheckBox)view.findViewById(R.id.enabled);
+            // Set checkbox's listener to null. If set, the
+            // defined listener will try to update the database
+            // and make bindView() called which enters an
+            // infinite loop.
+            enabledCheckBox.setOnCheckedChangeListener(null);
+            enabledCheckBox.setChecked(alarm.getBooleanField(Alarm.FIELD_ENABLED));
+            enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
+
+            // RepeatDays
+            final LinearLayout repeatDaysView =
+                (LinearLayout)view.findViewById(R.id.repeat_days);
+            repeatDaysView.removeAllViews();
+            Iterator<String> days =
+                Alarms.RepeatWeekdays.toStringList(
+                    alarm.getIntField(Alarm.FIELD_REPEAT_DAYS),
+                    context.getString(R.string.repeat_on_everyday),
+                    context.getString(R.string.no_repeat_days)).iterator();
+
+            LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(2, 2, 2, 2);
+
+            while(days.hasNext()) {
+                TextView dayLabel = new TextView(context);
+                dayLabel.setClickable(false);
+                dayLabel.setBackgroundResource(R.drawable.rounded_background);
+                dayLabel.setTextAppearance(context, R.style.RepeatDaysTextAppearance);
+                dayLabel.setText(days.next());
+                repeatDaysView.addView(dayLabel, params);
+            }
+            repeatDaysView.setVisibility(View.VISIBLE);
+        }
     }
 }

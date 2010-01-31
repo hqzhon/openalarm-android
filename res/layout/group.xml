@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:paddingLeft="36dp"
+              android:paddingRight="10dp"
+              android:layout_width="fill_parent"
+              android:layout_height="?android:attr/listPreferredItemHeight">
+  <!-- Group Label -->
+  <TextView style="?android:attr/textAppearanceLarge"
+            android:id="@+id/label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical" />
+
+  <!-- Group Icon -->
+  <ImageView android:id="@+id/icon"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center_vertical"
+             android:scaleType="fitXY"
+             android:maxWidth="36dp"
+             android:maxHeight="36dp"
+             android:src="@drawable/null_handler"/>
+</LinearLayout>
+
+
