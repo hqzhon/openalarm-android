@@ -259,10 +259,6 @@ public class Alarms {
     public static ActivityInfo getHandlerInfo(final PackageManager pm,
                                               final String handlerClassName)
         throws PackageManager.NameNotFoundException {
-
-        Intent i = new Intent(Alarm.ACTION_HANDLE);
-        i.addCategory(Intent.CATEGORY_ALTERNATIVE);
-
         // Search all receivers that can handle my alarms.
         Iterator<ResolveInfo> infoObjs = queryAlarmHandlers(pm).iterator();
         while (infoObjs.hasNext()) {
