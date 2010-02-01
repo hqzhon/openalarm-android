@@ -140,14 +140,12 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
     public void notifyDataSetChanged() {
         Log.d(TAG, "===> ExpandableAlarmAdapter.notifyDataSetChanged()");
 
-        notifyDataSetChanged(true);
+        super.notifyDataSetChanged();
     }
 
     @Override
     public void notifyDataSetInvalidated() {
         Log.d(TAG, "===> ExpandableAlarmAdapter.notifyDataSetInvalidated()");
-
-        releaseCursorHelpers();
 
         // Call every observer's onInvalidated()
         super.notifyDataSetInvalidated();
@@ -318,15 +316,12 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
              * @param selfChange
              */
             public void onChange(boolean selfChange) {
-                // Note that I don't need to tell other observers
-                // that alarm data is changed.
-
-                // notifyDataSetChanged();
-
-                Log.d(TAG, "===> MyContentObserver.onChange(" + selfChange + "): should I requery?");
                 if (mCursor != null && mIsValid) {
                     mCursor.requery();
                 }
+
+                // Notify outside that something has been changed.
+                notifyDataSetChanged();
             }
         }
 

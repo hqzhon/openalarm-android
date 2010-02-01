@@ -266,13 +266,6 @@ public class OpenAlarm extends ExpandableListActivity {
         startActivity(intent);
     }
 
-
-
-
-
-
-
-
     private class AlarmAdapter extends ExpandableAlarmAdapter {
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
@@ -473,6 +466,13 @@ public class OpenAlarm extends ExpandableListActivity {
                 repeatDaysView.addView(dayLabel, params);
             }
             repeatDaysView.setVisibility(View.VISIBLE);
+        }
+
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+
+
+            Notification.getInstance().set(OpenAlarm.this);
         }
     }
 }
