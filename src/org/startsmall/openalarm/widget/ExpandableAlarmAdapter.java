@@ -38,12 +38,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         mHandler = new Handler();
     }
 
-    // public void setGroupData(List<? extends Map<String, ?>> groupData) {
-    //     mGroupData = groupData;
-    //     // no need to requery for cursor??
-    //     notifyDataSetChanged();
-    // }
-
     public boolean hasStableIds() {
         return true;
     }
@@ -285,7 +279,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
         void deactivate() {
             if (mCursor != null && mIsValid) {
-                Log.d(TAG, "===> deactivate() : " + this);
                 mCursor.unregisterContentObserver(mContentObserver);
                 mCursor.unregisterDataSetObserver(mDataSetObserver);
                 mCursor.deactivate();
@@ -295,7 +288,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
         void activate() {
             if (mCursor != null && !mIsValid) {
-                Log.d(TAG, "===> activate() : " + this);
                 mCursor.registerContentObserver(mContentObserver);
                 mCursor.registerDataSetObserver(mDataSetObserver);
                 mCursor.requery();
@@ -305,7 +297,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
         void close() {
             if (mCursor != null && mIsValid && !mCursor.isClosed()) {
-                Log.d(TAG, "===> close() : " + this);
                 mCursor.unregisterContentObserver(mContentObserver);
                 mCursor.unregisterDataSetObserver(mDataSetObserver);
                 mCursor.deactivate();
@@ -345,10 +336,11 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                     // Cause MyDataSetObserver.onChange() to be
                     // called.
                     mCursor.requery();
-                }
 
-                // Notify outside that something has been changed.
-                notifyDataSetChanged();
+                    // Notify outside that something has been
+                    // changed.
+                    notifyDataSetChanged();
+                }
             }
         }
 
@@ -360,13 +352,13 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
              */
             @Override
             public void onChanged() {
-                Log.d(TAG, "===> MyDataSetObserver.onChange(): requery()");
+                // Log.d(TAG, "===> MyDataSetObserver.onChange(): requery()");
                 notifyDataSetChanged(false);
             }
 
             @Override
             public void onInvalidated() {
-                Log.d(TAG, "===> MyDataSetObserver.onInvalidated(): deactivate() or close()");
+                // Log.d(TAG, "===> MyDataSetObserver.onInvalidated(): deactivate() or close()");
                 // notifyDataSetInvalidated();
             }
         }

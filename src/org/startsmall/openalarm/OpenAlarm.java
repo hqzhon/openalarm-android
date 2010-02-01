@@ -110,7 +110,6 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "===> onDestroy()");
         super.onDestroy();
 
         // Close all child cursors opened by adapter.
@@ -120,8 +119,6 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onStop() {
-        Log.d(TAG, "===> onStop()");
-
         super.onStop();
 
         // Collapse all groups will deactivate its cursor.
@@ -131,8 +128,6 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onRestart() {
-        Log.d(TAG, "===> onRestart()");
-
         super.onRestart();
 
         // Activate all child cursors
@@ -165,13 +160,6 @@ public class OpenAlarm extends ExpandableListActivity {
 
         Notification.getInstance().set(this);
     }
-
-    // @Override
-    // public void onDestroy() {
-    //     super.onDestroy();
-
-    //     Log.d(TAG, "=======> onDestroy()");
-    // }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -233,10 +221,6 @@ public class OpenAlarm extends ExpandableListActivity {
         }
         return false;
     }
-
-    // public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-    //     return false;
-    // }
 
     @Override
     protected Dialog onCreateDialog(int id) {
@@ -487,10 +471,9 @@ public class OpenAlarm extends ExpandableListActivity {
             repeatDaysView.setVisibility(View.VISIBLE);
         }
 
+        @Override
         public void notifyDataSetChanged() {
             super.notifyDataSetChanged();
-
-
             Notification.getInstance().set(OpenAlarm.this);
         }
     }
