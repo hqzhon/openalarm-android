@@ -84,14 +84,14 @@
   <string name="wifi_toggle_dialog_title">Toggle Wi-Fi</string>
 
   <!-- Airplane mode -->
-  <string name="airplane_mode">飛航模式</string>
+  <string name="airplane_mode">Airplane mode</string>
   <string name="airplanemode_title">Toggle</string>
   <string name="airplanemode_summary">On</string>
   <string name="airplanemode_key">airplanemode_state</string>
   <string name="airplanemode_dialog_title">Toggle airplane mode</string>
 
   <!-- APN -->
-  <string name="mobile_network">行動網路</string>
+  <string name="mobile_network">Mobile network</string>
   <string name="apn_toggle_title">Toggle</string>
   <string name="apn_toggle_key">apn_state</string>
   <string name="apn_toggle_dialog_title">Toggle mobile network</string>
