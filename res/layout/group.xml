@@ -16,6 +16,17 @@
             android:ellipsize="marquee"
             android:gravity="center_vertical" />
 
+  <TextView style="?android:attr/textAppearanceLarge"
+            android:id="@+id/children_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingRight="2dp"
+            android:paddingLeft="2dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical" />
+
   <!-- Group Icon -->
   <ImageView android:id="@+id/icon"
              android:layout_width="wrap_content"

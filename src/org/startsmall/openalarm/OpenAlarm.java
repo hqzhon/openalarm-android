@@ -367,7 +367,7 @@ public class OpenAlarm extends ExpandableListActivity {
         }
 
         @Override
-        protected void bindGroupView(View view, Map<String, ?> data, String[] from, int[] to) {
+        protected void bindGroupView(View view, Map<String, ?> data, int childrenCount, String[] from, int[] to) {
             final int len = to.length;
 
             for (int i = 0; i < len; i++) {
@@ -380,6 +380,10 @@ public class OpenAlarm extends ExpandableListActivity {
                     iv.setImageDrawable((Drawable)data.get(from[i]));
                 }
             }
+
+            //
+            TextView childrenTextView = (TextView)view.findViewById(R.id.children_count);
+            childrenTextView.setText("(" + childrenCount + ")");
         }
 
         @Override
@@ -406,14 +410,13 @@ public class OpenAlarm extends ExpandableListActivity {
             // clients. Here, it is null.
             view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
 
+            Log.d(TAG, "===> newChildView()");
+
             return view;
         }
 
         @Override
         protected void bindChildView(View view, Context context, Cursor childCursor, boolean isLastChild) {
-            // note that this line is very important because it
-            // obtains alarm from content and cache it in the
-            // internal cache.
             Alarm alarm = Alarm.getInstance(childCursor);
 
             Bundle attachment = (Bundle)view.getTag();
@@ -468,6 +471,10 @@ public class OpenAlarm extends ExpandableListActivity {
                 repeatDaysView.addView(dayLabel, params);
             }
             repeatDaysView.setVisibility(View.VISIBLE);
+
+            Log.d(TAG, "===> bindChildView()");
+
+
         }
     }
 }

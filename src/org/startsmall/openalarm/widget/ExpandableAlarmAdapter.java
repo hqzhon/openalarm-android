@@ -78,13 +78,13 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         }
 
         Map<String, ?> groupData = mGroupData.get(groupPosition);
-        bindGroupView(v, groupData, mGroupFrom, mGroupTo);
+        bindGroupView(v, groupData, getChildrenCount(groupPosition), mGroupFrom, mGroupTo);
         return v;
     }
 
     protected abstract View newGroupView(ViewGroup parent);
 
-    protected abstract void bindGroupView(View view, Map<String, ?> data, String[] from, int[] to);
+    protected abstract void bindGroupView(View view, Map<String, ?> data, int childrenCount, String[] from, int[] to);
 
     /**
      * Children-releated
@@ -100,6 +100,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
      *
      */
     public long getChildId(int groupPosition, int childPosition) {
+        Log.d(TAG, "===> getChildId()");
         return getChildrenCursorHelper(groupPosition).getId(childPosition);
     }
 
@@ -113,7 +114,8 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
      * @return number of children this group has.
      */
     public int getChildrenCount(int groupPosition) {
-        Log.d(TAG, "===> getChildrenCount(" + groupPosition + ")");
+        int count = getChildrenCursorHelper(groupPosition).getCount();
+        Log.d(TAG, "===> getChildrenCount(" + groupPosition + "): " + count + " alarms");
         return getChildrenCursorHelper(groupPosition).getCount();
     }
 
@@ -139,6 +141,8 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
     @Override
     public void notifyDataSetChanged() {
+        Log.d(TAG, "===> ExpandableAlarmAdapter.notifyDataSetChanged()");
+
         notifyDataSetChanged(true);
     }
 
@@ -151,7 +155,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
     @Override
     public void notifyDataSetInvalidated() {
-        // Cursors were invalidated, release them
+        Log.d(TAG, "===> ExpandableAlarmAdapter.notifyDataSetInvalidated()");
         releaseCursorHelpers();
         super.notifyDataSetInvalidated();
     }
@@ -191,8 +195,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
      * @return
      */
     protected CursorHelper getChildrenCursorHelper(int groupPosition) {
-        Log.d(TAG, "===> getChildrenCursorHelper(" + groupPosition + ")");
-
         CursorHelper cursorHelper = mChildrenCursorHelpers.get(groupPosition);
         if (cursorHelper == null) {
             cursorHelper = new CursorHelper(getChildrenCursor(groupPosition));
@@ -202,7 +204,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
     }
 
     private synchronized Cursor getChildrenCursor(int groupPosition) {
-
         Log.d(TAG, "===> getChildrenCursor(" + groupPosition + ")");
 
         ContentResolver cr = mContext.getContentResolver();
@@ -222,19 +223,13 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
     private void releaseCursorHelpers() {
         final int len = mChildrenCursorHelpers.size();
-
-        Log.d(TAG, "===> 1 releaseCursorHelpers(): sparse array has " + len + " objects");
-
         for (int i = 0; i < len; i++) {
             CursorHelper cursorHelper = mChildrenCursorHelpers.get(i);
             if (cursorHelper != null) {
-                // cursorHelper.deactivate();
-                cursorHelper.close();
+                cursorHelper.deactivate();
             }
         }
         mChildrenCursorHelpers.clear();
-
-        Log.d(TAG, "===> 2 releaseCursorHelpers(): sparse array has " + mChildrenCursorHelpers.size() + " objects");
     }
 
     private class CursorHelper {
@@ -282,6 +277,8 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                 mCursor.unregisterDataSetObserver(mDataSetObserver);
                 mCursor.deactivate();
                 mIsValid = false;
+
+                Log.d(TAG, "===> deactivate() : " + this);
             }
         }
 
@@ -291,16 +288,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                 mCursor.registerDataSetObserver(mDataSetObserver);
                 mCursor.requery();
                 mIsValid = true;
-            }
-        }
-
-
-        void close() {
-            if (mCursor != null && mIsValid) {
-                mCursor.unregisterContentObserver(mContentObserver);
-                mCursor.unregisterDataSetObserver(mDataSetObserver);
-                mCursor.close();
-                mIsValid = false;
             }
         }
 
@@ -334,13 +321,13 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         private class MyDataSetObserver extends DataSetObserver {
             @Override
             public void onChanged() {
-                Log.d(TAG, "===> MyDataSetObserver.onChange(): requery() on the cursor");
+                Log.d(TAG, "===> MyDataSetObserver.onChange(): requery()");
                 notifyDataSetChanged();
             }
 
             @Override
             public void onInvalidated() {
-                Log.d(TAG, "===> MyDataSetObserver.onInvalidated(): deactivate() or close() on the cursor");
+                Log.d(TAG, "===> MyDataSetObserver.onInvalidated(): deactivate() or close()");
                 notifyDataSetInvalidated();
             }
         }
