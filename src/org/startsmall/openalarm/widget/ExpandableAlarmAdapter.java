@@ -100,7 +100,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
      *
      */
     public long getChildId(int groupPosition, int childPosition) {
-        Log.d(TAG, "===> getChildId()");
         return getChildrenCursorHelper(groupPosition).getId(childPosition);
     }
 
@@ -125,8 +124,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
      */
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
                              View convertView, ViewGroup parent) {
-        Log.d(TAG, "===> getChildView()");
-
         Cursor childCursor = getChild(groupPosition, childPosition);
         View v = convertView;
         if (convertView == null) {
@@ -146,17 +143,13 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         notifyDataSetChanged(true);
     }
 
-    public void notifyDataSetChanged(boolean releaseCursors) {
-        if (releaseCursors) {
-            releaseCursorHelpers();
-        }
-        super.notifyDataSetChanged();
-    }
-
     @Override
     public void notifyDataSetInvalidated() {
         Log.d(TAG, "===> ExpandableAlarmAdapter.notifyDataSetInvalidated()");
+
         releaseCursorHelpers();
+
+        // Call every observer's onInvalidated()
         super.notifyDataSetInvalidated();
     }
 
@@ -203,9 +196,16 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         return cursorHelper;
     }
 
-    private synchronized Cursor getChildrenCursor(int groupPosition) {
-        Log.d(TAG, "===> getChildrenCursor(" + groupPosition + ")");
+    private void notifyDataSetChanged(boolean releaseCursors) {
+        if (releaseCursors) {
+            releaseCursorHelpers();
+        }
 
+        // Call every observer's onChanged();
+        super.notifyDataSetChanged();
+    }
+
+    private synchronized Cursor getChildrenCursor(int groupPosition) {
         ContentResolver cr = mContext.getContentResolver();
 
         Map<String, ?> data = mGroupData.get(groupPosition);
@@ -229,7 +229,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                 cursorHelper.deactivate();
             }
         }
-        mChildrenCursorHelpers.clear();
+        // mChildrenCursorHelpers.clear();
     }
 
     private class CursorHelper {
@@ -273,17 +273,17 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
         void deactivate() {
             if (mCursor != null && mIsValid) {
+                Log.d(TAG, "===> deactivate() : " + this);
                 mCursor.unregisterContentObserver(mContentObserver);
                 mCursor.unregisterDataSetObserver(mDataSetObserver);
                 mCursor.deactivate();
                 mIsValid = false;
-
-                Log.d(TAG, "===> deactivate() : " + this);
             }
         }
 
         void activate() {
             if (mCursor != null && !mIsValid) {
+                Log.d(TAG, "===> activate() : " + this);
                 mCursor.registerContentObserver(mContentObserver);
                 mCursor.registerDataSetObserver(mDataSetObserver);
                 mCursor.requery();
@@ -308,27 +308,44 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                 return true;
             }
 
+            /**
+             * This method gets called when an alarm is inserted,
+             * updated and deleted. We should do an auto-requery
+             * when these situations happens because we need an
+             * group updates its child views immediately if it is
+             * expanded already.
+             *
+             * @param selfChange
+             */
             public void onChange(boolean selfChange) {
-                notifyDataSetChanged();
+                // Note that I don't need to tell other observers
+                // that alarm data is changed.
 
-                // no, we don't need a auto-requery for this?
-                // In my code flow, the alarm's settings was
-                // cached into an alarm map
-                Log.d(TAG, "===> MyContentObserver.onChange(): should I requery?");
+                // notifyDataSetChanged();
+
+                Log.d(TAG, "===> MyContentObserver.onChange(" + selfChange + "): should I requery?");
+                if (mCursor != null && mIsValid) {
+                    mCursor.requery();
+                }
             }
         }
 
         private class MyDataSetObserver extends DataSetObserver {
+            /**
+             * This method is triggered by cursor.requery() in
+             * ContentObserver.onChange().
+             *
+             */
             @Override
             public void onChanged() {
                 Log.d(TAG, "===> MyDataSetObserver.onChange(): requery()");
-                notifyDataSetChanged();
+                notifyDataSetChanged(false);
             }
 
             @Override
             public void onInvalidated() {
                 Log.d(TAG, "===> MyDataSetObserver.onInvalidated(): deactivate() or close()");
-                notifyDataSetInvalidated();
+                // notifyDataSetInvalidated();
             }
         }
 

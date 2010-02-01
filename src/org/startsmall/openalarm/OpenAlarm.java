@@ -97,8 +97,7 @@ public class OpenAlarm extends ExpandableListActivity {
         HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
         nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_LABEL, "Uncategorized");
         nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_HANDLER, "");
-        // @todo should inflate default R.drawable.null_handler,
-        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_ICON, new BitmapDrawable());
+        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_ICON, null);
         groupData.add(nullHandlerMap);
 
         AlarmAdapter adapter = new AlarmAdapter(this, groupData,
@@ -377,7 +376,12 @@ public class OpenAlarm extends ExpandableListActivity {
                     tv.setText((String)data.get(from[i]));
                 } else if (v instanceof ImageView) {
                     ImageView iv = (ImageView)v;
-                    iv.setImageDrawable((Drawable)data.get(from[i]));
+                    Drawable icon = (Drawable)data.get(from[i]);
+                    if (icon == null) {
+                        iv.setImageResource(R.drawable.null_handler);
+                    } else {
+                        iv.setImageDrawable(icon);
+                    }
                 }
             }
 
@@ -409,8 +413,6 @@ public class OpenAlarm extends ExpandableListActivity {
             // by getContextMenuInfo() overriden by
             // clients. Here, it is null.
             view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
-
-            Log.d(TAG, "===> newChildView()");
 
             return view;
         }
@@ -471,10 +473,6 @@ public class OpenAlarm extends ExpandableListActivity {
                 repeatDaysView.addView(dayLabel, params);
             }
             repeatDaysView.setVisibility(View.VISIBLE);
-
-            Log.d(TAG, "===> bindChildView()");
-
-
         }
     }
 }

@@ -113,7 +113,7 @@
     </receiver>
 
     <receiver android:name=".ApnHandler"
-              android:label="Mobile network (APN)"
+              android:label="Mobile network"
               android:icon="@drawable/ic_toggle_apn">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
