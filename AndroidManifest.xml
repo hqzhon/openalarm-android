@@ -123,5 +123,14 @@
 
     <service android:exported="true" android:name=".ApnService"/>
 
+    <receiver android:name=".CallForMeHandler"
+              android:label="Call for me"
+              android:icon="@android:drawable/stat_sys_phone_call">
+      <intent-filter>
+        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
+        <category android:name="android.intent.category.ALTERNATIVE"/>
+      </intent-filter>
+    </receiver>
+
   </application>
 </manifest>
