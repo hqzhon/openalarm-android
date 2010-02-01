@@ -90,7 +90,7 @@
 
     <receiver android:name=".WifiHandler"
               android:label="Wi-Fi"
-              android:icon="@drawable/ic_toggle_wifi">
+              android:icon="@drawable/wifi_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
