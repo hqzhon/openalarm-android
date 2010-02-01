@@ -60,7 +60,7 @@
     </activity>
 
     <receiver android:name=".AlarmHandler"
-              android:label="@string/alarm_handler"
+              android:label="@string/alarm"
               android:icon="@drawable/alarm_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
@@ -104,8 +104,8 @@
     </receiver>
 
     <receiver android:name=".AirplaneModeHandler"
-              android:label="Airplane mode"
-              android:icon="@drawable/ic_lock_airplane_mode">
+              android:label="@string/airplane_mode"
+              android:icon="@drawable/airplanemode_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
@@ -113,8 +113,8 @@
     </receiver>
 
     <receiver android:name=".ApnHandler"
-              android:label="Mobile network"
-              android:icon="@drawable/ic_toggle_apn">
+              android:label="@string/mobile_network"
+              android:icon="@drawable/apn_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>

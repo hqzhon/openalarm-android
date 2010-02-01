@@ -280,6 +280,8 @@ public class FireAlarm extends Activity {
 
     private void dismissAlarm() {
         Intent scheduleIntent = new Intent(getIntent());
+        scheduleIntent.setFlags(
+            scheduleIntent.getFlags() ^ Intent.FLAG_ACTIVITY_NEW_TASK);
         scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
         scheduleIntent.setComponent(null);
         sendBroadcast(scheduleIntent);

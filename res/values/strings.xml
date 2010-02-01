@@ -54,8 +54,12 @@
   <string name="alarm_set_notification_ticker">Next Alarm: %s</string>
   <string name="alarm_set_notification_content">Scheduled at %s</string>
 
+  <!-- Group -->
+  <string name="uncategorized">Uncategorized</string>
+
+  <!-- Handler -->
   <!-- Alarm handler -->
-  <string name="alarm_handler">Alarm</string>
+  <string name="alarm">Alarm</string>
   <string name="alarm_handler_ringtone_title">Ringtone</string>
 
   <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
@@ -73,7 +77,6 @@
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 
-  <!-- Handler -->
   <!-- WiFi -->
   <string name="wifi_toggle_title">Toggle</string>
   <string name="wifi_toggle_summary">On</string>
@@ -81,12 +84,14 @@
   <string name="wifi_toggle_dialog_title">Toggle Wi-Fi</string>
 
   <!-- Airplane mode -->
+  <string name="airplane_mode">飛航模式</string>
   <string name="airplanemode_title">Toggle</string>
   <string name="airplanemode_summary">On</string>
   <string name="airplanemode_key">airplanemode_state</string>
   <string name="airplanemode_dialog_title">Toggle airplane mode</string>
 
   <!-- APN -->
+  <string name="mobile_network">行動網路</string>
   <string name="apn_toggle_title">Toggle</string>
   <string name="apn_toggle_key">apn_state</string>
   <string name="apn_toggle_dialog_title">Toggle mobile network</string>

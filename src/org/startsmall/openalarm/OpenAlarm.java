@@ -95,7 +95,8 @@ public class OpenAlarm extends ExpandableListActivity {
 
         // Null handler group
         HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
-        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_LABEL, "Uncategorized");
+        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_LABEL,
+                           getString(R.string.uncategorized));
         nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_HANDLER, "");
         nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_ICON, null);
         groupData.add(nullHandlerMap);
@@ -105,6 +106,38 @@ public class OpenAlarm extends ExpandableListActivity {
                                                              AlarmAdapter.GROUP_DATA_KEY_ICON},
                                                 new int[]{R.id.label, R.id.icon});
         setListAdapter(adapter);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "===> onDestroy()");
+        super.onDestroy();
+
+        // Close all child cursors opened by adapter.
+        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
+        adapter.closeChildCursors();
+    }
+
+    @Override
+    public void onStop() {
+        Log.d(TAG, "===> onStop()");
+
+        super.onStop();
+
+        // Collapse all groups will deactivate its cursor.
+        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
+        adapter.deactivateChildCursors();
+    }
+
+    @Override
+    public void onRestart() {
+        Log.d(TAG, "===> onRestart()");
+
+        super.onRestart();
+
+        // Activate all child cursors
+        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
+        adapter.activateChildCursors();
     }
 
     @Override
@@ -201,22 +234,8 @@ public class OpenAlarm extends ExpandableListActivity {
         return false;
     }
 
-    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-        Log.d(TAG, "================> onChildClick()");
-        return false;
-    }
-
-    /**
-     * Notify user only when an alarm is changed only in the
-     * case that cursor is not deactivated and
-     * invalidated. In this case, only check/uncheck of
-     * CheckBox will trigger this method.
-     */
-    // @Override
-    // public void onContentChanged() {
-
-
-    //     Notification.getInstance().set(this);
+    // public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+    //     return false;
     // }
 
     @Override

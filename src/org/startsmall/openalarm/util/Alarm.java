@@ -285,7 +285,8 @@ class Alarm {
             return;
         }
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+        // i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+        i.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
 
         // Alarm ID is always necessary for its operations.
         i.putExtra(AlarmColumns._ID, mId);
