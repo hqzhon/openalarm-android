@@ -4,7 +4,7 @@
               android:paddingLeft="18dip"
               android:paddingRight="10dip"
               android:layout_width="fill_parent"
-              android:layout_height="wrap_content">
+              android:layout_height="?android:attr/listPreferredItemHeight">
 
   <!-- Enabled -->
   <CheckBox android:id="@+id/enabled"
@@ -23,16 +23,6 @@
     <LinearLayout android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal">
-      <!-- Action Icon -->
-      <!-- <ImageView android:id="@+id/icon" -->
-      <!--            android:layout_width="wrap_content" -->
-      <!--            android:layout_height="wrap_content" -->
-      <!--            android:layout_gravity="center_vertical" -->
-      <!--            android:scaleType="fitXY" -->
-      <!--            android:maxWidth="36dp" -->
-      <!--            android:maxHeight="36dp" -->
-      <!--            android:src="@drawable/null_handler"/> -->
-
       <!-- Alarm Label -->
       <TextView style="?android:attr/textAppearanceLarge"
                 android:id="@+id/label"

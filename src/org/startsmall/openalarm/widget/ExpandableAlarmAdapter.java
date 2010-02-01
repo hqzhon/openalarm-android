@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.util.Log;
 import android.util.SparseArray;
 import android.widget.BaseExpandableListAdapter;
 
@@ -19,6 +20,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
     public static final String GROUP_DATA_KEY_HANDLER = "handler";
     public static final String GROUP_DATA_KEY_ICON = "icon";
 
+    private static final String TAG = "ExpandableAlarmAdapter";
     private Context mContext;
     private List<? extends Map<String, ?>> mGroupData;
     private int mGroupLayout;
@@ -36,12 +38,11 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         mHandler = new Handler();
     }
 
-    public void setGroupData(List<? extends Map<String, ?>> groupData) {
-        mGroupData = groupData;
-
-        // no need to requery for cursor??
-        notifyDataSetChanged();
-    }
+    // public void setGroupData(List<? extends Map<String, ?>> groupData) {
+    //     mGroupData = groupData;
+    //     // no need to requery for cursor??
+    //     notifyDataSetChanged();
+    // }
 
     public boolean hasStableIds() {
         return true;
@@ -103,10 +104,16 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
     }
 
     /**
+     * Return how many children this group has. This method will
+     * be executed before getChildView() to instantiate a view or
+     * bind a view with data.
      *
+     * @param groupPosition Position of clicked group.
      *
+     * @return number of children this group has.
      */
     public int getChildrenCount(int groupPosition) {
+        Log.d(TAG, "===> getChildrenCount(" + groupPosition + ")");
         return getChildrenCursorHelper(groupPosition).getCount();
     }
 
@@ -116,8 +123,9 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
      */
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
                              View convertView, ViewGroup parent) {
-        Cursor childCursor =
-            getChildrenCursorHelper(groupPosition).moveTo(childPosition);
+        Log.d(TAG, "===> getChildView()");
+
+        Cursor childCursor = getChild(groupPosition, childPosition);
         View v = convertView;
         if (convertView == null) {
             v = newChildView(mContext, childCursor, isLastChild, parent);
@@ -126,17 +134,11 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         return v;
     }
 
-    protected abstract View newChildView(Context context, Cursor childCursor, boolean isLastChild,
-                                         ViewGroup parent);
-
-    // The binding might be too complex for this class to
-    // implement.
+    protected abstract View newChildView(Context context, Cursor childCursor, boolean isLastChild, ViewGroup parent);
     protected abstract void bindChildView(View v, Context context, Cursor childCursor, boolean isLastChild);
 
     @Override
     public void notifyDataSetChanged() {
-        super.notifyDataSetChanged();
-
         notifyDataSetChanged(true);
     }
 
@@ -154,7 +156,43 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         super.notifyDataSetInvalidated();
     }
 
+    /**
+     *
+     *
+     * @param groupPosition
+     */
+    @Override
+    public void onGroupCollapsed(int groupPosition) {
+        // Deactivate cursor of this group to save some resources
+        CursorHelper cursorHelper = mChildrenCursorHelpers.get(groupPosition);
+        if (cursorHelper != null) {
+            cursorHelper.deactivate();
+        }
+    }
+
+    /**
+     *
+     *
+     * @param groupPosition
+     */
+    @Override
+    public void onGroupExpanded(int groupPosition) {
+        CursorHelper cursorHelper = mChildrenCursorHelpers.get(groupPosition);
+        if (cursorHelper != null) {
+            cursorHelper.activate();
+        }
+    }
+
+    /**
+     *
+     *
+     * @param groupPosition
+     *
+     * @return
+     */
     protected CursorHelper getChildrenCursorHelper(int groupPosition) {
+        Log.d(TAG, "===> getChildrenCursorHelper(" + groupPosition + ")");
+
         CursorHelper cursorHelper = mChildrenCursorHelpers.get(groupPosition);
         if (cursorHelper == null) {
             cursorHelper = new CursorHelper(getChildrenCursor(groupPosition));
@@ -164,6 +202,9 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
     }
 
     private synchronized Cursor getChildrenCursor(int groupPosition) {
+
+        Log.d(TAG, "===> getChildrenCursor(" + groupPosition + ")");
+
         ContentResolver cr = mContext.getContentResolver();
 
         Map<String, ?> data = mGroupData.get(groupPosition);
@@ -181,18 +222,24 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
     private void releaseCursorHelpers() {
         final int len = mChildrenCursorHelpers.size();
+
+        Log.d(TAG, "===> 1 releaseCursorHelpers(): sparse array has " + len + " objects");
+
         for (int i = 0; i < len; i++) {
-            CursorHelper cursorHelper =
-                mChildrenCursorHelpers.get(i);
+            CursorHelper cursorHelper = mChildrenCursorHelpers.get(i);
             if (cursorHelper != null) {
-                cursorHelper.getCursor().close();
-                mChildrenCursorHelpers.remove(i);
+                // cursorHelper.deactivate();
+                cursorHelper.close();
             }
         }
+        mChildrenCursorHelpers.clear();
+
+        Log.d(TAG, "===> 2 releaseCursorHelpers(): sparse array has " + mChildrenCursorHelpers.size() + " objects");
     }
 
-    class CursorHelper {
+    private class CursorHelper {
         private Cursor mCursor;
+        private boolean mIsValid;
         private MyContentObserver mContentObserver;
         private MyDataSetObserver mDataSetObserver;
 
@@ -204,6 +251,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
             if (mCursor != null) {
                 mCursor.registerDataSetObserver(mDataSetObserver);
                 mCursor.registerContentObserver(mContentObserver);
+                mIsValid =true;
             }
         }
 
@@ -228,6 +276,34 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
             return -1;
         }
 
+        void deactivate() {
+            if (mCursor != null && mIsValid) {
+                mCursor.unregisterContentObserver(mContentObserver);
+                mCursor.unregisterDataSetObserver(mDataSetObserver);
+                mCursor.deactivate();
+                mIsValid = false;
+            }
+        }
+
+        void activate() {
+            if (mCursor != null && !mIsValid) {
+                mCursor.registerContentObserver(mContentObserver);
+                mCursor.registerDataSetObserver(mDataSetObserver);
+                mCursor.requery();
+                mIsValid = true;
+            }
+        }
+
+
+        void close() {
+            if (mCursor != null && mIsValid) {
+                mCursor.unregisterContentObserver(mContentObserver);
+                mCursor.unregisterDataSetObserver(mDataSetObserver);
+                mCursor.close();
+                mIsValid = false;
+            }
+        }
+
         int getCount() {
             if (mCursor != null) {
                 return mCursor.getCount();
@@ -247,29 +323,27 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
             public void onChange(boolean selfChange) {
                 notifyDataSetChanged();
+
+                // no, we don't need a auto-requery for this?
+                // In my code flow, the alarm's settings was
+                // cached into an alarm map
+                Log.d(TAG, "===> MyContentObserver.onChange(): should I requery?");
             }
         }
 
         private class MyDataSetObserver extends DataSetObserver {
             @Override
             public void onChanged() {
+                Log.d(TAG, "===> MyDataSetObserver.onChange(): requery() on the cursor");
                 notifyDataSetChanged();
             }
 
             @Override
             public void onInvalidated() {
+                Log.d(TAG, "===> MyDataSetObserver.onInvalidated(): deactivate() or close() on the cursor");
                 notifyDataSetInvalidated();
             }
         }
 
     }
-
-    // private class My extends BroadcastReceiver {
-    //     public void onReceive(Context context, Intent intent) {
-
-
-
-
-    //     }
-    // }
 }
