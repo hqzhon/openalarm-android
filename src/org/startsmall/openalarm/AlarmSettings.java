@@ -221,7 +221,7 @@ public class AlarmSettings extends PreferenceActivity {
                 Class.forName("java.lang.String"));
             m.invoke(handler.newInstance(), this, mExtraSettingsCategory, extraValue);
         } catch(Exception e) {
-            Log.d(TAG, e.getMessage());
+            Log.d(TAG, "ERROR: " + e.getMessage());
         }
     }
 

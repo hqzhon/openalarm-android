@@ -1,20 +1,12 @@
 package org.startsmall.openalarm;
 
-import android.app.Activity;
-import android.app.KeyguardManager;
 import android.content.Context;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.PowerManager;
-import android.os.Vibrator;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -25,13 +17,7 @@ import android.text.format.DateUtils;
 import android.text.method.DigitsKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.FileDescriptor;
 import java.util.Calendar;
 
 public class AlarmHandler extends AbsHandler {
