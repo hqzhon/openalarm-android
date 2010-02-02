@@ -1,96 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:padding="5dip"
-              >
-  <LinearLayout
-     android:orientation="horizontal"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     >
 
-    <LinearLayout
-       android:layout_weight="0.25"
-       android:layout_width="10dip"
-       android:layout_height="wrap_content"
-       android:orientation="horizontal"
-       android:visibility="gone"/>
-
-    <ImageView
-       android:id="@+id/icon"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:layout_weight="0.25"
-       android:scaleType="fitXY"
-       android:src="@drawable/gray_alarm"
-       />
-
-    <TextView
-       style="?android:attr/textAppearanceLarge"
-       android:id="@+id/label"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:layout_marginLeft="2dp"
-       android:layout_marginRight="2dp"
-       android:layout_gravity="center_vertical"
-       android:singleLine="true"
-       android:ellipsize="marquee"
-       android:gravity="center_vertical"
-       android:text="ha"
-       android:maxLength="10"
-       />
-
-    <LinearLayout android:layout_weight="0.25"
-                  android:layout_width="10dip"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal"
-                  android:visibility="gone"/>
-  </LinearLayout>
-
-  <ImageView
-     android:layout_width="fill_parent"
-     android:layout_height="1dip"
-     android:layout_marginLeft="10dip"
-     android:layout_marginRight="10dip"
-     android:scaleType="fitXY"
-     android:gravity="fill_horizontal"
-     android:src="@android:drawable/divider_horizontal_bright"
-     android:paddingTop="4dip"
-     android:paddingBottom="4dip"
-     />
-
-  <LinearLayout android:orientation="horizontal"
-                android:layout_width="fill_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                >
+                android:padding="5dip">
+  <ImageView android:id="@+id/icon"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_alignParentTop="true"
+             android:layout_alignParentLeft="true"
+             android:scaleType="fitXY"
+             android:src="@drawable/color_alarm"/>
 
-    <LinearLayout android:layout_weight="0.25"
-                  android:layout_width="0dip"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal"
-                  android:visibility="gone"/>
-
-    <Button android:id="@+id/snooze"
-            android:text="@string/fire_alarm_snooze_text"
-            android:layout_weight="1"
-            android:layout_gravity="left"
+  <TextView style="?android:attr/textAppearanceLarge"
+            android:id="@+id/label"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="36dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_gravity="center_vertical"
+            android:layout_toRightOf="@id/icon"
+            android:layout_alignBaseline="@id/icon"
+            android:layout_alignBottom="@id/icon"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical"
+            android:maxLength="10"/>
 
-    <Button android:id="@+id/dismiss"
-            android:text="@string/fire_alarm_dismiss_text"
-            android:layout_weight="1"
-            android:layout_gravity="right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+  <ImageView android:id="@+id/sep"
+             android:layout_width="fill_parent"
+             android:layout_height="1dip"
+             android:layout_marginLeft="10dip"
+             android:layout_marginRight="10dip"
+             android:layout_alignParentLeft="true"
+             android:layout_alignParentRight="true"
+             android:layout_below="@id/icon"
+             android:scaleType="fitXY"
+             android:gravity="fill_horizontal"
+             android:src="@android:drawable/divider_horizontal_dark"
+             android:paddingTop="10dip"
+             android:paddingBottom="10dip"/>
 
-    <LinearLayout android:layout_width="0dip"
-                  android:layout_weight="0.25"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal"
-                  android:visibility="gone"/>
-  </LinearLayout>
-</LinearLayout>
+  <Button android:id="@+id/snooze"
+          android:layout_gravity="left"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignParentLeft="true"
+          android:layout_below="@id/sep"
+          android:text="@string/fire_alarm_snooze_text"/>
+
+  <Button android:id="@+id/dismiss"
+          android:layout_gravity="right"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignBaseline="@id/snooze"
+          android:layout_alignParentRight="true"
+          android:layout_toRightOf="@id/snooze"
+          android:text="@string/fire_alarm_dismiss_text"/>
+</RelativeLayout>
 
