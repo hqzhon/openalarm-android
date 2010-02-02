@@ -27,8 +27,6 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
         // Try to schedule the alarm.
         if (alarm.schedule()) {
             alarm.set(context);
-            Log.i(TAG, "===> scheduled alarm: " + alarm.format(context));
-
             // Reset notification to the next scheduled alarm.
             Notification.getInstance().set(context);
         }
