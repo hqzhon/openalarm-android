@@ -93,7 +93,7 @@ public class AlarmActionPreference extends ListPreference {
     protected void generateListItems(ArrayList<CharSequence> entries,
                                      ArrayList<CharSequence> entryValues) {
         PackageManager pm = getContext().getPackageManager();
-        List<ResolveInfo> handlers = Alarms.queryAlarmHandlers(pm);
+        List<ResolveInfo> handlers = Alarms.queryAlarmHandlers(pm, false);
         final int numberOfHandlers = handlers.size();
 
         if(numberOfHandlers > 0) {

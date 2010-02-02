@@ -32,12 +32,7 @@ import android.util.Log;
 import android.text.format.DateUtils;
 import android.text.TextUtils;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.text.DateFormat;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.text.SimpleDateFormat;
 
 public class Alarms {
@@ -86,6 +81,9 @@ public class Alarms {
     private static final String PREFERENCE_FILE_FOR_SNOOZED_ALARM = "snoozed_alarm";
 
     private static final String USER_APK_DIR = "/data/app";
+
+    // Cache of installed alarm action handler cache
+    private static List<ResolveInfo> sHandlerList;
 
     /**
      * Constants used in content provider and SQLiteDatabase
@@ -253,31 +251,24 @@ public class Alarms {
     }
 
     /**
-     * Get ActivityInfo object of an alarm handler from PackageManager
-     *
-     */
-    public static ActivityInfo getHandlerInfo(final PackageManager pm,
-                                              final String handlerClassName)
-        throws PackageManager.NameNotFoundException {
-        // Search all receivers that can handle my alarms.
-        Iterator<ResolveInfo> infoObjs = queryAlarmHandlers(pm).iterator();
-        while (infoObjs.hasNext()) {
-            ActivityInfo activityInfo = infoObjs.next().activityInfo;
-            if (activityInfo.name.equals(handlerClassName)) {
-                return activityInfo;
-            }
-        }
-        throw new PackageManager.NameNotFoundException(
-            "BroadcastReceiver " + handlerClassName + " not found");
-    }
-
-    /**
      * Return list of alarm handlers
      *
      */
-    public static List<ResolveInfo> queryAlarmHandlers(final PackageManager pm) {
+    public static List<ResolveInfo> queryAlarmHandlers(final PackageManager pm, boolean requery) {
         Intent i = new Intent(Alarm.ACTION_HANDLE);
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
-        return pm.queryBroadcastReceivers(i, 0);
+        if (sHandlerList == null || requery) {
+            sHandlerList = pm.queryBroadcastReceivers(i, 0);
+            Collections.sort(
+                sHandlerList,
+                new Comparator<ResolveInfo>() {
+                    public int compare(ResolveInfo r1, ResolveInfo r2) {
+                        String label1 = r1.loadLabel(pm).toString(),
+                               label2 = r2.loadLabel(pm).toString();
+                        return label1.compareTo(label2);
+                    }
+                });
+        }
+        return sHandlerList;
     }
 }
