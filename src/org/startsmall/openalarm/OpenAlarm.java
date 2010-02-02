@@ -75,7 +75,7 @@ public class OpenAlarm extends ExpandableListActivity {
         // Query currently installed action handlers and create a
         // list of group data map.
         PackageManager pm = getPackageManager();
-        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm);
+        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
         List<HashMap<String, Object>> groupData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
         Iterator<ResolveInfo> infoIter = infoList.iterator();
         while (infoIter.hasNext()) {
