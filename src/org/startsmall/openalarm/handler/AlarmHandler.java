@@ -1,82 +1,21 @@
 package org.startsmall.openalarm;
 
-import android.app.Activity;
-import android.app.KeyguardManager;
 import android.content.Context;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
-import android.media.MediaPlayer;
-import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.PowerManager;
-import android.os.Vibrator;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
-import android.preference.RingtonePreference;
-import android.telephony.TelephonyManager;
-import android.text.format.DateUtils;
 import android.text.method.DigitsKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.FileDescriptor;
 import java.util.Calendar;
 
 public class AlarmHandler extends AbsHandler {
-    interface IRingtoneChangedListener {
-        public void onRingtoneChanged(Uri uri);
-    }
-
-    private static class MyRingtonePreference extends RingtonePreference {
-        IRingtoneChangedListener mRingtoneChangedListener;
-
-        public MyRingtonePreference(Context context) {
-            super(context);
-
-            setShowDefault(true);
-            setShowSilent(true);
-        }
-
-        @SuppressWarnings("unused")
-        public void setRingtoneChangedListener(IRingtoneChangedListener listener) {
-            mRingtoneChangedListener = listener;
-        }
-
-        public Uri getRingtoneUri() {
-            return Uri.parse(getPersistedString(""));
-        }
-
-        public void setRingtoneUri(Uri ringtoneUri) {
-            persistString(ringtoneUri.toString());
-            Ringtone ringtone =
-                RingtoneManager.getRingtone(getContext(), ringtoneUri);
-            setSummary(ringtone.getTitle(getContext()));
-        }
-
-        protected void onSaveRingtone(Uri ringtoneUri) {
-            setRingtoneUri(ringtoneUri);
-            if(mRingtoneChangedListener != null) {
-                mRingtoneChangedListener.onRingtoneChanged(ringtoneUri);
-            }
-        }
-
-        protected Uri onRestoreRingtone() {
-            return getRingtoneUri();
-        }
-    }
-
     private static final String TAG = "AlarmHandler";
 
     private static final String EXTRA_KEY_VIBRATE = "vibrate";
@@ -86,7 +25,7 @@ public class AlarmHandler extends AbsHandler {
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
 
     public void onReceive(Context context, Intent intent) {
-        Log.i(TAG, "===> onReceive(): " + Calendar.getInstance());
+        // Log.i(TAG, "===> onReceive(): " + Calendar.getInstance());
 
         // Parse extra data in the Intent and put them into Intent.
         final String extra = intent.getStringExtra(AlarmColumns.EXTRA);
@@ -119,7 +58,7 @@ public class AlarmHandler extends AbsHandler {
         category.addPreference(vibratePref);
 
         // Ringtone;
-        MyRingtonePreference ringtonePref = new MyRingtonePreference(context);
+        RingtonePreference ringtonePref = new RingtonePreference(context);
         ringtonePref.setShowDefault(false);
         ringtonePref.setShowSilent(false);
         ringtonePref.setTitle(R.string.alarm_handler_ringtone_title);
@@ -148,19 +87,22 @@ public class AlarmHandler extends AbsHandler {
             });
         category.addPreference(snoozeDurationPref);
 
-        if(!TextUtils.isEmpty(extra)) {
+        if (TextUtils.isEmpty(extra)) {
+            vibratePref.setChecked(false);
+            ringtonePref.setRingtoneUri(null);
+            ringtonePref.setSummary("");
+            snoozeDurationPref.setText("");
+            snoozeDurationPref.setSummary("");
+        } else {
             Bundle result = getBundleFromExtra(extra);
 
             boolean vibrate = result.getBoolean(EXTRA_KEY_VIBRATE, false);
             vibratePref.setChecked(vibrate);
 
             String rtString = result.getString(EXTRA_KEY_RINGTONE);
-            if(rtString != null) {
+            if(!TextUtils.isEmpty(rtString)) {
                 Uri rtUri = Uri.parse(rtString);
                 ringtonePref.setRingtoneUri(rtUri);
-                Ringtone ringtone =
-                    RingtoneManager.getRingtone(context, rtUri);
-                ringtonePref.setSummary(ringtone.getTitle(context));
             }
 
             int snoozeDuration = result.getInt(EXTRA_KEY_SNOOZE_DURATION, -1);
