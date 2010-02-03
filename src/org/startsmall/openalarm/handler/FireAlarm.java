@@ -151,8 +151,6 @@ public class FireAlarm extends Activity {
         super.onDestroy();
 
         releaseWakeLock();
-
-        setNotification(false);
     }
 
     @Override
@@ -173,14 +171,14 @@ public class FireAlarm extends Activity {
         if (sHandler != null) {
             sHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK);
         }
+
+        setNotification(false);
     }
 
     // FireAlarm comes to the foreground
     @Override
     public void onResume() {
         super.onResume();
-
-        // Log.d(TAG, "===> onResume()");
 
         // FireAlarm goes back to interact to user. But, Keyguard
         // may be in front.
@@ -215,27 +213,36 @@ public class FireAlarm extends Activity {
 
     @Override
     public void onNewIntent(Intent newIntent) {
-        // Dismiss the old alarm.
-        dismissAlarm();
-        stopVibration();
+        if (!getIntent().filterEquals(newIntent)) {
+            // Dismiss the old alarm (when two alarms are
+            // scheduled at the same time, the only difference
+            // between two alarms is the data they are operating
+            // on).
+            dismissAlarm();
+            stopVibration();
 
-        // New intent comes. Replace the old one.
-        setIntent(newIntent);
+            // New intent comes. Replace the old one.
+            setIntent(newIntent);
 
-        // Refresh UI of the existing instance.
-        setLabelFromIntent();
-        setWindowTitleFromIntent();
+            // Refresh UI of the existing instance.
+            setLabelFromIntent();
+            setWindowTitleFromIntent();
 
-        // The ringtone uri might be different and timeout of
-        // playback needs to be recounted.
-        if (prepareMediaPlayer()) {
-            // A new TIME_OUT message
-            if (sHandler.sendEmptyMessageDelayed(MESSAGE_ID_STOP_PLAYBACK, PLAYBACK_TIMEOUT)) {
-                sMediaPlayer.start();
+            // The ringtone uri might be different and timeout of
+            // playback needs to be recounted.
+            if (prepareMediaPlayer()) {
+                sHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK);
+                // A new TIME_OUT message
+                if (sHandler.sendEmptyMessageDelayed(MESSAGE_ID_STOP_PLAYBACK, PLAYBACK_TIMEOUT)) {
+                    sMediaPlayer.start();
+                }
             }
+
+            startVibration();
         }
 
-        startVibration();
+        // If two Intent objects are equal, they are the same
+        // thing. FireAlarm is restored from notification bar.
     }
 
     private void setWindowTitleFromIntent() {
@@ -410,7 +417,7 @@ public class FireAlarm extends Activity {
             NotificationManager nm =
                 (NotificationManager)getSystemService(
                     Context.NOTIFICATION_SERVICE);
-            nm.cancel(0);
+            nm.cancelAll();
 
             Intent intent = new Intent(getIntent());
             intent.setClass(this, FireAlarm.class);
@@ -433,7 +440,7 @@ public class FireAlarm extends Activity {
             String contentText = getString(R.string.alarm_set_notification_content, timeString);
 
             android.app.Notification notification =
-                new android.app.Notification(R.drawable.stat_notify_alarm,
+                new android.app.Notification(R.drawable.stat_notify_warning_alarm,
                                              tickerText, System.currentTimeMillis());
             notification.flags = android.app.Notification.FLAG_NO_CLEAR;
             notification.setLatestEventInfo(this,
