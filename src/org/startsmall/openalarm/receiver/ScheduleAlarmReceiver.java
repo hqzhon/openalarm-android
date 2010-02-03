@@ -14,7 +14,7 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // Log.i(TAG, "===> onReceive(" + intent.getAction() + ") start: " + Calendar.getInstance());
+        Log.i(TAG, "===> onReceive(" + intent.getAction() + ") start: " + Calendar.getInstance());
 
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
 

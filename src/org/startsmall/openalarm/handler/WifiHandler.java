@@ -72,7 +72,9 @@ public class WifiHandler extends AbsHandler {
                 }
             });
 
-        if (!TextUtils.isEmpty(defaultValue)) {
+        if (TextUtils.isEmpty(defaultValue)) {
+            onOffPref.setValueIndex(1); // set to false.
+        } else {
             Bundle result = getBundleFromExtra(defaultValue);
             boolean state = result.getBoolean(KEY_TOGGLE, false);
             onOffPref.setValueIndex(state ? 0 : 1);

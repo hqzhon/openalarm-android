@@ -56,7 +56,7 @@
     </activity>
 
     <activity android:name=".FireAlarm"
-              android:launchMode="singleTop"
+              android:launchMode="singleInstance"
               android:theme="@android:style/Theme.Dialog"
               android:configChanges="orientation|keyboardHidden|keyboard|navigation">
     </activity>

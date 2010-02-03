@@ -299,6 +299,7 @@ class Alarm {
         final int minutes = c.get(Calendar.MINUTE);
         i.putExtra(AlarmColumns.HOUR_OF_DAY, hourOfDay);
         i.putExtra(AlarmColumns.MINUTES, minutes);
+        i.putExtra(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
         i.putExtra(AlarmColumns.REPEAT_DAYS, mRepeatDays);
         i.putExtra(AlarmColumns.HANDLER, mHandler);
 

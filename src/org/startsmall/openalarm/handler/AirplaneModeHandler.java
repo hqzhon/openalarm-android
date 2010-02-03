@@ -17,7 +17,7 @@ public class AirplaneModeHandler extends AbsHandler {
     private static final String KEY_TOGGLE = "airplanemode_state";
 
     public void onReceive(Context context, Intent intent) {
-        Log.v(TAG, "===> AirplaneModeHandler.onReceive() start:" + Calendar.getInstance());
+        // Log.v(TAG, "===> AirplaneModeHandler.onReceive() start:" + Calendar.getInstance());
 
         final String extra = intent.getStringExtra("extra");
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
@@ -38,7 +38,7 @@ public class AirplaneModeHandler extends AbsHandler {
         scheduleIntent.setComponent(null);
         context.sendBroadcast(scheduleIntent);
 
-        Log.v(TAG, "===> AirplaneModeHandler.onReceive() start:" + Calendar.getInstance());
+        // Log.v(TAG, "===> AirplaneModeHandler.onReceive() start:" + Calendar.getInstance());
     }
 
     @Override
@@ -69,12 +69,13 @@ public class AirplaneModeHandler extends AbsHandler {
                 }
             });
 
-        if (!TextUtils.isEmpty(defaultValue)) {
+        if (TextUtils.isEmpty(defaultValue)) {
+            onOffPref.setValueIndex(1); // set to false
+        } else {
             Bundle result = getBundleFromExtra(defaultValue);
             boolean state = result.getBoolean(KEY_TOGGLE, false);
             onOffPref.setValueIndex(state ? 0 : 1);
         }
-
         onOffPref.setSummary(onOffPref.getEntry());
     }
 
