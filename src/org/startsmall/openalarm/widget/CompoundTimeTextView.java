@@ -45,9 +45,9 @@ public class CompoundTimeTextView extends LinearLayout {
         addView(amPmView);
 
         mAmTextView = (TextView)findViewById(R.id.am);
-        mAmTextView.setText(DateUtils.getAMPMString(Calendar.AM));
+        mAmTextView.setText(DateUtils.getAMPMString(Calendar.AM).toUpperCase());
         mPmTextView = (TextView)findViewById(R.id.pm);
-        mPmTextView.setText(DateUtils.getAMPMString(Calendar.PM));
+        mPmTextView.setText(DateUtils.getAMPMString(Calendar.PM).toUpperCase());
     }
 
     public void setTime(final int hourOfDay, final int minutes) {

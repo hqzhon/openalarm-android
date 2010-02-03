@@ -8,4 +8,5 @@
           android:focusable="false"
           android:singleLine="true"
           android:ellipsize="marquee"
+          android:maxLength="25"
           android:clickable="false"/>

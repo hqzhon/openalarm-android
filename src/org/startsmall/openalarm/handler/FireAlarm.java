@@ -2,6 +2,8 @@ package org.startsmall.openalarm;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
@@ -40,9 +42,7 @@ public class FireAlarm extends Activity {
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
             case MESSAGE_ID_STOP_PLAYBACK:
-
-                Log.d(TAG, "===> handleMessage()");
-
+                Log.i(TAG, "===> Ringtone playing timed out.");
                 // This callback is executed because user doesn't
                 // tell me what to do, i.e., dimiss or snooze.
                 FireAlarm.this.autoSnoozeOrDismissAlarm();
@@ -72,6 +72,7 @@ public class FireAlarm extends Activity {
     private static final int MESSAGE_ID_STOP_PLAYBACK = 1;
     private static final float IN_CALL_VOLUME = 0.125f;
     private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
+    private static final int TITLE_MAX_LENGTH = 18;
 
     private static final int AUTO_SNOOZE_COUNT_MAX = 3;
     private static int sAutoSnoozeCount = 0;
@@ -141,6 +142,8 @@ public class FireAlarm extends Activity {
         }
 
         startVibration();
+
+        setNotification(true);
     }
 
     @Override
@@ -148,6 +151,8 @@ public class FireAlarm extends Activity {
         super.onDestroy();
 
         releaseWakeLock();
+
+        setNotification(false);
     }
 
     @Override
@@ -195,9 +200,14 @@ public class FireAlarm extends Activity {
     }
 
     @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event)  {
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK &&
-            event.getRepeatCount() == 0) { // don't handle BACK key.
+            event.getRepeatCount() == 0) {
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -205,8 +215,6 @@ public class FireAlarm extends Activity {
 
     @Override
     public void onNewIntent(Intent newIntent) {
-        // Log.v(TAG, "===> onNewIntent()");
-
         // Dismiss the old alarm.
         dismissAlarm();
         stopVibration();
@@ -232,7 +240,10 @@ public class FireAlarm extends Activity {
 
     private void setWindowTitleFromIntent() {
         Intent i = getIntent();
-        final String label = i.getStringExtra(AlarmColumns.LABEL);
+        String label = i.getStringExtra(AlarmColumns.LABEL);
+        if (label.length() > TITLE_MAX_LENGTH) {
+            label = label.substring(0, TITLE_MAX_LENGTH - 3) + " ...";
+        }
         setTitle(label);
     }
 
@@ -245,12 +256,12 @@ public class FireAlarm extends Activity {
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
 
-        final String label =
+        final String timeLabel =
             DateUtils.formatDateTime(this,
                                      calendar.getTimeInMillis(),
                                      DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_CAP_AMPM);
-        TextView labelView = (TextView)findViewById(R.id.label);
-        labelView.setText(label);
+        TextView timeTextView = (TextView)findViewById(R.id.time);
+        timeTextView.setText(timeLabel);
     }
 
     private void autoSnoozeOrDismissAlarm() {
@@ -345,49 +356,93 @@ public class FireAlarm extends Activity {
             sMediaPlayer.reset();
         }
 
+        // Whether we should use fallback ringtone?
         Intent intent = getIntent();
+        String uriString = "";
+        boolean useFallbackRingtone = false;
         if (intent.hasExtra(EXTRA_KEY_RINGTONE)) {
-            String uriString = intent.getStringExtra(EXTRA_KEY_RINGTONE);
-            if (TextUtils.isEmpty(uriString)) {
-                return false;
+            uriString = intent.getStringExtra(EXTRA_KEY_RINGTONE);
+            if (TextUtils.isEmpty(uriString) ||
+                mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
+                useFallbackRingtone = true;
             }
-
-            // Log.d(TAG, "===> Play ringtone: " + uriString);
-
-            try {
-                // Detects if we are in a call when this alarm goes off.
-                if (mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
-                    sMediaPlayer.setDataSource(this, Uri.parse(uriString));
-                } else {
-                    Log.w(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
-
-                    // This raw media must be supported by Android
-                    // and no errors thrown from it.
-                    AssetFileDescriptor afd =
-                        getResources().openRawResourceFd(R.raw.in_call_ringtone);
-                    sMediaPlayer.setDataSource(afd.getFileDescriptor(),
-                                               afd.getStartOffset(),
-                                               afd.getLength());
-                    afd.close();
-                    sMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
-                }
-            } catch (java.io.IOException e) {
-                return false;
-            }
-
-            sMediaPlayer.setLooping(true);
-
-            // Prepare MediaPlayer into Prepared state and
-            // MediaPlayer is ready to play.
-            try {
-                sMediaPlayer.prepare();
-            } catch (java.io.IOException e) {
-                return false;
-            }
-
-            return true;
+        } else {
+            useFallbackRingtone = true;
         }
 
-        return false;
+        try {
+            if (useFallbackRingtone) {
+                // This raw media must be supported by Android
+                // and no errors thrown from it.
+                AssetFileDescriptor afd =
+                    getResources().openRawResourceFd(R.raw.in_call_ringtone);
+                sMediaPlayer.setDataSource(afd.getFileDescriptor(),
+                                           afd.getStartOffset(),
+                                           afd.getLength());
+                afd.close();
+
+                if (mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
+                    Log.i(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
+                    sMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+                }
+            } else {
+                sMediaPlayer.setDataSource(this, Uri.parse(uriString));
+            }
+        } catch (java.io.IOException e) {
+            return false;
+        }
+
+        sMediaPlayer.setLooping(true);
+
+        // Prepare MediaPlayer into Prepared state and
+        // MediaPlayer is ready to play.
+        try {
+            sMediaPlayer.prepare();
+        } catch (java.io.IOException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void setNotification(boolean enable) {
+        if (enable) {
+            NotificationManager nm =
+                (NotificationManager)getSystemService(
+                    Context.NOTIFICATION_SERVICE);
+            nm.cancel(0);
+
+            Intent intent = new Intent(getIntent());
+            intent.setClass(this, FireAlarm.class);
+            PendingIntent intentSender =
+                PendingIntent.getActivity(this, 0,
+                                          intent,
+                                          PendingIntent.FLAG_CANCEL_CURRENT);
+
+            final long when = intent.getLongExtra(AlarmColumns.TIME_IN_MILLIS, -1);
+            Calendar calendar = Alarms.getCalendarInstance();
+            calendar.setTimeInMillis(when);
+            final String timeString = DateUtils.formatDateTime(
+                this, when,
+                DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
+                DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
+
+
+            String label = getIntent().getStringExtra(AlarmColumns.LABEL);
+            String tickerText = getString(R.string.fire_alarm_set_notification_ticker, label);
+            String contentText = getString(R.string.alarm_set_notification_content, timeString);
+
+            android.app.Notification notification =
+                new android.app.Notification(R.drawable.stat_notify_alarm,
+                                             tickerText, System.currentTimeMillis());
+            notification.flags = android.app.Notification.FLAG_NO_CLEAR;
+            notification.setLatestEventInfo(this,
+                                            tickerText,
+                                            contentText,
+                                            intentSender);
+            nm.notify(0, notification);
+        } else {
+            Notification.getInstance().set(this);
+        }
     }
 }

@@ -68,6 +68,10 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        Log.d(TAG, "===> onCreate(): task id=" + getTaskId());
+
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main);
@@ -110,6 +114,7 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "===> onDestroy() - close all child cursors");
         super.onDestroy();
 
         // Close all child cursors opened by adapter.
@@ -119,6 +124,7 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onStop() {
+        Log.d(TAG, "===> onStop() - deactivate all child cursors");
         super.onStop();
 
         // Collapse all groups will deactivate its cursor.
@@ -128,6 +134,7 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onRestart() {
+        Log.d(TAG, "===> onRestart() - activate all child cursors");
         super.onRestart();
 
         // Activate all child cursors
@@ -329,13 +336,13 @@ public class OpenAlarm extends ExpandableListActivity {
                                 alarm.getStringField(Alarm.FIELD_HANDLER),
                                 alarm.getStringField(Alarm.FIELD_EXTRA));
 
-                            if (isChecked) {
-                                String text =
-                                    context.getString(R.string.alarm_set_toast_text,
-                                                      alarm.getStringField(Alarm.FIELD_LABEL),
-                                                      alarm.formatSchedule(context));
-                                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-                            }
+                            // if (isChecked) {
+                            //     String text =
+                            //         context.getString(R.string.alarm_set_toast_text,
+                            //                           alarm.getStringField(Alarm.FIELD_LABEL),
+                            //                           alarm.formatSchedule(context));
+                            //     Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+                            // }
                         } else {
                             // Alarm can't be set because its
                             // settings are't good enough. Bring
