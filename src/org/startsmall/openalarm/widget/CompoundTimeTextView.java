@@ -23,6 +23,9 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 public class CompoundTimeTextView extends LinearLayout {
+    public static final int TIME_TEXT = 0;
+    public static final int AMPM_TEXT = 1;
+
     private final TextView mTimeTextView;
     private final TextView mAmTextView;
     private final TextView mPmTextView;
@@ -30,10 +33,12 @@ public class CompoundTimeTextView extends LinearLayout {
     public CompoundTimeTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        setOrientation(0);       // horizontal
+
         // Time text view;
         mTimeTextView = new TextView(context);
-        mTimeTextView.setTextAppearance(context, android.R.style.TextAppearance_Medium);
         mTimeTextView.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);
+        mTimeTextView.setTextAppearance(context, android.R.style.TextAppearance_Large);
         LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
                                                LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.CENTER_VERTICAL;
@@ -48,6 +53,18 @@ public class CompoundTimeTextView extends LinearLayout {
         mAmTextView.setText(DateUtils.getAMPMString(Calendar.AM).toUpperCase());
         mPmTextView = (TextView)findViewById(R.id.pm);
         mPmTextView.setText(DateUtils.getAMPMString(Calendar.PM).toUpperCase());
+    }
+
+    public void setTextAppearance(Context context, int id, int style) {
+        switch (id) {
+        case TIME_TEXT:
+            mTimeTextView.setTextAppearance(context, style);
+            break;
+        case AMPM_TEXT:
+            mAmTextView.setTextAppearance(context, style);
+            mPmTextView.setTextAppearance(context, style);
+            break;
+        }
     }
 
     public void setTime(final int hourOfDay, final int minutes) {
@@ -68,15 +85,11 @@ public class CompoundTimeTextView extends LinearLayout {
             }
         }
 
-        Calendar calendar = Alarms.getCalendarInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        calendar.set(Calendar.MINUTE, minutes);
-
         mTimeTextView.setText(formatTime(hourOfDay, minutes, is24HourFormat));
     }
 
     private String formatTime(final int hourOfDay, final int minutes,
-                            final boolean is24HourMode) {
+                              final boolean is24HourMode) {
         Calendar calendar = Alarms.getCalendarInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
