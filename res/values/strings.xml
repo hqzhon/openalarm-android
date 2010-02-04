@@ -72,7 +72,7 @@
   <!-- FireAlarm -->
   <string name="fire_alarm_snooze_text">Snooze</string>
   <string name="fire_alarm_dismiss_text">Dismiss</string>
-  <string name="fire_alarm_set_notification_ticker">Snooze or dismiss alarm %s</string>
+  <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>
 
   <!-- MediaPlayer -->
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>

@@ -427,7 +427,6 @@ public class FireAlarm extends Activity {
                 DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
                 DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
 
-
             String label = getIntent().getStringExtra(AlarmColumns.LABEL);
             String tickerText = getString(R.string.fire_alarm_set_notification_ticker, label);
             String contentText = getString(R.string.alarm_set_notification_content, timeString);
