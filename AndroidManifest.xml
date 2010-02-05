@@ -19,8 +19,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
-          android:versionName="20100202-release"
-          android:versionCode="20100202">
+          android:versionName="20100202-bugfixes"
+          android:versionCode="20100204">
   <uses-sdk android:minSdkVersion="3"/>
 
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -134,5 +134,12 @@
       </intent-filter>
     </receiver>
 
+    <!-- The application's publisher ID assigned by AdMob -->
+    <meta-data android:value="a14b5bc24b5db07" android:name="ADMOB_PUBLISHER_ID" />
   </application>
+
+  <!-- AdMob Permissions -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
 </manifest>

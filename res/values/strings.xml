@@ -3,6 +3,8 @@
   <!--  -->
   <string name="app_name">OpenAlarm</string>
 
+  <string name="admob_keywords">android application utility</string>
+
   <!-- About HTML file name -->
   <string name="about_this_application">About this application</string>
   <string name="about_html">about.html</string>
@@ -72,7 +74,7 @@
   <!-- FireAlarm -->
   <string name="fire_alarm_snooze_text">Snooze</string>
   <string name="fire_alarm_dismiss_text">Dismiss</string>
-  <string name="fire_alarm_set_notification_ticker">Snooze or dismiss alarm %s</string>
+  <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>
 
   <!-- MediaPlayer -->
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>

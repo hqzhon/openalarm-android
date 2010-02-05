@@ -259,16 +259,9 @@ public class FireAlarm extends Activity {
         final int hourOfDay = i.getIntExtra(AlarmColumns.HOUR_OF_DAY, -1);
         final int minutes = i.getIntExtra(AlarmColumns.MINUTES, -1);
 
-        Calendar calendar = Alarms.getCalendarInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        calendar.set(Calendar.MINUTE, minutes);
-
-        final String timeLabel =
-            DateUtils.formatDateTime(this,
-                                     calendar.getTimeInMillis(),
-                                     DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_CAP_AMPM);
-        TextView timeTextView = (TextView)findViewById(R.id.time);
-        timeTextView.setText(timeLabel);
+        CompoundTimeTextView timeWithAMPM = (CompoundTimeTextView)findViewById(R.id.time);
+        timeWithAMPM.setTextAppearance(this, CompoundTimeTextView.TIME_TEXT, R.style.HugeTextView);
+        timeWithAMPM.setTime(hourOfDay, minutes);
     }
 
     private void autoSnoozeOrDismissAlarm() {
@@ -433,7 +426,6 @@ public class FireAlarm extends Activity {
                 this, when,
                 DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
                 DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
-
 
             String label = getIntent().getStringExtra(AlarmColumns.LABEL);
             String tickerText = getString(R.string.fire_alarm_set_notification_ticker, label);

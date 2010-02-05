@@ -66,6 +66,7 @@
   <!-- FireAlarm -->
   <string name="fire_alarm_snooze_text">"再瞇一下"</string>
   <string name="fire_alarm_dismiss_text">"起來了"</string>
+  <string name="fire_alarm_set_notification_ticker">%s: "再瞇一下還是起來"?</string>
 
   <!-- MediaPlayer -->
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>
