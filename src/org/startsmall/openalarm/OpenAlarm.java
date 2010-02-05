@@ -306,7 +306,9 @@ public class OpenAlarm extends ExpandableListActivity {
                         int alarmId = attachment.getInt(AlarmColumns._ID);
                         editAlarm(alarmId);
 
-                        showAdsChecked();
+                        // Distracting... don't show ads when an
+                        // alarm is clicked.
+                        // showAdsChecked();
                     }
                 };
 
