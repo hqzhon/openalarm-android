@@ -53,15 +53,15 @@ public class AlarmHandler extends AbsHandler {
         vibratePref.setKey(EXTRA_KEY_VIBRATE);
         vibratePref.setPersistent(true);
         vibratePref.setTitle(R.string.alarm_handler_vibrate_title);
-        vibratePref.setSummaryOn(R.string.alarm_handler_vibrate_summary_on);
-        vibratePref.setSummaryOff(R.string.alarm_handler_vibrate_summary_off);
+        vibratePref.setSummaryOn(R.string.on);
+        vibratePref.setSummaryOff(R.string.off);
         category.addPreference(vibratePref);
 
         // Ringtone;
         RingtonePreference ringtonePref = new RingtonePreference(context);
         ringtonePref.setShowDefault(false);
         ringtonePref.setShowSilent(false);
-        ringtonePref.setTitle(R.string.alarm_handler_ringtone_title);
+        ringtonePref.setTitle(R.string.ringtone_title);
         ringtonePref.setKey(EXTRA_KEY_RINGTONE);
         ringtonePref.setPersistent(true);
         ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALL);

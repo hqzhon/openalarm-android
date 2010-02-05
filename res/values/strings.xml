@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <!--  -->
   <string name="app_name">OpenAlarm</string>
 
   <string name="admob_keywords">android application utility</string>
+
+  <string name="on">On</string>
+  <string name="off">Off</string>
 
   <!-- About HTML file name -->
   <string name="about_this_application">About this application</string>
   <string name="about_html">about.html</string>
 
   <!-- Options menu item -->
-  <string name="menu_item_add">Add</string>
-  <string name="menu_item_preferences">Preferences</string>
-  <string name="menu_item_set_theme_title">Theme</string>
+  <string name="menu_item_add">New</string>
+  <!-- <string name="menu_item_preferences">Preferences</string> -->
+  <!-- <string name="menu_item_set_theme_title">Theme</string> -->
   <string name="menu_item_send_feedback">Send feedback</string>
   <string name="menu_item_about">About</string>
 
@@ -60,16 +62,14 @@
   <string name="uncategorized">Uncategorized</string>
 
   <!-- Handler -->
-  <!-- Alarm handler -->
-  <string name="alarm">Alarm</string>
-  <string name="alarm_handler_ringtone_title">Ringtone</string>
+  <string name="ringtone_title">Ringtone</string>
+  <string name="toggle_title">Toggle</string>
 
+  <!-- Alarm handler -->
+  <string name="alarm_handler">Alarm</string>
   <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
   <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
-
   <string name="alarm_handler_vibrate_title">Vibrate</string>
-  <string name="alarm_handler_vibrate_summary_on">On</string>
-  <string name="alarm_handler_vibrate_summary_off">Off</string>
 
   <!-- FireAlarm -->
   <string name="fire_alarm_snooze_text">Snooze</string>
@@ -81,22 +81,22 @@
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 
   <!-- WiFi -->
-  <string name="wifi_toggle_title">Toggle</string>
-  <string name="wifi_toggle_summary">On</string>
+  <string name="wifi_handler">Wi-Fi</string>
   <string name="wifi_key">wifi_state</string>
   <string name="wifi_toggle_dialog_title">Toggle Wi-Fi</string>
 
   <!-- Airplane mode -->
   <string name="airplane_mode">Airplane mode</string>
-  <string name="airplanemode_title">Toggle</string>
-  <string name="airplanemode_summary">On</string>
   <string name="airplanemode_key">airplanemode_state</string>
   <string name="airplanemode_dialog_title">Toggle airplane mode</string>
 
   <!-- APN -->
-  <string name="mobile_network">Mobile network</string>
-  <string name="apn_toggle_title">Toggle</string>
+  <string name="apn_handler">Mobile network</string>
   <string name="apn_toggle_key">apn_state</string>
   <string name="apn_toggle_dialog_title">Toggle mobile network</string>
 
+  <!-- Call for me -->
+  <string name="callforme_handler">Call for me</string>
+  <string name="callforme_handler_phone_number_title">Phone number</string>
+  <string name="callforme_handler_speakerphone_title">Speakerphone Mode</string>
 </resources>

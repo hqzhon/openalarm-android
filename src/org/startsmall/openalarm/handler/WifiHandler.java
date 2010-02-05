@@ -49,7 +49,9 @@ public class WifiHandler extends AbsHandler {
                                  final PreferenceCategory category,
                                  final String defaultValue) {
         ListPreference onOffPref = new ListPreference(context);
-        CharSequence[] entries = new CharSequence[]{"On", "Off"};
+        CharSequence[] entries =
+            new CharSequence[]{context.getString(R.string.on),
+                               context.getString(R.string.off)};
         CharSequence[] entryValues = new CharSequence[]{"true", "false"};
         onOffPref.setKey(KEY_TOGGLE);
         onOffPref.setPersistent(true);
@@ -58,7 +60,7 @@ public class WifiHandler extends AbsHandler {
         category.addPreference(onOffPref);
 
         onOffPref.setValueIndex(1);
-        onOffPref.setTitle(context.getString(R.string.wifi_toggle_title));
+        onOffPref.setTitle(context.getString(R.string.toggle_title));
         onOffPref.setDialogTitle(context.getString(R.string.wifi_toggle_dialog_title));
         onOffPref.setOnPreferenceChangeListener(
             new Preference.OnPreferenceChangeListener() {

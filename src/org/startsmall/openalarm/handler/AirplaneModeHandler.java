@@ -46,7 +46,9 @@ public class AirplaneModeHandler extends AbsHandler {
                                  final PreferenceCategory category,
                                  final String defaultValue) {
         ListPreference onOffPref = new ListPreference(context);
-        CharSequence[] entries = new CharSequence[]{"On", "Off"};
+        CharSequence[] entries =
+            new CharSequence[]{context.getString(R.string.on),
+                               context.getString(R.string.off)};
         CharSequence[] entryValues = new CharSequence[]{"true", "false"};
         onOffPref.setKey(KEY_TOGGLE);
         onOffPref.setPersistent(true);
@@ -55,7 +57,7 @@ public class AirplaneModeHandler extends AbsHandler {
         category.addPreference(onOffPref);
 
         onOffPref.setValueIndex(1);
-        onOffPref.setTitle(context.getString(R.string.airplanemode_title));
+        onOffPref.setTitle(context.getString(R.string.toggle_title));
         onOffPref.setDialogTitle(context.getString(R.string.airplanemode_dialog_title));
         onOffPref.setOnPreferenceChangeListener(
             new Preference.OnPreferenceChangeListener() {
@@ -92,23 +94,6 @@ public class AirplaneModeHandler extends AbsHandler {
         Intent i = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         i.putExtra("state", toggle);
         context.sendBroadcast(i);
-
-        // No need to put an notification on the status bar. The
-        // system already has one for airplane mode.
-
-        // String label = i.getStringExtra("label");
-        // String state = toggle ? "on" : "off";
-        // Notificator notificator = new Notificator(context);
-        // if (toggle) {
-        //     notificator.set(0,
-        //                     R.drawable.ic_lock_airplane_mode,
-        //                     context.getString(
-        //                         R.string.airplanemode_notification_ticker,
-        //                         state.toUpperCase()),
-        //                     context.getString(
-        //                         R.string.airplanemode_notification_content,
-        //                         label, state));
-        // }
     }
 
     private boolean isAirplaneModeOn(Context context) {

@@ -260,7 +260,9 @@ public class OpenAlarm extends ExpandableListActivity {
         i.setData(Uri.parse("mailto:yenliangl@gmail.com"));
         i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
         i.putExtra(Intent.EXTRA_TEXT, "Hi Josh!" );
-        startActivity(Intent.createChooser(i, "Send Feedback"));
+        startActivity(
+            Intent.createChooser(
+                i, getString(R.string.menu_item_send_feedback)));
     }
 
     private void addNewAlarm() {
