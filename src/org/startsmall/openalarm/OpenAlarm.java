@@ -57,21 +57,19 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
+import com.admob.android.ads.AdView;
 import java.util.*;
 
 public class OpenAlarm extends ExpandableListActivity {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
-
     private static final int DIALOG_ID_ABOUT = 0;
+
+    private int mGroupOpenCloseCount = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
-        Log.d(TAG, "===> onCreate(): task id=" + getTaskId());
-
-
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main);
@@ -276,11 +274,22 @@ public class OpenAlarm extends ExpandableListActivity {
         startActivity(intent);
     }
 
+    private void showAds(boolean show) {
+        AdView ads = (AdView)findViewById(R.id.ad);
+        int currentVisibility = ads.getVisibility();
+        if (show && currentVisibility == View.GONE) {
+            ads.setVisibility(View.VISIBLE);
+        } else {
+            ads.setVisibility(View.GONE);
+        }
+    }
+
     private class AlarmAdapter extends ExpandableAlarmAdapter {
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
         private LayoutInflater mInflater;
+        private int mShowAdsCount = 0;
 
         AlarmAdapter(Context context,
                      List<HashMap<String, Object>> groupData, String[] groupFrom, int[] groupTo) {
@@ -296,6 +305,8 @@ public class OpenAlarm extends ExpandableListActivity {
 
                         int alarmId = attachment.getInt(AlarmColumns._ID);
                         editAlarm(alarmId);
+
+                        showAdsChecked();
                     }
                 };
 
@@ -311,6 +322,8 @@ public class OpenAlarm extends ExpandableListActivity {
 
                         menu.setHeaderTitle(label);
                         menu.add(alarmId, MENU_ITEM_ID_DELETE, 0, R.string.menu_item_delete_alarm);
+
+                        showAdsChecked();
                     }
                 };
 
@@ -336,13 +349,8 @@ public class OpenAlarm extends ExpandableListActivity {
                                 alarm.getStringField(Alarm.FIELD_HANDLER),
                                 alarm.getStringField(Alarm.FIELD_EXTRA));
 
-                            // if (isChecked) {
-                            //     String text =
-                            //         context.getString(R.string.alarm_set_toast_text,
-                            //                           alarm.getStringField(Alarm.FIELD_LABEL),
-                            //                           alarm.formatSchedule(context));
-                            //     Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-                            // }
+                            showAdsChecked();
+
                         } else {
                             // Alarm can't be set because its
                             // settings are't good enough. Bring
@@ -482,6 +490,28 @@ public class OpenAlarm extends ExpandableListActivity {
         public void notifyDataSetChanged() {
             super.notifyDataSetChanged();
             Notification.getInstance().set(OpenAlarm.this);
+        }
+
+        @Override
+        public void onGroupCollapsed(int groupPosition) {
+            super.onGroupCollapsed(groupPosition);
+            showAdsChecked();
+        }
+
+        @Override
+        public void onGroupExpanded(int groupPosition) {
+            super.onGroupExpanded(groupPosition);
+            showAdsChecked();
+        }
+
+        private void showAdsChecked() {
+            boolean show = false;
+            if (mShowAdsCount > 5) {
+                mShowAdsCount = 0;
+                show = true;
+            }
+            OpenAlarm.this.showAds(show);
+            mShowAdsCount++;
         }
     }
 }

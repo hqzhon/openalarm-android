@@ -3,6 +3,8 @@
   <!--  -->
   <string name="app_name">OpenAlarm</string>
 
+  <string name="admob_keywords">android application clock love travel</string>
+
   <!-- About HTML file name -->
   <string name="about_this_application">About this application</string>
   <string name="about_html">about.html</string>
