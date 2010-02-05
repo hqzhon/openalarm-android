@@ -64,6 +64,7 @@
   <!-- Handler -->
   <string name="ringtone_title">Ringtone</string>
   <string name="toggle_title">Toggle</string>
+  <string name="phone_number_title">Phone number</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">Alarm</string>
@@ -82,21 +83,21 @@
 
   <!-- WiFi -->
   <string name="wifi_handler">Wi-Fi</string>
-  <string name="wifi_key">wifi_state</string>
   <string name="wifi_toggle_dialog_title">Toggle Wi-Fi</string>
 
   <!-- Airplane mode -->
   <string name="airplane_mode">Airplane mode</string>
-  <string name="airplanemode_key">airplanemode_state</string>
   <string name="airplanemode_dialog_title">Toggle airplane mode</string>
 
   <!-- APN -->
   <string name="apn_handler">Mobile network</string>
-  <string name="apn_toggle_key">apn_state</string>
   <string name="apn_toggle_dialog_title">Toggle mobile network</string>
 
   <!-- Call for me -->
   <string name="callforme_handler">Call for me</string>
-  <string name="callforme_handler_phone_number_title">Phone number</string>
   <string name="callforme_handler_speakerphone_title">Speakerphone Mode</string>
+
+  <!-- SMS -->
+  <string name="sms_handler">SMS</string>
+  <string name="sms_handler_text_title">Text</string>
 </resources>

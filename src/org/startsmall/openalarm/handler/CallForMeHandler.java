@@ -81,7 +81,7 @@ public class CallForMeHandler extends AbsHandler {
         PhonePreference phonePref = new PhonePreference(context);
         phonePref.setKey(EXTRA_KEY_PHONE_URI);
         phonePref.setPersistent(true);
-        phonePref.setTitle(R.string.callforme_handler_phone_number_title);
+        phonePref.setTitle(R.string.phone_number_title);
         phonePref.setOnPhonePickedListener(
             new PhonePreference.OnPhonePickedListener() {
                 public void onPhonePicked(Preference preference, Uri uri) {

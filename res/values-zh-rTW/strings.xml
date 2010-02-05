@@ -64,6 +64,7 @@
   <!-- Handler -->
   <string name="ringtone_title">"音樂鈴聲"</string>
   <string name="toggle_title">開或關</string>
+  <string name="phone_number_title">電話號碼</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">"鬧鐘"</string>
@@ -82,21 +83,21 @@
 
   <!-- WiFi -->
   <string name="wifi_handler">無線網路</string>
-  <!-- <string name="wifi_key">wifi_state</string> -->
   <string name="wifi_toggle_dialog_title">"開啟或關閉無線網路"</string>
 
   <!-- Airplane mode -->
   <string name="airplane_mode">飛航模式</string>
-  <!-- <string name="airplanemode_key">airplanemode_state</string> -->
   <string name="airplanemode_dialog_title">開關飛航模式</string>
 
   <!-- APN -->
   <string name="apn_handler">行動網路</string>
-  <!-- <string name="apn_toggle_key">apn_state</string> -->
   <string name="apn_toggle_dialog_title">開關行動網路</string>
 
   <!-- Call for me -->
   <string name="callforme_handler">定時撥號</string>
-  <string name="callforme_handler_phone_number_title">電話號碼</string>
   <string name="callforme_handler_speakerphone_title">擴音模式</string>
+
+  <!-- SMS -->
+  <string name="sms_handler">SMS</string>
+  <string name="sms_handler_text_title">簡訊內容</string>
 </resources>
