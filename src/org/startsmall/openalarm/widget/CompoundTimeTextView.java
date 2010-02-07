@@ -68,9 +68,7 @@ public class CompoundTimeTextView extends LinearLayout {
     }
 
     public void setTime(final int hourOfDay, final int minutes) {
-        boolean is24HourFormat = DateFormat.is24HourFormat(getContext());
-
-        if (is24HourFormat) {
+        if (Alarms.is24HourMode) {
             mAmTextView.setVisibility(View.GONE);
             mPmTextView.setVisibility(View.GONE);
         } else {
@@ -85,16 +83,15 @@ public class CompoundTimeTextView extends LinearLayout {
             }
         }
 
-        mTimeTextView.setText(formatTime(hourOfDay, minutes, is24HourFormat));
+        mTimeTextView.setText(formatTime(hourOfDay, minutes));
     }
 
-    private String formatTime(final int hourOfDay, final int minutes,
-                              final boolean is24HourMode) {
+    private String formatTime(final int hourOfDay, final int minutes) {
         Calendar calendar = Alarms.getCalendarInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minutes);
 
-        if (is24HourMode) {
+        if (Alarms.is24HourMode) {
             return Alarms.formatTime("HH:mm", calendar);
         }
         return Alarms.formatTime("hh:mm", calendar);

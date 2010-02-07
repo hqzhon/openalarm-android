@@ -34,6 +34,9 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+
+import android.os.Debug;
+
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
@@ -108,47 +111,6 @@ public class OpenAlarm extends ExpandableListActivity {
                                                              AlarmAdapter.GROUP_DATA_KEY_ICON},
                                                 new int[]{R.id.label, R.id.icon});
         setListAdapter(adapter);
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "===> onDestroy() - close all child cursors");
-        super.onDestroy();
-
-        // Close all child cursors opened by adapter.
-        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
-        adapter.closeChildCursors();
-    }
-
-    @Override
-    public void onStop() {
-        Log.d(TAG, "===> onStop() - deactivate all child cursors");
-        super.onStop();
-
-        // Collapse all groups will deactivate its cursor.
-        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
-        adapter.deactivateChildCursors();
-    }
-
-    @Override
-    public void onRestart() {
-        Log.d(TAG, "===> onRestart() - activate all child cursors");
-        super.onRestart();
-
-        // Activate all child cursors
-        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
-        adapter.activateChildCursors();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu, menu);
-        return true;
-    }
-
-    public void onResume() {
-        super.onResume();
 
         // If there are no alarms in the cache (first start or
         // killed), try to bring them from content database. In
@@ -162,8 +124,43 @@ public class OpenAlarm extends ExpandableListActivity {
             Alarm.foreach(this, Alarms.getAlarmUri(-1),
                           new BootService.ScheduleEnabledAlarm());
         }
-
         Notification.getInstance().set(this);
+
+        Alarms.is24HourMode = Alarms.is24HourMode(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // Close all child cursors opened by adapter.
+        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
+        adapter.closeChildCursors();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // Collapse all groups will deactivate its cursor.
+        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
+        adapter.deactivateChildCursors();
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+
+        // Activate all child cursors
+        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
+        adapter.activateChildCursors();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+        return true;
     }
 
     @Override
@@ -307,10 +304,6 @@ public class OpenAlarm extends ExpandableListActivity {
 
                         int alarmId = attachment.getInt(AlarmColumns._ID);
                         editAlarm(alarmId);
-
-                        // Distracting... don't show ads when an
-                        // alarm is clicked.
-                        // showAdsChecked();
                     }
                 };
 
@@ -477,7 +470,7 @@ public class OpenAlarm extends ExpandableListActivity {
                 new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
-            params.setMargins(2, 2, 2, 2);
+            params.setMargins(1, 1, 1, 1);
 
             while(days.hasNext()) {
                 TextView dayLabel = new TextView(context);
