@@ -36,6 +36,9 @@ import java.util.*;
 import java.text.SimpleDateFormat;
 
 public class Alarms {
+
+    public static boolean is24HourMode = false;
+
     private static final String TAG = "Alarms";
 
     /**
