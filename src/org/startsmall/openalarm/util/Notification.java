@@ -36,6 +36,7 @@ class Notification {
         GetNextAlarm getNextAlarm = new GetNextAlarm();
         Alarm.foreach(getNextAlarm);
 
+        String timeSettingString = "";
         if (getNextAlarm.alarm != null) {
             Alarm alarm = getNextAlarm.alarm;
 
@@ -64,10 +65,11 @@ class Notification {
             sNotificationManager.notify(0, notification);
 
             // Put schedule of next alarm in system settings,
-            Settings.System.putString(context.getContentResolver(),
-                                      Settings.System.NEXT_ALARM_FORMATTED,
-                                      alarm.formatSchedule(context));
+            timeSettingString = alarm.formatSchedule(context);
         }
+        Settings.System.putString(context.getContentResolver(),
+                                  Settings.System.NEXT_ALARM_FORMATTED,
+                                  timeSettingString);
     }
 
     private Notification() {}

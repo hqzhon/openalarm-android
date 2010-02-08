@@ -170,6 +170,7 @@ public class FireAlarm extends Activity {
         // STOP_PLAYBACK messages from queue.
         if (sHandler != null) {
             sHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK);
+            sHandler = null;
         }
 
         setNotification(false);

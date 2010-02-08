@@ -16,7 +16,8 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // Log.i(TAG, "===> onReceive(" + intent.getAction() + ")");
+        Alarms.is24HourMode = Alarms.is24HourMode(context);
+        Log.i(TAG, "===> onReceive(" + intent.getAction() + ")");
 
         // Redirect time-consuming alarm scheduling to BootService.
         intent.setAction(null);

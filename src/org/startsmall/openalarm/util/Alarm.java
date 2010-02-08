@@ -285,7 +285,6 @@ class Alarm {
             return;
         }
         i.addCategory(Intent.CATEGORY_ALTERNATIVE);
-        // i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         i.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
 
         // Alarm ID is always necessary for its operations.
@@ -423,7 +422,10 @@ class Alarm {
         // If alarm needs to be scheduled.
         if (mEnabled && scheduleRequired) {
             if (schedule()) {
-                values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
+                // Note that we don't need to update
+                // TIME_IN_MILLIS field, it is an auxilary field
+                // used in for ScheduleAlarmReceiver.
+                // values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
                 set(context);
             } else {
                 // This alarm was enabled, but this update turns

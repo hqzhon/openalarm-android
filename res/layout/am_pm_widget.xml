@@ -6,11 +6,12 @@
               android:padding="2dp"
               android:orientation="vertical">
   <TextView style="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
             android:id="@+id/am"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingTop="5dp"
-            android:gravity="center_vertical"/>
+            android:gravity="center_vertical" />
 
   <LinearLayout android:orientation="vertical"
                 android:layout_width="wrap_content"
@@ -18,6 +19,7 @@
                 android:layout_weight="1"/>
 
   <TextView style="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
             android:id="@+id/pm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

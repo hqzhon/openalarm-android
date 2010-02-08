@@ -20,7 +20,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
           android:versionName="20100202-bugfixes"
-          android:versionCode="20100204">
+          android:versionCode="20100205">
   <uses-sdk android:minSdkVersion="3"/>
 
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
