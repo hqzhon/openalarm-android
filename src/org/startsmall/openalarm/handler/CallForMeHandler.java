@@ -16,14 +16,14 @@ import android.preference.Preference;
 import android.provider.Contacts;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.text.method.DigitsKeyListener;
+import android.text.method.DialerKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
 import java.util.Calendar;
 
 public class CallForMeHandler extends AbsHandler {
     private static final String TAG = "CallForMeHandler";
-    private static final String EXTRA_KEY_PHONE_URI = "phone_uri";
+    private static final String EXTRA_KEY_PHONE_NUMBER = "phone_number";
     private static final String EXTRA_KEY_SPEAKERPHONE = "speakerphone_on";
     private static final String EXTRA_KEY_VOICE_URI = "voice_uri";
 
@@ -34,12 +34,12 @@ public class CallForMeHandler extends AbsHandler {
         final String extra = intent.getStringExtra("extra");
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
 
-        if (intent.hasExtra(EXTRA_KEY_PHONE_URI)) {
+        if (intent.hasExtra(EXTRA_KEY_PHONE_NUMBER)) {
             // Prepare MediaPlayer first;
             if (intent.hasExtra(EXTRA_KEY_VOICE_URI)) {
                 String voiceUriString = intent.getStringExtra(EXTRA_KEY_VOICE_URI);
-                MediaPlayer mp = prepareMediaPlayer(context,
-                                                    Uri.parse(voiceUriString));
+                MediaPlayer mp =
+                    prepareMediaPlayer(context, Uri.parse(voiceUriString));
                 if (mp != null) {
                     AudioManager am =
                         (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
@@ -57,9 +57,10 @@ public class CallForMeHandler extends AbsHandler {
             }
 
             // Make a phone call to specified person.
-            Uri phoneUri =
-                Uri.parse(intent.getStringExtra(EXTRA_KEY_PHONE_URI));
-            callPhone(context, phoneUri);
+            String phoneNumber = intent.getStringExtra(EXTRA_KEY_PHONE_NUMBER);
+            if (!TextUtils.isEmpty(phoneNumber)) {
+                callPhone(context, phoneNumber);
+            }
         }
 
         // Reshedule this alarm.
@@ -78,18 +79,22 @@ public class CallForMeHandler extends AbsHandler {
                                  final PreferenceCategory category,
                                  final String extra) {
         // Phone number to call
-        PhonePreference phonePref = new PhonePreference(context);
-        phonePref.setKey(EXTRA_KEY_PHONE_URI);
+        EditTextPreference phonePref = new EditTextPreference(context);
+        phonePref.setKey(EXTRA_KEY_PHONE_NUMBER);
         phonePref.setPersistent(true);
         phonePref.setTitle(R.string.phone_number_title);
-        phonePref.setOnPhonePickedListener(
-            new PhonePreference.OnPhonePickedListener() {
-                public void onPhonePicked(Preference preference, Uri uri) {
-                    PhonePreference pref = (PhonePreference)preference;
-                    pref.setPhoneUri(uri);
-                    updateSummary(context, pref);
+        phonePref.getEditText().setKeyListener(DialerKeyListener.getInstance());
+        phonePref.setDialogTitle(R.string.phone_number_dialog_title);
+        phonePref.setOnPreferenceChangeListener(
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference p,
+                                                  Object newValue) {
+                    p.setSummary((String)newValue);
+                    return true;
                 }
             });
+
         category.addPreference(phonePref);
 
         // Speakerphone mode
@@ -113,7 +118,7 @@ public class CallForMeHandler extends AbsHandler {
 
         // Get settings from extra.
         if (TextUtils.isEmpty(extra)) {
-            phonePref.setPhoneUri(null);
+            phonePref.setText("");
             phonePref.setSummary("");
             speakerPhonePref.setChecked(false);
             voicePref.setRingtoneUri(null);
@@ -121,11 +126,10 @@ public class CallForMeHandler extends AbsHandler {
         } else {
             Bundle result = getBundleFromExtra(extra);
 
-            String phoneUriString = result.getString(EXTRA_KEY_PHONE_URI);
-            if(phoneUriString != null) {
-                Uri phoneUri = Uri.parse(phoneUriString);
-                phonePref.setPhoneUri(phoneUri);
-                updateSummary(context, phonePref);
+            String phoneNumber = result.getString(EXTRA_KEY_PHONE_NUMBER);
+            if(!TextUtils.isEmpty(phoneNumber)) {
+                phonePref.setText(phoneNumber);
+                phonePref.setSummary(phoneNumber);
             }
 
             boolean isSpeakerphoneOn = result.getBoolean(EXTRA_KEY_SPEAKERPHONE);
@@ -143,9 +147,9 @@ public class CallForMeHandler extends AbsHandler {
 
     @Override
     protected void putBundleIntoIntent(Intent intent, Bundle bundle) {
-        final String phoneUriString = bundle.getString(EXTRA_KEY_PHONE_URI);
-        if (!TextUtils.isEmpty(phoneUriString)) {
-            intent.putExtra(EXTRA_KEY_PHONE_URI, phoneUriString);
+        final String phoneNumber = bundle.getString(EXTRA_KEY_PHONE_NUMBER);
+        if (!TextUtils.isEmpty(phoneNumber)) {
+            intent.putExtra(EXTRA_KEY_PHONE_NUMBER, phoneNumber);
         }
 
         final boolean isSpeakerphoneOn = bundle.getBoolean(EXTRA_KEY_SPEAKERPHONE);
@@ -169,9 +173,9 @@ public class CallForMeHandler extends AbsHandler {
                 }
 
                 String[] elems = value.split("=");
-                if (elems[0].equals(EXTRA_KEY_PHONE_URI)) {
+                if (elems[0].equals(EXTRA_KEY_PHONE_NUMBER)) {
                     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                        result.putString(EXTRA_KEY_PHONE_URI, elems[1]);
+                        result.putString(EXTRA_KEY_PHONE_NUMBER, elems[1]);
                     }
                 } else if (elems[0].equals(EXTRA_KEY_SPEAKERPHONE)) {
                     boolean isSpeakerphoneOn = false;
@@ -189,33 +193,9 @@ public class CallForMeHandler extends AbsHandler {
         return result;
     }
 
-    private void updateSummary(Context context, PhonePreference preference) {
-        Uri phoneUri = preference.getPhoneUri();
-        if (phoneUri == null) {
-            return;
-        }
-        Cursor c = context.getContentResolver()
-                   .query(phoneUri,
-                          new String[]{Contacts.Phones.NAME,
-                                       Contacts.Phones.NUMBER,},
-                          null,
-                          null,
-                          Contacts.Phones.DEFAULT_SORT_ORDER);
-        if (c.moveToFirst()) {
-            do {
-                final String name = c.getString(0);
-                final String number = c.getString(1);
-                preference.setSummary(name + " (" + number + ")");
-
-                Log.d(TAG, "===> get " + name + "(" + number + ")");
-
-            } while (c.moveToNext());
-        }
-        c.close();
-    }
-
-    private void callPhone(Context context, Uri phoneUri) {
-        Intent intent = new Intent(Intent.ACTION_CALL, phoneUri);
+    private void callPhone(Context context, String phoneNumber) {
+        Intent intent = new Intent(Intent.ACTION_CALL,
+                                   Uri.parse("tel:" + phoneNumber));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|
                         Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         context.startActivity(intent);

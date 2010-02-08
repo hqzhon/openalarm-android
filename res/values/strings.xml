@@ -65,6 +65,7 @@
   <string name="ringtone_title">Ringtone</string>
   <string name="toggle_title">Toggle</string>
   <string name="phone_number_title">Phone number</string>
+  <string name="phone_number_dialog_title">Enter phone number</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">Alarm</string>
@@ -95,9 +96,5 @@
 
   <!-- Call for me -->
   <string name="callforme_handler">Call for me</string>
-  <string name="callforme_handler_speakerphone_title">Speakerphone Mode</string>
-
-  <!-- SMS -->
-  <string name="sms_handler">SMS</string>
-  <string name="sms_handler_text_title">Text</string>
+  <string name="callforme_handler_speakerphone_title">Speakerphone mode</string>
 </resources>

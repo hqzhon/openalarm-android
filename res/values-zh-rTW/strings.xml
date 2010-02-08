@@ -65,6 +65,7 @@
   <string name="ringtone_title">"音樂鈴聲"</string>
   <string name="toggle_title">開或關</string>
   <string name="phone_number_title">電話號碼</string>
+  <string name="phone_number_dialog_title">輸入電話號碼</string>
 
   <!-- Alarm handler -->
   <string name="alarm_handler">"鬧鐘"</string>
@@ -96,8 +97,4 @@
   <!-- Call for me -->
   <string name="callforme_handler">定時撥號</string>
   <string name="callforme_handler_speakerphone_title">擴音模式</string>
-
-  <!-- SMS -->
-  <string name="sms_handler">SMS</string>
-  <string name="sms_handler_text_title">簡訊內容</string>
 </resources>
