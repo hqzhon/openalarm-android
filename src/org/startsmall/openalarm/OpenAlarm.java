@@ -34,9 +34,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import android.os.Debug;
-
+// import android.os.Debug;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
@@ -68,8 +66,6 @@ public class OpenAlarm extends ExpandableListActivity {
 
     private static final int MENU_ITEM_ID_DELETE = 0;
     private static final int DIALOG_ID_ABOUT = 0;
-
-    private int mGroupOpenCloseCount = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +127,7 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "===> onDestroy()");
         super.onDestroy();
 
         // Close all child cursors opened by adapter.
@@ -140,7 +137,11 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onStop() {
+        Log.d(TAG, "===> onStop()");
+
         super.onStop();
+
+        // Debug.dumpHprofDatga("openalarm");
 
         // Collapse all groups will deactivate its cursor.
         AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
@@ -149,6 +150,8 @@ public class OpenAlarm extends ExpandableListActivity {
 
     @Override
     public void onRestart() {
+        Log.d(TAG, "===> onRestart()");
+
         super.onRestart();
 
         // Activate all child cursors

@@ -26,7 +26,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
     private int mGroupLayout;
     private String[] mGroupFrom;
     private int[] mGroupTo;
-    private SparseArray<CursorHelper> mChildrenCursorHelpers = new SparseArray<CursorHelper>();
+    private SparseArray<CursorHelper> mChildCursorHelpers = new SparseArray<CursorHelper>();
     private Handler mHandler;
 
     public ExpandableAlarmAdapter(Context context,
@@ -50,7 +50,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
-    // Group-related
     public Object getGroup(int groupPosition) {
         return mGroupData.get(groupPosition);
     }
@@ -76,44 +75,31 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         return v;
     }
 
-    protected abstract View newGroupView(ViewGroup parent);
+    @Override
+    public void onGroupCollapsed(int groupPosition) {
+        deactivateChildCursorHelper(groupPosition);
+    }
 
+    @Override
+    public void onGroupExpanded(int groupPosition) {
+        activateChildCursorHelper(groupPosition);
+    }
+
+    protected abstract View newGroupView(ViewGroup parent);
     protected abstract void bindGroupView(View view, Map<String, ?> data, int childrenCount, String[] from, int[] to);
 
-    /**
-     * Children-releated
-     *
-     */
     public Cursor getChild(int groupPosition, int childPosition) {
-        // Get this group's children Cursor pointing to the particular position.
-        return getChildrenCursorHelper(groupPosition).moveTo(childPosition);
+        return getChildCursorHelper(groupPosition, true).moveTo(childPosition);
     }
 
-    /**
-     *
-     *
-     */
     public long getChildId(int groupPosition, int childPosition) {
-        return getChildrenCursorHelper(groupPosition).getId(childPosition);
+        return getChildCursorHelper(groupPosition, true).getId(childPosition);
     }
 
-    /**
-     * Return how many children this group has. This method will
-     * be executed before getChildView() to instantiate a view or
-     * bind a view with data.
-     *
-     * @param groupPosition Position of clicked group.
-     *
-     * @return number of children this group has.
-     */
     public int getChildrenCount(int groupPosition) {
-        return getChildrenCursorHelper(groupPosition).getCount();
+        return getChildCursorHelper(groupPosition, true).getCount();
     }
 
-    /**
-     *
-     *
-     */
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
                              View convertView, ViewGroup parent) {
         Cursor childCursor = getChild(groupPosition, childPosition);
@@ -138,52 +124,26 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         super.notifyDataSetInvalidated();
     }
 
-    /**
-     *
-     *
-     * @param groupPosition
-     */
-    @Override
-    public void onGroupCollapsed(int groupPosition) {
-        // Deactivate cursor of this group to save some resources
-        CursorHelper cursorHelper = mChildrenCursorHelpers.get(groupPosition);
-        if (cursorHelper != null) {
-            cursorHelper.deactivate();
-        }
-
-        Log.d(TAG, "===> onGroupCollapsed(" + groupPosition + ")");
-
-    }
-
-    /**
-     *
-     *
-     * @param groupPosition
-     */
-    @Override
-    public void onGroupExpanded(int groupPosition) {
-        CursorHelper cursorHelper = mChildrenCursorHelpers.get(groupPosition);
-        if (cursorHelper != null) {
-            cursorHelper.activate();
-        }
-        Log.d(TAG, "===> onGroupExpanded" + groupPosition + ")");
-    }
-
     public void closeChildCursors() {
-        final int len = mChildrenCursorHelpers.size();
+
+        Log.d(TAG, "===> closeChildCursors()");
+
+        final int len = mChildCursorHelpers.size();
         for (int i = 0; i < len; i++) {
-            CursorHelper cursorHelper = mChildrenCursorHelpers.get(i);
+            CursorHelper cursorHelper = getChildCursorHelper(i, false);
             if (cursorHelper != null) {
                 cursorHelper.close();
             }
         }
-        mChildrenCursorHelpers.clear();
+        mChildCursorHelpers.clear();
     }
 
     public void deactivateChildCursors() {
-        final int len = mChildrenCursorHelpers.size();
+        Log.d(TAG, "===> deactivateChildCursors()");
+
+        final int len = mChildCursorHelpers.size();
         for (int i = 0; i < len; i++) {
-            CursorHelper cursorHelper = mChildrenCursorHelpers.get(i);
+            CursorHelper cursorHelper = getChildCursorHelper(i, false);
             if (cursorHelper != null) {
                 cursorHelper.deactivate();
             }
@@ -191,39 +151,44 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
     }
 
     public void activateChildCursors() {
-        final int len = mChildrenCursorHelpers.size();
+        Log.d(TAG, "===> activateChildCursors()");
+
+        final int len = mChildCursorHelpers.size();
         for (int i = 0; i < len; i++) {
-            CursorHelper cursorHelper = mChildrenCursorHelpers.get(i);
+            CursorHelper cursorHelper = getChildCursorHelper(i, true);
             if (cursorHelper != null) {
                 cursorHelper.activate();
             }
         }
     }
 
-    /**
-     *
-     *
-     * @param groupPosition
-     *
-     * @return
-     */
-    protected CursorHelper getChildrenCursorHelper(int groupPosition) {
-        CursorHelper cursorHelper = mChildrenCursorHelpers.get(groupPosition);
-        if (cursorHelper == null) {
-            cursorHelper = new CursorHelper(getChildrenCursor(groupPosition));
-            mChildrenCursorHelpers.put(groupPosition, cursorHelper);
+    private void deactivateChildCursorHelper(int groupPosition) {
+        CursorHelper cursorHelper = getChildCursorHelper(groupPosition, true);
+        cursorHelper.deactivate();
+    }
+
+    private void activateChildCursorHelper(int groupPosition) {
+        CursorHelper cursorHelper = getChildCursorHelper(groupPosition, true);
+        cursorHelper.activate();
+    }
+
+    private CursorHelper getChildCursorHelper(int groupPosition, boolean createCursorOnDemand) {
+        CursorHelper cursorHelper = mChildCursorHelpers.get(groupPosition);
+        if (cursorHelper == null && createCursorOnDemand) {
+            cursorHelper = new CursorHelper(getChildCursor(groupPosition));
+            mChildCursorHelpers.put(groupPosition, cursorHelper);
         }
         return cursorHelper;
     }
 
-    private void notifyDataSetChanged(boolean releaseCursors) {
-        if (releaseCursors) {
+    private void notifyDataSetChanged(boolean deactivateCursors) {
+        if (deactivateCursors) {
             deactivateChildCursors();
         }
         notifyDataSetChanged();
     }
 
-    private synchronized Cursor getChildrenCursor(int groupPosition) {
+    private Cursor getChildCursor(int groupPosition) {
         ContentResolver cr = mContext.getContentResolver();
 
         Map<String, ?> data = mGroupData.get(groupPosition);
@@ -268,13 +233,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         }
 
         long getId(int position) {
-
-            Log.d(TAG, "=======> 1 getId() , mIsDataValid=" + mIsDataValid);
-
             if (mCursor != null && mIsDataValid) {
-
-                Log.d(TAG, "=======> 2 getId(), mIsDataValid=" + mIsDataValid);
-
                 int idIndex = mCursor.getColumnIndexOrThrow(AlarmColumns._ID);
                 mCursor.moveToPosition(position);
                 return mCursor.getLong(idIndex);
@@ -288,9 +247,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                 mCursor.unregisterDataSetObserver(mDataSetObserver);
                 mCursor.deactivate();
                 mIsDataValid = false;
-
-                Log.d(TAG, "===> deactivate(): " + mIsDataValid);
-
+                // Log.d(TAG, "===> deactivate(): deactivated, mIsDataValid=" + mIsDataValid);
             }
         }
 
@@ -299,16 +256,17 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                 mCursor.registerContentObserver(mContentObserver);
                 mCursor.registerDataSetObserver(mDataSetObserver);
                 mIsDataValid = mCursor.requery();
-
-                Log.d(TAG, "===> activate(): " + mIsDataValid);
-
+                // Log.d(TAG, "===> activate(): activated, mIsDataValid=" + mIsDataValid);
             }
         }
 
         void close() {
             if (mCursor != null && !mCursor.isClosed()) {
-                mCursor.unregisterContentObserver(mContentObserver);
-                mCursor.unregisterDataSetObserver(mDataSetObserver);
+                // Log.d(TAG, "===> close(): mIsDataValid=" + mIsDataValid);
+                if (mIsDataValid) {
+                    mCursor.unregisterContentObserver(mContentObserver);
+                    mCursor.unregisterDataSetObserver(mDataSetObserver);
+                }
                 mCursor.close();
                 mIsDataValid = false;
                 mCursor = null;
@@ -316,12 +274,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         }
 
         int getCount() {
-
-            Log.d(TAG, "===> before getCount(): mCursor=" + mCursor + ", mIsDataValid=" + mIsDataValid);
-
-            // if (mCursor != null && mIsDataValid) {
-            //     return mCursor.getCount();
-            // }
+            // Log.d(TAG, "===> before getCount(): mCursor=" + mCursor + ", mIsDataValid=" + mIsDataValid);
             if (mCursor != null) {
                 return mCursor.getCount();
             }
@@ -353,7 +306,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                     // called.
                     mIsDataValid = mCursor.requery();
 
-                    Log.d(TAG, "===> MyContentObserver.onChange(): mIsDataValid=" + mIsDataValid);
+                    // Log.d(TAG, "===> MyContentObserver.onChange(): mIsDataValid=" + mIsDataValid);
 
                     // Notify outside that something has been
                     // changed.
@@ -364,21 +317,23 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
 
         private class MyDataSetObserver extends DataSetObserver {
             /**
-             * This method is triggered by cursor.requery() in
-             * ContentObserver.onChange().
+             * Trigger by Cursor.requery()
              *
              */
             @Override
             public void onChanged() {
-                Log.d(TAG, "===> MyDataSetObserver.onChanged()");
+                // Log.d(TAG, "===> MyDataSetObserver.onChanged()");
                 notifyDataSetChanged(false);
             }
 
-            // deactivate or close
+            /**
+             * Triggered by Cursor.deactivate() or Cursor.close()
+             *
+             */
             @Override
             public void onInvalidated() {
                 mIsDataValid = false;
-                Log.d(TAG, "===> MyDataSetObserver.onInvalidated()" + mIsDataValid);
+                // Log.d(TAG, "===> MyDataSetObserver.onInvalidated()" + mIsDataValid);
                 notifyDataSetInvalidated();
             }
         }

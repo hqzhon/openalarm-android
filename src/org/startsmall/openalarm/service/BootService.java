@@ -26,8 +26,11 @@ public class BootService extends Service {
                 }
             }
 
-            // @note Update alarm in order for bindView() to
-            // update am/pm label whether alarm is enabled.
+            // In fact, we don't need to update TIME_IN_MILLIS
+            // field of every alarm. But if TIME_SET triggers
+            // this receiver, we probably need to reflect change
+            // of is24HourMode in our AM/PM label of alarm list
+            // item in main activity.
             long when = alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
             if (alarm.schedule()) {
                 // Alarm is scheduled successfully. Chances are
@@ -37,7 +40,6 @@ public class BootService extends Service {
                     alarm.set(context);
                 }
             }
-
             alarm.update(context, when);
         }
     }
