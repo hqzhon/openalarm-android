@@ -122,17 +122,25 @@ public class OpenAlarm extends ExpandableListActivity {
         Notification.getInstance().set(this);
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
+
+        showAds(true);
     }
 
-    @Override
-    public void onStop() {
-        Log.d(TAG, "===> onStop()");
-        super.onStop();
+    // @Override
+    // public void onStop() {
+    //     Log.d(TAG, "===> onStop()");
+    //     super.onStop();
 
-        // Deactivate all opened cursor helpers.
-        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
-        adapter.deactivateChildCursors();
-    }
+    //     // Deactivate all opened cursor helpers.
+    //     // AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
+    //     // adapter.deactivateChildCursors();
+    // }
+
+    // @Override
+    // public void onDestroy() {
+    //     Log.d(TAG, "===> onDestroy()");
+    //     super.onDestroy();
+    // }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

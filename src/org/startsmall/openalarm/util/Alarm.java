@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 class Alarm {
+    static long sNearestSchedule = Long.MAX_VALUE;
+
     /**
      * Alarm alert action string.
      * <p>Value: org.startsmall.openalarm.HANDLE_ALARM</p>
@@ -375,6 +377,16 @@ class Alarm {
             } else {
                 // Cancel old schedule.
                 cancel(context);
+
+                // If this alarm is nearest and it's cancelled,
+                // we should reset sNearestSchedule and have
+                // Notification to recalculate it.
+                if (mTimeInMillis == sNearestSchedule) {
+
+                    Log.d(TAG, "===> reset sNearestSchedule to MAX_VAL");
+
+                    sNearestSchedule = Long.MAX_VALUE;
+                }
             }
             mEnabled = enabled;
         }
@@ -491,7 +503,7 @@ class Alarm {
 
         set(context);
 
-        // Persit alarm id in SharedPreferences.
+        // Persist alarm id in SharedPreferences.
         SharedPreferences.Editor ed =
             Alarms.getSharedPreferencesOfSnoozedAlarm(context).edit();
         ed.putInt(AlarmColumns._ID, mId);

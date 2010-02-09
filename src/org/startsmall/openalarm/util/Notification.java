@@ -29,7 +29,6 @@ class Notification {
                 (NotificationManager)context.getSystemService(
                     Context.NOTIFICATION_SERVICE);
         }
-        sNotificationManager.cancel(0);
 
         // Iterate all enabled alarms and find out which one is
         // the next.
@@ -38,6 +37,7 @@ class Notification {
 
         String timeSettingString = "";
         if (getNextAlarm.alarm != null) {
+            // We have to update notification!
             Alarm alarm = getNextAlarm.alarm;
 
             Intent intent = new Intent();
@@ -62,10 +62,20 @@ class Notification {
                                             tickerText,
                                             contentText,
                                             intentSender);
+            sNotificationManager.cancel(0);
             sNotificationManager.notify(0, notification);
 
             // Put schedule of next alarm in system settings,
             timeSettingString = alarm.formatSchedule(context);
+        } else {
+            // I can't find an alarm that is scheduled nearer
+            // than Long.MAX_VALUE. This means no alarms are
+            // enabled.
+            if (Alarm.sNearestSchedule == Long.MAX_VALUE) {
+                sNotificationManager.cancel(0);
+            } else {
+                Log.d(TAG, "===> no need to update notification!!!!!!");
+            }
         }
         Settings.System.putString(context.getContentResolver(),
                                   Settings.System.NEXT_ALARM_FORMATTED,
@@ -81,14 +91,11 @@ class Notification {
      */
     private static class GetNextAlarm extends Alarm.AbsVisitor {
         public Alarm alarm;
-
-        private long mWhen = Long.MAX_VALUE;
-
         public void onVisit(final Alarm alarm) {
             boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
             long timeInMillis = alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
-            if (enabled && timeInMillis < mWhen) {
-                mWhen = timeInMillis;
+            if (enabled && timeInMillis < alarm.sNearestSchedule) {
+                alarm.sNearestSchedule = timeInMillis;
                 this.alarm = alarm;
             }
         }

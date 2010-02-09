@@ -27,6 +27,12 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
         // Try to schedule the alarm.
         if (alarm.schedule()) {
             alarm.set(context);
+
+            // This was the nearest schedule (because it was just
+            // rang) and it was now rescheduled. Reset
+            // Alarm.sNearestSchedule.
+            Alarm.sNearestSchedule = Long.MAX_VALUE;
+
             // Reset notification to the next scheduled alarm.
             Notification.getInstance().set(context);
         }

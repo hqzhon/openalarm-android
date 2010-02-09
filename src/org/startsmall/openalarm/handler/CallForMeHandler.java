@@ -46,6 +46,10 @@ public class CallForMeHandler extends AbsHandler {
                     if (intent.hasExtra(EXTRA_KEY_SPEAKERPHONE)) {
                         boolean isSpeakerphoneOn =
                             intent.getBooleanExtra(EXTRA_KEY_SPEAKERPHONE, false);
+
+
+                        Log.d(TAG, "===> isSpeakerphoneOn=" + isSpeakerphoneOn);
+
                         am.setSpeakerphoneOn(isSpeakerphoneOn);
                     }
 
@@ -231,7 +235,7 @@ public class CallForMeHandler extends AbsHandler {
             case TelephonyManager.CALL_STATE_OFFHOOK:
                 if (mOldState == TelephonyManager.CALL_STATE_RINGING ||
                     mOldState == TelephonyManager.CALL_STATE_IDLE) {
-                    Log.d(TAG, "===> picked up!!..");
+                    Log.d(TAG, "===> picked up!!.." + mAudioManager.isSpeakerphoneOn());
 
                     // Start play voice in earpiece, not in speaker.
                     // mAudioManager.setSpeakerphoneOn(false);
