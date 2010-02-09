@@ -138,7 +138,6 @@ public class OpenAlarm extends ExpandableListActivity {
     @Override
     public void onStop() {
         Log.d(TAG, "===> onStop()");
-
         super.onStop();
 
         // Debug.dumpHprofDatga("openalarm");
@@ -151,7 +150,6 @@ public class OpenAlarm extends ExpandableListActivity {
     @Override
     public void onRestart() {
         Log.d(TAG, "===> onRestart()");
-
         super.onRestart();
 
         // Activate all child cursors
@@ -506,7 +504,7 @@ public class OpenAlarm extends ExpandableListActivity {
 
         private void showAdsChecked() {
             boolean show = false;
-            if (mShowAdsCount > 5) {
+            if (mShowAdsCount > 3) {
                 mShowAdsCount = 0;
                 show = true;
             }
