@@ -34,7 +34,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-// import android.os.Debug;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
@@ -126,35 +125,13 @@ public class OpenAlarm extends ExpandableListActivity {
     }
 
     @Override
-    public void onDestroy() {
-        Log.d(TAG, "===> onDestroy()");
-        super.onDestroy();
-
-        // Close all child cursors opened by adapter.
-        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
-        adapter.closeChildCursors();
-    }
-
-    @Override
     public void onStop() {
         Log.d(TAG, "===> onStop()");
         super.onStop();
 
-        // Debug.dumpHprofDatga("openalarm");
-
-        // Collapse all groups will deactivate its cursor.
+        // Deactivate all opened cursor helpers.
         AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
         adapter.deactivateChildCursors();
-    }
-
-    @Override
-    public void onRestart() {
-        Log.d(TAG, "===> onRestart()");
-        super.onRestart();
-
-        // Activate all child cursors
-        AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
-        adapter.activateChildCursors();
     }
 
     @Override

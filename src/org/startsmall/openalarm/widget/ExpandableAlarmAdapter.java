@@ -80,11 +80,6 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         deactivateChildCursorHelper(groupPosition);
     }
 
-    @Override
-    public void onGroupExpanded(int groupPosition) {
-        activateChildCursorHelper(groupPosition);
-    }
-
     protected abstract View newGroupView(ViewGroup parent);
     protected abstract void bindGroupView(View view, Map<String, ?> data, int childrenCount, String[] from, int[] to);
 
@@ -124,52 +119,25 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
         super.notifyDataSetInvalidated();
     }
 
-    public void closeChildCursors() {
-
-        Log.d(TAG, "===> closeChildCursors()");
-
-        final int len = mChildCursorHelpers.size();
-        for (int i = 0; i < len; i++) {
-            CursorHelper cursorHelper = getChildCursorHelper(i, false);
-            if (cursorHelper != null) {
-                cursorHelper.close();
-            }
-        }
-        mChildCursorHelpers.clear();
-    }
-
+    /**
+     * Deactivate all children cursors.
+     *
+     */
     public void deactivateChildCursors() {
         Log.d(TAG, "===> deactivateChildCursors()");
 
         final int len = mChildCursorHelpers.size();
         for (int i = 0; i < len; i++) {
             CursorHelper cursorHelper = getChildCursorHelper(i, false);
-            if (cursorHelper != null) {
-                cursorHelper.deactivate();
-            }
+            cursorHelper.deactivate();
         }
-    }
-
-    public void activateChildCursors() {
-        Log.d(TAG, "===> activateChildCursors()");
-
-        final int len = mChildCursorHelpers.size();
-        for (int i = 0; i < len; i++) {
-            CursorHelper cursorHelper = getChildCursorHelper(i, true);
-            if (cursorHelper != null) {
-                cursorHelper.activate();
-            }
-        }
+        mChildCursorHelpers.clear();
     }
 
     private void deactivateChildCursorHelper(int groupPosition) {
-        CursorHelper cursorHelper = getChildCursorHelper(groupPosition, true);
+        CursorHelper cursorHelper = getChildCursorHelper(groupPosition, false);
         cursorHelper.deactivate();
-    }
-
-    private void activateChildCursorHelper(int groupPosition) {
-        CursorHelper cursorHelper = getChildCursorHelper(groupPosition, true);
-        cursorHelper.activate();
+        mChildCursorHelpers.remove(groupPosition);
     }
 
     private CursorHelper getChildCursorHelper(int groupPosition, boolean createCursorOnDemand) {
