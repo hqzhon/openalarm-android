@@ -18,9 +18,10 @@ import java.util.Calendar;
 public class AlarmHandler extends AbsHandler {
     private static final String TAG = "AlarmHandler";
 
-    private static final String EXTRA_KEY_VIBRATE = "vibrate";
-    private static final String EXTRA_KEY_RINGTONE = "ringtone";
-    private static final String EXTRA_KEY_SNOOZE_DURATION = "snooze_duration";
+    static final String EXTRA_KEY_VIBRATE = "vibrate";
+    static final String EXTRA_KEY_RINGTONE = "ringtone";
+    static final String EXTRA_KEY_SNOOZE_DURATION = "snooze_duration";
+    static final String EXTRA_KEY_MATH_MODE_ON = "math_mode_on";
 
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
 
@@ -87,12 +88,22 @@ public class AlarmHandler extends AbsHandler {
             });
         category.addPreference(snoozeDurationPref);
 
+        // Math mode: Do a math in order to snooze or dimiss alarm
+        CheckBoxPreference mathModePref = new CheckBoxPreference(context);
+        mathModePref.setKey(EXTRA_KEY_MATH_MODE_ON);
+        mathModePref.setPersistent(true);
+        mathModePref.setTitle(R.string.alarm_handler_math_mode_title);
+        mathModePref.setSummaryOn(R.string.alarm_handler_math_mode_summary_on);
+        mathModePref.setSummaryOff(R.string.alarm_handler_math_mode_summary_off);
+        category.addPreference(mathModePref);
+
         if (TextUtils.isEmpty(extra)) {
             vibratePref.setChecked(false);
             ringtonePref.setRingtoneUri(null);
             ringtonePref.setSummary("");
             snoozeDurationPref.setText("");
             snoozeDurationPref.setSummary("");
+            mathModePref.setChecked(false);
         } else {
             Bundle result = getBundleFromExtra(extra);
 
@@ -111,12 +122,15 @@ public class AlarmHandler extends AbsHandler {
                     Integer.toString(snoozeDuration) + " minutes");
                 snoozeDurationPref.setText(String.valueOf(snoozeDuration));
             }
+
+            boolean isMathModeOn = result.getBoolean(EXTRA_KEY_MATH_MODE_ON, false);
+            mathModePref.setChecked(isMathModeOn);
         }
     }
 
     @Override
     protected void putBundleIntoIntent(Intent intent, Bundle bundle) {
-        final Boolean vibrate = bundle.getBoolean(EXTRA_KEY_VIBRATE, false);
+        final boolean vibrate = bundle.getBoolean(EXTRA_KEY_VIBRATE, false);
         intent.putExtra(EXTRA_KEY_VIBRATE, vibrate);
 
         final String uriString = bundle.getString(EXTRA_KEY_RINGTONE);
@@ -126,6 +140,9 @@ public class AlarmHandler extends AbsHandler {
 
         final int ringtoneDuration = bundle.getInt(EXTRA_KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
         intent.putExtra(EXTRA_KEY_SNOOZE_DURATION, ringtoneDuration);
+
+        final boolean isMathModeOn = bundle.getBoolean(EXTRA_KEY_MATH_MODE_ON, false);
+        intent.putExtra(EXTRA_KEY_MATH_MODE_ON, isMathModeOn);
     }
 
     @Override
@@ -154,6 +171,11 @@ public class AlarmHandler extends AbsHandler {
                     if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
                         result.putInt(EXTRA_KEY_SNOOZE_DURATION,
                                       Integer.parseInt(elems[1]));
+                    }
+                } else if (elems[0].equals(EXTRA_KEY_MATH_MODE_ON)) {
+                    if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                        result.putBoolean(EXTRA_KEY_MATH_MODE_ON,
+                                          Boolean.parseBoolean(elems[1]));
                     }
                 }
             }

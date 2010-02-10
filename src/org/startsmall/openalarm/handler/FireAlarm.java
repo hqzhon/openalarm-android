@@ -27,11 +27,13 @@ import android.view.animation.Animation;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.FileDescriptor;
 import java.util.Calendar;
+import java.util.Random;
 
 public class FireAlarm extends Activity {
     // MediaPlayer enters Prepared state and now a
@@ -65,9 +67,6 @@ public class FireAlarm extends Activity {
 
     private static final String TAG = "FireAlarm";
 
-    private static final String EXTRA_KEY_VIBRATE = "vibrate";
-    private static final String EXTRA_KEY_RINGTONE = "ringtone";
-    private static final String EXTRA_KEY_SNOOZE_DURATION = "snooze_duration";
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
     private static final int MESSAGE_ID_STOP_PLAYBACK = 1;
     private static final float IN_CALL_VOLUME = 0.125f;
@@ -103,6 +102,8 @@ public class FireAlarm extends Activity {
 
         setLabelFromIntent();
         setWindowTitleFromIntent();
+
+        hideMathOrButtonViews();
 
         // Snooze this alarm makes the alarm postponded and saved
         // as a SharedPreferences.
@@ -228,6 +229,7 @@ public class FireAlarm extends Activity {
             // Refresh UI of the existing instance.
             setLabelFromIntent();
             setWindowTitleFromIntent();
+            hideMathOrButtonViews();
 
             // The ringtone uri might be different and timeout of
             // playback needs to be recounted.
@@ -241,9 +243,6 @@ public class FireAlarm extends Activity {
 
             startVibration();
         }
-
-        // If two Intent objects are equal, they are the same
-        // thing. FireAlarm is restored from notification bar.
     }
 
     private void setWindowTitleFromIntent() {
@@ -261,8 +260,59 @@ public class FireAlarm extends Activity {
         final int minutes = i.getIntExtra(AlarmColumns.MINUTES, -1);
 
         CompoundTimeTextView timeWithAMPM = (CompoundTimeTextView)findViewById(R.id.time);
-        timeWithAMPM.setTextAppearance(this, CompoundTimeTextView.TIME_TEXT, R.style.HugeTextView);
+        timeWithAMPM.setTextAppearance(this, CompoundTimeTextView.TIME_TEXT, R.style.TextAppearanceHuge);
         timeWithAMPM.setTime(hourOfDay, minutes);
+    }
+
+    private void hideMathOrButtonViews() {
+        Intent i = getIntent();
+
+        boolean isMathModeOn = i.getBooleanExtra(AlarmHandler.EXTRA_KEY_MATH_MODE_ON, false);
+        final View mathView = findViewById(R.id.math);
+        final View buttonView = findViewById(R.id.buttons);
+        if (isMathModeOn) {
+            mathView.setVisibility(View.VISIBLE);
+            buttonView.setVisibility(View.GONE);
+
+            // Generate a simple equation of the addition of two integers.
+            Random rand1 = new Random();
+            int i1 = rand1.nextInt(500);
+            Random rand2 = new Random();
+            int i2 = rand2.nextInt(500);
+            final int answer = i1 + i2;
+            TextView equationView = (TextView)mathView.findViewById(R.id.equation);
+            equationView.setText(i1 + " + " + i2 + " = ");
+
+            EditText answerView = (EditText)mathView.findViewById(R.id.answer);
+            answerView.setOnEditorActionListener(
+                new TextView.OnEditorActionListener() {
+                    public boolean onEditorAction(TextView view,
+                                                  int actionId,
+                                                  KeyEvent event) {
+                        if (event != null) { // an Enter was pressed.
+                            boolean wrongAnswerEntered = true;
+                            int myAnswer = -1;
+                            try {
+                                myAnswer= Integer.parseInt(view.getText().toString());
+                                if (myAnswer == answer) {
+                                    mathView.setVisibility(View.GONE);
+                                    buttonView.setVisibility(View.VISIBLE);
+                                    wrongAnswerEntered = false;
+                                }
+                            } catch (NumberFormatException e) {
+                            }
+
+                            if (wrongAnswerEntered) {
+                                view.setText("");
+                            }
+                        }
+                        return false;
+                    }
+                });
+        } else {
+            mathView.setVisibility(View.GONE);
+            buttonView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void autoSnoozeOrDismissAlarm() {
@@ -284,7 +334,8 @@ public class FireAlarm extends Activity {
     private void snoozeAlarm() {
         Intent i = getIntent();
         final int alarmId = i.getIntExtra(AlarmColumns._ID, -1);
-        final int snoozeDuration = i.getIntExtra(EXTRA_KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
+        final int snoozeDuration = i.getIntExtra(AlarmHandler.EXTRA_KEY_SNOOZE_DURATION,
+                                                 DEFAULT_SNOOZE_DURATION);
 
         Alarm alarm = Alarm.getInstance(alarmId);
         alarm.snooze(this, snoozeDuration);
@@ -304,7 +355,7 @@ public class FireAlarm extends Activity {
 
     private void startVibration() {
         Intent intent = getIntent();
-        if (intent.getBooleanExtra("vibrate", false)) {
+        if (intent.getBooleanExtra(AlarmHandler.EXTRA_KEY_VIBRATE, false)) {
             if (mVibratePattern == null) {
                 mVibratePattern = new long[]{500, 500};
             }
@@ -364,8 +415,8 @@ public class FireAlarm extends Activity {
         Intent intent = getIntent();
         String uriString = "";
         boolean useFallbackRingtone = false;
-        if (intent.hasExtra(EXTRA_KEY_RINGTONE)) {
-            uriString = intent.getStringExtra(EXTRA_KEY_RINGTONE);
+        if (intent.hasExtra(AlarmHandler.EXTRA_KEY_RINGTONE)) {
+            uriString = intent.getStringExtra(AlarmHandler.EXTRA_KEY_RINGTONE);
             if (TextUtils.isEmpty(uriString) ||
                 mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
                 useFallbackRingtone = true;
