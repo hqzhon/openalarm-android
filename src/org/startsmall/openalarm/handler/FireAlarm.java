@@ -7,6 +7,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,9 +37,11 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.FileDescriptor;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
-public class FireAlarm extends Activity {
+public class FireAlarm extends Activity
+                       implements SensorEventListener {
     // MediaPlayer enters Prepared state and now a
     // Handler should be setup to stop playback of
     // ringtone after some period of time.
@@ -84,6 +90,7 @@ public class FireAlarm extends Activity {
     private KeyguardManager mKeyguardManager;
     private PowerManager.WakeLock mWakeLock;
     private KeyguardManager.KeyguardLock mKeyguardLock;
+    private SensorManager mSensorManager;
     private long[] mVibratePattern;
 
     @Override
@@ -188,6 +195,18 @@ public class FireAlarm extends Activity {
 
         Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
         findViewById(R.id.icon).startAnimation(shake);
+
+        // Register sensor listener
+        List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
+        mSensorManager.registerListener(this, sensors.get(0), SensorManager.SENSOR_DELAY_FASTEST);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // Register sensor listener
+        mSensorManager.unregisterListener(this);
     }
 
     @Override
@@ -243,6 +262,23 @@ public class FireAlarm extends Activity {
 
             startVibration();
         }
+    }
+
+    public void onSensorChanged(SensorEvent event) {
+        Sensor sensor = event.sensor;
+        if (sensor.getType() != Sensor.TYPE_ORIENTATION) {
+            return;
+        }
+
+        float roll = event.values[2];
+        Log.d(TAG, "===> roll=" + roll);
+    }
+
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        if (sensor.getType() != Sensor.TYPE_ORIENTATION) {
+            return;
+        }
+        Log.d(TAG, "===> accuracy=" + accuracy);
     }
 
     private void setWindowTitleFromIntent() {
