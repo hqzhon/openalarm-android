@@ -72,9 +72,7 @@
   <string name="alarm_handler_snooze_duration_title">貪睡間隔</string>
   <string name="alarm_handler_snooze_duration_dialog_title">貪睡幾分鐘</string>
   <string name="alarm_handler_vibrate_title">振動</string>
-  <string name="alarm_handler_math_mode_title">數學模式</string>
-  <string name="alarm_handler_math_mode_summary_on">做個算術清醒一下</string>
-  <string name="alarm_handler_math_mode_summary_off">我不需要</string>
+  <string name="alarm_handler_math_mode_title">算術模式</string>
 
   <!-- FireAlarm -->
   <string name="fire_alarm_snooze_text">再瞇一下</string>

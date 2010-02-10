@@ -13,7 +13,7 @@ import android.text.method.DigitsKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
 
-import java.util.Calendar;
+// import java.util.Calendar;
 
 public class AlarmHandler extends AbsHandler {
     private static final String TAG = "AlarmHandler";
@@ -93,8 +93,8 @@ public class AlarmHandler extends AbsHandler {
         mathModePref.setKey(EXTRA_KEY_MATH_MODE_ON);
         mathModePref.setPersistent(true);
         mathModePref.setTitle(R.string.alarm_handler_math_mode_title);
-        mathModePref.setSummaryOn(R.string.alarm_handler_math_mode_summary_on);
-        mathModePref.setSummaryOff(R.string.alarm_handler_math_mode_summary_off);
+        mathModePref.setSummaryOn(R.string.on);
+        mathModePref.setSummaryOff(R.string.off);
         category.addPreference(mathModePref);
 
         if (TextUtils.isEmpty(extra)) {

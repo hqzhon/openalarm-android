@@ -124,7 +124,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
      *
      */
     private void deactivateChildCursors() {
-        Log.d(TAG, "===> deactivateChildCursors()");
+        // Log.d(TAG, "===> deactivateChildCursors()");
 
         final int len = mChildCursorHelpers.size();
         for (int i = 0; i < len; i++) {
@@ -274,7 +274,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
                     // called.
                     mIsDataValid = mCursor.requery();
 
-                    Log.d(TAG, "===> MyContentObserver.onChange(): mIsDataValid=" + mIsDataValid);
+                    // Log.d(TAG, "===> MyContentObserver.onChange(): mIsDataValid=" + mIsDataValid);
 
                     // Notify outside that something has been
                     // changed.
@@ -290,7 +290,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
              */
             @Override
             public void onChanged() {
-                Log.d(TAG, "===> MyDataSetObserver.onChanged()");
+                // Log.d(TAG, "===> MyDataSetObserver.onChanged()");
                 notifyDataSetChanged(false);
             }
 
@@ -301,7 +301,7 @@ abstract class ExpandableAlarmAdapter extends BaseExpandableListAdapter {
             @Override
             public void onInvalidated() {
                 mIsDataValid = false;
-                Log.d(TAG, "===> MyDataSetObserver.onInvalidated()" + mIsDataValid);
+                // Log.d(TAG, "===> MyDataSetObserver.onInvalidated()" + mIsDataValid);
                 notifyDataSetInvalidated();
             }
         }

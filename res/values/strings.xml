@@ -73,8 +73,6 @@
   <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
   <string name="alarm_handler_vibrate_title">Vibrate</string>
   <string name="alarm_handler_math_mode_title">Math mode</string>
-  <string name="alarm_handler_math_mode_summary_on">I am a deep sleeper!</string>
-  <string name="alarm_handler_math_mode_summary_off">I promise to get up</string>
 
   <!-- FireAlarm -->
   <string name="fire_alarm_snooze_text">Snooze</string>

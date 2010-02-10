@@ -10,7 +10,7 @@ import android.preference.ListPreference;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import java.util.Calendar;
+// import java.util.Calendar;
 
 public class AirplaneModeHandler extends AbsHandler {
     private static final String TAG = "AirplaneModeHandler";

@@ -73,9 +73,10 @@ class Notification {
             // enabled.
             if (Alarm.sNearestSchedule == Long.MAX_VALUE) {
                 sNotificationManager.cancel(0);
-            } else {
-                Log.d(TAG, "===> no need to update notification!!!!!!");
             }
+            // else {
+            //     Log.d(TAG, "===> no need to update notification!!!!!!");
+            // }
         }
         Settings.System.putString(context.getContentResolver(),
                                   Settings.System.NEXT_ALARM_FORMATTED,

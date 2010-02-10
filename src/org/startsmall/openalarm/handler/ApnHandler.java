@@ -9,7 +9,7 @@ import android.preference.PreferenceCategory;
 import android.preference.ListPreference;
 import android.text.TextUtils;
 import android.util.Log;
-import java.util.Calendar;
+// import java.util.Calendar;
 
 public class ApnHandler extends AbsHandler {
     private static final String TAG = "ApnHandler";
@@ -17,7 +17,7 @@ public class ApnHandler extends AbsHandler {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.v(TAG, "===> ApnHandler.onReceive() start: " + Calendar.getInstance());
+        // Log.v(TAG, "===> ApnHandler.onReceive() start: " + Calendar.getInstance());
 
         // Parse extra settings out of combined value.
         final int alarmId = intent.getIntExtra("_id", -1);
@@ -43,7 +43,7 @@ public class ApnHandler extends AbsHandler {
         scheduleIntent.setComponent(null);
         context.sendBroadcast(scheduleIntent);
 
-        Log.v(TAG, "===> ApnHandler.onReceive() end: " + Calendar.getInstance());
+        // Log.v(TAG, "===> ApnHandler.onReceive() end: " + Calendar.getInstance());
     }
 
     public void addMyPreferences(final Context context,

@@ -24,7 +24,7 @@
       <item name="android:background">@drawable/label_blue</item>
       <item name="android:textColor">?android:attr/textColorPrimary</item>
       <item name="android:typeface">monospace</item>
-      <item name="android:textSize">11sp</item>
+      <item name="android:textSize">12sp</item>
     </style>
 
     <style name="TextAppearanceExtraLarge" parent="android:TextAppearance.Large">

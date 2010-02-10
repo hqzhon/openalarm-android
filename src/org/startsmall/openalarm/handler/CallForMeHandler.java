@@ -2,7 +2,6 @@ package org.startsmall.openalarm;
 
 import android.content.Intent;
 import android.content.Context;
-import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
@@ -14,49 +13,43 @@ import android.preference.EditTextPreference;
 import android.preference.PreferenceCategory;
 import android.preference.Preference;
 import android.provider.Contacts;
-import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.method.DialerKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
-import java.util.Calendar;
+// import java.util.Calendar;
 
 public class CallForMeHandler extends AbsHandler {
     private static final String TAG = "CallForMeHandler";
-    private static final String EXTRA_KEY_PHONE_NUMBER = "phone_number";
-    private static final String EXTRA_KEY_SPEAKERPHONE = "speakerphone_on";
-    private static final String EXTRA_KEY_VOICE_URI = "voice_uri";
+    static final String EXTRA_KEY_PHONE_NUMBER = "phone_number";
+    static final String EXTRA_KEY_SPEAKERPHONE_MODE = "speakerphone_on";
+    static final String EXTRA_KEY_VOICE_URI = "voice_uri";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.v(TAG, "===> CallForMeHandler.onReceive() start:" + Calendar.getInstance());
+        // Log.i(TAG, "===> CallForMeHandler.onReceive()");
 
         final String extra = intent.getStringExtra("extra");
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
 
         if (intent.hasExtra(EXTRA_KEY_PHONE_NUMBER)) {
-            // Prepare MediaPlayer first;
-            if (intent.hasExtra(EXTRA_KEY_VOICE_URI)) {
-                String voiceUriString = intent.getStringExtra(EXTRA_KEY_VOICE_URI);
-                MediaPlayer mp =
-                    prepareMediaPlayer(context, Uri.parse(voiceUriString));
-                if (mp != null) {
-                    AudioManager am =
-                        (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-                    if (intent.hasExtra(EXTRA_KEY_SPEAKERPHONE)) {
-                        boolean isSpeakerphoneOn =
-                            intent.getBooleanExtra(EXTRA_KEY_SPEAKERPHONE, false);
 
+            if (intent.hasExtra(EXTRA_KEY_SPEAKERPHONE_MODE)) {
+                boolean speakerphoneOn = intent.getBooleanExtra(EXTRA_KEY_SPEAKERPHONE_MODE, false);
+                if (speakerphoneOn) {
+                    if (intent.hasExtra(EXTRA_KEY_VOICE_URI)) {
+                        String voiceUriString = intent.getStringExtra(EXTRA_KEY_VOICE_URI);
+                        MediaPlayer mp = prepareMediaPlayer(context, Uri.parse(voiceUriString));
+                        if (mp != null) {
+                            AudioManager am =
+                                (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+                            am.setSpeakerphoneOn(speakerphoneOn);
 
-                        Log.d(TAG, "===> isSpeakerphoneOn=" + isSpeakerphoneOn);
-
-                        am.setSpeakerphoneOn(isSpeakerphoneOn);
+                            TelephonyManager tm =
+                                (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+                            tm.listen(new PhoneStateListener(am, tm, mp), PhoneStateListener.LISTEN_CALL_STATE);
+                        }
                     }
-
-                    TelephonyManager tm =
-                        (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-                    tm.listen(new MyPhoneStateListener(am, tm, mp),
-                              PhoneStateListener.LISTEN_CALL_STATE);
                 }
             }
 
@@ -75,7 +68,7 @@ public class CallForMeHandler extends AbsHandler {
         scheduleIntent.setComponent(null);
         context.sendBroadcast(scheduleIntent);
 
-        Log.v(TAG, "===> CallForMeHandler.onReceive() end:" + Calendar.getInstance());
+        // Log.i(TAG, "===> CallForMeHandler.onReceive()");
     }
 
     @Override
@@ -103,7 +96,7 @@ public class CallForMeHandler extends AbsHandler {
 
         // Speakerphone mode
         CheckBoxPreference speakerPhonePref = new CheckBoxPreference(context);
-        speakerPhonePref.setKey(EXTRA_KEY_SPEAKERPHONE);
+        speakerPhonePref.setKey(EXTRA_KEY_SPEAKERPHONE_MODE);
         speakerPhonePref.setPersistent(true);
         speakerPhonePref.setTitle(R.string.callforme_handler_speakerphone_title);
         speakerPhonePref.setSummaryOn(R.string.on);
@@ -112,13 +105,14 @@ public class CallForMeHandler extends AbsHandler {
 
         // Ringtone to play in earpiece or speaker
         RingtonePreference voicePref = new RingtonePreference(context);
+        category.addPreference(voicePref);
         voicePref.setShowDefault(false);
         voicePref.setShowSilent(false);
         voicePref.setTitle(R.string.ringtone_title);
         voicePref.setKey(EXTRA_KEY_VOICE_URI);
         voicePref.setPersistent(true);
         voicePref.setRingtoneType(RingtoneManager.TYPE_ALL);
-        category.addPreference(voicePref);
+        voicePref.setDependency(EXTRA_KEY_SPEAKERPHONE_MODE);
 
         // Get settings from extra.
         if (TextUtils.isEmpty(extra)) {
@@ -136,7 +130,7 @@ public class CallForMeHandler extends AbsHandler {
                 phonePref.setSummary(phoneNumber);
             }
 
-            boolean isSpeakerphoneOn = result.getBoolean(EXTRA_KEY_SPEAKERPHONE);
+            boolean isSpeakerphoneOn = result.getBoolean(EXTRA_KEY_SPEAKERPHONE_MODE);
             speakerPhonePref.setChecked(isSpeakerphoneOn);
 
             String voiceString = result.getString(EXTRA_KEY_VOICE_URI);
@@ -156,8 +150,8 @@ public class CallForMeHandler extends AbsHandler {
             intent.putExtra(EXTRA_KEY_PHONE_NUMBER, phoneNumber);
         }
 
-        final boolean isSpeakerphoneOn = bundle.getBoolean(EXTRA_KEY_SPEAKERPHONE);
-        intent.putExtra(EXTRA_KEY_SPEAKERPHONE, isSpeakerphoneOn);
+        final boolean isSpeakerphoneOn = bundle.getBoolean(EXTRA_KEY_SPEAKERPHONE_MODE);
+        intent.putExtra(EXTRA_KEY_SPEAKERPHONE_MODE, isSpeakerphoneOn);
 
         final String voiceUriString = bundle.getString(EXTRA_KEY_VOICE_URI);
         if (!TextUtils.isEmpty(voiceUriString)) {
@@ -181,12 +175,12 @@ public class CallForMeHandler extends AbsHandler {
                     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
                         result.putString(EXTRA_KEY_PHONE_NUMBER, elems[1]);
                     }
-                } else if (elems[0].equals(EXTRA_KEY_SPEAKERPHONE)) {
+                } else if (elems[0].equals(EXTRA_KEY_SPEAKERPHONE_MODE)) {
                     boolean isSpeakerphoneOn = false;
                     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
                         isSpeakerphoneOn = Boolean.parseBoolean(elems[1]);
                     }
-                    result.putBoolean(EXTRA_KEY_SPEAKERPHONE, isSpeakerphoneOn);
+                    result.putBoolean(EXTRA_KEY_SPEAKERPHONE_MODE, isSpeakerphoneOn);
                 } else if (elems[0].equals(EXTRA_KEY_VOICE_URI)) {
                     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
                         result.putString(EXTRA_KEY_VOICE_URI, elems[1]);
@@ -205,40 +199,41 @@ public class CallForMeHandler extends AbsHandler {
         context.startActivity(intent);
     }
 
-    private class MyPhoneStateListener extends PhoneStateListener {
+    private class PhoneStateListener extends android.telephony.PhoneStateListener {
         private int mOldState = -1;
         private AudioManager mAudioManager;
         private MediaPlayer mMediaPlayer;
         private TelephonyManager mTelephonyManager;
 
-        public MyPhoneStateListener(AudioManager am, TelephonyManager tm, MediaPlayer mp) {
+        public PhoneStateListener(AudioManager am, TelephonyManager tm, MediaPlayer mp) {
             mAudioManager = am;
             mTelephonyManager = tm;
             mMediaPlayer = mp;
         }
 
         public void onCallStateChanged(int state, String incomingNumber) {
-            Log.d(TAG, "===> (current state, old state)=(" + state + ", " + mOldState + ")");
+            // Log.d(TAG, "===> (current state, old state)=(" + state + ", " + mOldState + ")");
             switch (state) {
             case TelephonyManager.CALL_STATE_IDLE:
                 if (mOldState == TelephonyManager.CALL_STATE_OFFHOOK) {
-                    Log.d(TAG, "===> hung up!!..");
+                    // Log.d(TAG, "===> hung up!!..");
 
                     // Stop playing voice and restore audio
                     // routing to speaker.
                     mMediaPlayer.stop();
                     mMediaPlayer.release();
-                    mAudioManager.setSpeakerphoneOn(false);
-                    mTelephonyManager.listen(this,
-                                             PhoneStateListener.LISTEN_NONE);                }
+
+                    // No need to revert speaker phone
+                    // mode. Android should do it for you.
+
+                    mTelephonyManager.listen(this, LISTEN_NONE);
+                }
                 break;
             case TelephonyManager.CALL_STATE_OFFHOOK:
                 if (mOldState == TelephonyManager.CALL_STATE_RINGING ||
                     mOldState == TelephonyManager.CALL_STATE_IDLE) {
-                    Log.d(TAG, "===> picked up!!.." + mAudioManager.isSpeakerphoneOn());
 
-                    // Start play voice in earpiece, not in speaker.
-                    // mAudioManager.setSpeakerphoneOn(false);
+                    // Log.d(TAG, "===> picked up!!.." + mAudioManager.isSpeakerphoneOn());
                     mMediaPlayer.start();
                 }
                 break;
@@ -251,7 +246,6 @@ public class CallForMeHandler extends AbsHandler {
     }
 
     private MediaPlayer prepareMediaPlayer(Context context, Uri audioUri) {
-        // final float IN_CALL_VOLUME = 0.125f;
         if (audioUri == null || TextUtils.isEmpty(audioUri.toString())) {
             return null;
         }
@@ -263,7 +257,6 @@ public class CallForMeHandler extends AbsHandler {
             return null;
         }
 
-        // mp.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
         mp.setLooping(true);
 
         try {
