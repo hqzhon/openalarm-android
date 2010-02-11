@@ -90,8 +90,14 @@ public class FireAlarm extends Activity
     private KeyguardManager mKeyguardManager;
     private PowerManager.WakeLock mWakeLock;
     private KeyguardManager.KeyguardLock mKeyguardLock;
-    private SensorManager mSensorManager;
     private long[] mVibratePattern;
+    private SensorManager mSensorManager;
+    private long mLastUpdateTime = -1;
+    private float mLastRoll;
+    private static final float SLOPE_THRESHOLD_MIN = 1.5f;
+    private static final float SLOPE_THRESHOLD_MAX = 2.0f;
+    private static final float ROLL_THRESHOLD = 75;
+    private int mTiltSensingCount = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -101,6 +107,7 @@ public class FireAlarm extends Activity
         mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         mKeyguardManager = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);;
         mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+        mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 
         acquireWakeLock();
 
@@ -197,8 +204,10 @@ public class FireAlarm extends Activity
         findViewById(R.id.icon).startAnimation(shake);
 
         // Register sensor listener
-        List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
-        mSensorManager.registerListener(this, sensors.get(0), SensorManager.SENSOR_DELAY_FASTEST);
+        Sensor sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        if (sensor != null) {
+            mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
@@ -269,17 +278,36 @@ public class FireAlarm extends Activity
         if (sensor.getType() != Sensor.TYPE_ORIENTATION) {
             return;
         }
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - mLastUpdateTime > 40) {
+            float roll = event.values[2];
+            float slope = (roll - mLastRoll) / 40;
 
-        float roll = event.values[2];
-        Log.d(TAG, "===> roll=" + roll);
-    }
+            Log.d(TAG, "=======================> roll=" + roll + ", slope=" + slope);
 
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        if (sensor.getType() != Sensor.TYPE_ORIENTATION) {
-            return;
+            if (roll >= ROLL_THRESHOLD) {
+                if (slope > SLOPE_THRESHOLD_MIN && slope < SLOPE_THRESHOLD_MAX) {
+                    mTiltSensingCount++;
+                } else if (slope > -SLOPE_THRESHOLD_MAX && slope < -SLOPE_THRESHOLD_MIN) {
+                    mTiltSensingCount++;
+                }
+            }
+
+            // if (mTiltSensingCount % 2 == 1) {
+
+            //     Log.d(TAG, "===========================================================> tile sensed, mTiltSensingCount=" + mTiltSensingCount);
+            //     mTiltSensingCount = 1;
+
+            //     // Tilt sensed
+            //     // dismissAlarm();
+            //     // finish();
+            // }
+            mLastRoll = roll;
+            mLastUpdateTime = currentTime;
         }
-        Log.d(TAG, "===> accuracy=" + accuracy);
     }
+
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     private void setWindowTitleFromIntent() {
         Intent i = getIntent();
