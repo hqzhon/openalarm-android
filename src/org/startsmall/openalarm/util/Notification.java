@@ -21,14 +21,6 @@ class Notification {
         return sInstance;
     }
 
-    public boolean isNext(long schedule) {
-        return mNextSchedule == schedule;
-    }
-
-    public void reset() {
-        mNextSchedule = Long.MAX_VALUE;
-    }
-
     /**
      * Notify user the next scheduled alarm on the status bar
      *
@@ -46,9 +38,6 @@ class Notification {
         Alarm.foreach(getNextAlarm);
         Alarm nextAlarm = getNextAlarm.result;
 
-        Log.d(TAG, "===========> nextAlarm=" + nextAlarm);
-
-
         if (nextAlarm == null) {
             if (!getNextAlarm.hasEnabledAlarms) {
                 mNotificationManager.cancel(0);
@@ -57,9 +46,6 @@ class Notification {
             }
         } else {
             long nextSchedule = nextAlarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
-
-            Log.d(TAG, "===========> mNextSchedule=" + mNextSchedule + ", nextSchedule=" + nextSchedule);
-
 
             if (nextSchedule != mNextSchedule) {
                 // In case that the previous scheduled alarm is
