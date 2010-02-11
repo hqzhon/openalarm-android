@@ -2,19 +2,14 @@ package org.startsmall.openalarm;
 
 import android.content.Context;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.net.Uri;
-import android.text.format.DateUtils;
-import android.util.Log;
-import java.util.Calendar;
 
 public class ScheduleAlarmReceiver extends BroadcastReceiver {
     private static final String TAG = "ScheduleAlarmReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(TAG, "===> onReceive(" + intent.getAction() + ") start: " + Calendar.getInstance());
+        // Log.i(TAG, "===> onReceive()");
 
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
 
@@ -27,13 +22,6 @@ public class ScheduleAlarmReceiver extends BroadcastReceiver {
         // Try to schedule the alarm.
         if (alarm.schedule()) {
             alarm.set(context);
-
-            // This was the nearest schedule (because it was just
-            // rang) and it was now rescheduled. Reset
-            // Alarm.sNearestSchedule.
-            Alarm.sNearestSchedule = Long.MAX_VALUE;
-
-            // Reset notification to the next scheduled alarm.
             Notification.getInstance().set(context);
         }
     }
