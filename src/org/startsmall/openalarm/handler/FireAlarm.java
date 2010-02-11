@@ -339,9 +339,6 @@ public class FireAlarm extends Activity {
 
         Alarm alarm = Alarm.getInstance(alarmId);
         alarm.snooze(this, snoozeDuration);
-
-        // Reset nearest schedule.
-        Alarm.sNearestSchedule = Long.MAX_VALUE;
     }
 
     private void dismissAlarm() {

@@ -10,7 +10,9 @@ import android.util.Log;
 class Notification {
     private static final String TAG = "Notification";
     private static Notification sInstance;
-    private NotificationManager sNotificationManager;
+
+    private NotificationManager mNotificationManager;
+    private long mNextSchedule = Long.MAX_VALUE;
 
     public static Notification getInstance() {
         if (sInstance == null) {
@@ -19,13 +21,21 @@ class Notification {
         return sInstance;
     }
 
+    public boolean isNext(long schedule) {
+        return mNextSchedule == schedule;
+    }
+
+    public void reset() {
+        mNextSchedule = Long.MAX_VALUE;
+    }
+
     /**
      * Notify user the next scheduled alarm on the status bar
      *
      */
     public void set(Context context) {
-        if (sNotificationManager == null) {
-            sNotificationManager =
+        if (mNotificationManager == null) {
+            mNotificationManager =
                 (NotificationManager)context.getSystemService(
                     Context.NOTIFICATION_SERVICE);
         }
@@ -34,53 +44,60 @@ class Notification {
         // the next.
         GetNextAlarm getNextAlarm = new GetNextAlarm();
         Alarm.foreach(getNextAlarm);
+        Alarm nextAlarm = getNextAlarm.result;
 
-        String timeSettingString = "";
-        if (getNextAlarm.alarm != null) {
-            // We have to update notification!
-            Alarm alarm = getNextAlarm.alarm;
+        Log.d(TAG, "===========> nextAlarm=" + nextAlarm);
 
-            Intent intent = new Intent();
-            intent.setClass(context, OpenAlarm.class);
-            PendingIntent intentSender =
-                PendingIntent.getActivity(context, 0,
-                                          intent,
-                                          PendingIntent.FLAG_CANCEL_CURRENT);
 
-            String tickerText =
-                context.getString(R.string.alarm_set_notification_ticker,
-                                  alarm.getStringField(Alarm.FIELD_LABEL));
-            String contentText =
-                context.getString(R.string.alarm_set_notification_content,
-                                  alarm.formatSchedule(context));
-
-            android.app.Notification notification =
-                new android.app.Notification(R.drawable.stat_notify_alarm,
-                                             tickerText, System.currentTimeMillis());
-            notification.flags = android.app.Notification.FLAG_NO_CLEAR;
-            notification.setLatestEventInfo(context,
-                                            tickerText,
-                                            contentText,
-                                            intentSender);
-            sNotificationManager.cancel(0);
-            sNotificationManager.notify(0, notification);
-
-            // Put schedule of next alarm in system settings,
-            timeSettingString = alarm.formatSchedule(context);
-        } else {
-            // I can't find an alarm that is scheduled nearer
-            // than Long.MAX_VALUE. This means no alarms are
-            // enabled.
-            if (Alarm.sNearestSchedule == Long.MAX_VALUE) {
-                sNotificationManager.cancel(0);
+        if (nextAlarm == null) {
+            if (!getNextAlarm.hasEnabledAlarms) {
+                mNotificationManager.cancel(0);
+                Settings.System.putString(context.getContentResolver(),
+                                          Settings.System.NEXT_ALARM_FORMATTED, "");
             }
-            // else {
-            //     Log.d(TAG, "===> no need to update notification!!!!!!");
-            // }
+        } else {
+            long nextSchedule = nextAlarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
+
+            Log.d(TAG, "===========> mNextSchedule=" + mNextSchedule + ", nextSchedule=" + nextSchedule);
+
+
+            if (nextSchedule != mNextSchedule) {
+                // In case that the previous scheduled alarm is
+                // still the next alarm but it is re-scheduled.
+
+                Intent intent = new Intent();
+                intent.setClass(context, OpenAlarm.class);
+                PendingIntent intentSender =
+                    PendingIntent.getActivity(context, 0,
+                                              intent,
+                                              PendingIntent.FLAG_CANCEL_CURRENT);
+
+                String tickerText =
+                    context.getString(R.string.alarm_set_notification_ticker,
+                                      nextAlarm.getStringField(Alarm.FIELD_LABEL));
+                String contentText =
+                    context.getString(R.string.alarm_set_notification_content,
+                                      nextAlarm.formatSchedule(context));
+
+                android.app.Notification notification =
+                    new android.app.Notification(R.drawable.stat_notify_alarm,
+                                                 tickerText, System.currentTimeMillis());
+                notification.flags = android.app.Notification.FLAG_NO_CLEAR;
+                notification.setLatestEventInfo(context,
+                                                tickerText,
+                                                contentText,
+                                                intentSender);
+                mNotificationManager.cancel(0);
+                mNotificationManager.notify(0, notification);
+
+                mNextSchedule = nextSchedule;
+
+                // Put schedule of next alarm in system settings,
+                Settings.System.putString(context.getContentResolver(),
+                                          Settings.System.NEXT_ALARM_FORMATTED,
+                                          nextAlarm.formatSchedule(context));
+            }
         }
-        Settings.System.putString(context.getContentResolver(),
-                                  Settings.System.NEXT_ALARM_FORMATTED,
-                                  timeSettingString);
     }
 
     private Notification() {}
@@ -91,13 +108,25 @@ class Notification {
      *
      */
     private static class GetNextAlarm extends Alarm.AbsVisitor {
-        public Alarm alarm;
+        Alarm result;
+        boolean hasEnabledAlarms;
+        private long mSchedule;
+
+        public GetNextAlarm() {
+            result = null;
+            hasEnabledAlarms = false;
+            mSchedule = Long.MAX_VALUE;
+        }
+
         public void onVisit(final Alarm alarm) {
             boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
             long timeInMillis = alarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
-            if (enabled && timeInMillis < alarm.sNearestSchedule) {
-                alarm.sNearestSchedule = timeInMillis;
-                this.alarm = alarm;
+            if (enabled) {
+                hasEnabledAlarms = true;
+                if (timeInMillis < mSchedule) {
+                    result = alarm;
+                    mSchedule = timeInMillis;
+                }
             }
         }
     }
