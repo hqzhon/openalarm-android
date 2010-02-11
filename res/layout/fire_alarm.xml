@@ -17,7 +17,7 @@
 
     <org.startsmall.openalarm.CompoundTimeTextView
        android:id="@+id/time"
-       android:layout_width="wrap_content"
+       android:layout_width="0dp"
        android:layout_height="fill_parent"
        android:layout_gravity="center_vertical"
        android:layout_weight="1"
@@ -42,10 +42,10 @@
               android:textAppearance="@style/TextAppearanceExtraLarge"/>
 
     <EditText android:id="@+id/answer"
-              android:layout_width="wrap_content"
+              android:layout_width="0dp"
               android:layout_height="wrap_content"
               android:layout_gravity="center_vertical"
-              android:layout_weight="0.25"
+              android:layout_weight="1"
               android:singleLine="true"
               android:numeric="integer"/>
   </LinearLayout>

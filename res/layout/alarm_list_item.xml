@@ -13,8 +13,8 @@
             android:layout_gravity="center_vertical">
   </CheckBox>
 
-  <!-- Action Icon, Label, Repeat on -->
-  <LinearLayout android:layout_width="wrap_content"
+  <!-- Action Icon, Label, Repeat on, android:layout_width="wrap_content" -->
+  <LinearLayout android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_gravity="center_vertical"
