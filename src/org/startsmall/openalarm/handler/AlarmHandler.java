@@ -21,7 +21,7 @@ public class AlarmHandler extends AbsHandler {
     static final String EXTRA_KEY_VIBRATE = "vibrate";
     static final String EXTRA_KEY_RINGTONE = "ringtone";
     static final String EXTRA_KEY_SNOOZE_DURATION = "snooze_duration";
-    static final String EXTRA_KEY_MATH_MODE_ON = "math_mode_on";
+    static final String EXTRA_KEY_MATH_LOCK_ON = "math_lock_on";
 
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
 
@@ -90,9 +90,9 @@ public class AlarmHandler extends AbsHandler {
 
         // Math mode: Do a math in order to snooze or dimiss alarm
         CheckBoxPreference mathModePref = new CheckBoxPreference(context);
-        mathModePref.setKey(EXTRA_KEY_MATH_MODE_ON);
+        mathModePref.setKey(EXTRA_KEY_MATH_LOCK_ON);
         mathModePref.setPersistent(true);
-        mathModePref.setTitle(R.string.alarm_handler_math_mode_title);
+        mathModePref.setTitle(R.string.alarm_handler_math_lock_title);
         mathModePref.setSummaryOn(R.string.on);
         mathModePref.setSummaryOff(R.string.off);
         category.addPreference(mathModePref);
@@ -123,7 +123,7 @@ public class AlarmHandler extends AbsHandler {
                 snoozeDurationPref.setText(String.valueOf(snoozeDuration));
             }
 
-            boolean isMathModeOn = result.getBoolean(EXTRA_KEY_MATH_MODE_ON, false);
+            boolean isMathModeOn = result.getBoolean(EXTRA_KEY_MATH_LOCK_ON, false);
             mathModePref.setChecked(isMathModeOn);
         }
     }
@@ -141,8 +141,8 @@ public class AlarmHandler extends AbsHandler {
         final int ringtoneDuration = bundle.getInt(EXTRA_KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
         intent.putExtra(EXTRA_KEY_SNOOZE_DURATION, ringtoneDuration);
 
-        final boolean isMathModeOn = bundle.getBoolean(EXTRA_KEY_MATH_MODE_ON, false);
-        intent.putExtra(EXTRA_KEY_MATH_MODE_ON, isMathModeOn);
+        final boolean isMathModeOn = bundle.getBoolean(EXTRA_KEY_MATH_LOCK_ON, false);
+        intent.putExtra(EXTRA_KEY_MATH_LOCK_ON, isMathModeOn);
     }
 
     @Override
@@ -172,9 +172,9 @@ public class AlarmHandler extends AbsHandler {
                         result.putInt(EXTRA_KEY_SNOOZE_DURATION,
                                       Integer.parseInt(elems[1]));
                     }
-                } else if (elems[0].equals(EXTRA_KEY_MATH_MODE_ON)) {
+                } else if (elems[0].equals(EXTRA_KEY_MATH_LOCK_ON)) {
                     if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                        result.putBoolean(EXTRA_KEY_MATH_MODE_ON,
+                        result.putBoolean(EXTRA_KEY_MATH_LOCK_ON,
                                           Boolean.parseBoolean(elems[1]));
                     }
                 }

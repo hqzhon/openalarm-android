@@ -42,39 +42,14 @@ import java.util.Random;
 
 public class FireAlarm extends Activity
                        implements SensorEventListener {
-    // MediaPlayer enters Prepared state and now a
-    // Handler should be setup to stop playback of
-    // ringtone after some period of time.
-    private class StopPlayback implements Handler.Callback {
-        @Override
-        public boolean handleMessage(Message msg) {
-            switch (msg.what) {
-            case MESSAGE_ID_STOP_PLAYBACK:
-                Log.i(TAG, "===> Ringtone playing timed out.");
-                // This callback is executed because user doesn't
-                // tell me what to do, i.e., dimiss or snooze.
-                FireAlarm.this.autoSnoozeOrDismissAlarm();
-                FireAlarm.this.finish();
-                return true;
-            default:
-                break;
-            }
-            return true;
-        }
-    }
-
-    private static class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
-        @Override
-        public boolean onError(MediaPlayer mp, int what, int extra) {
-            Log.e(TAG, "===> onError(): " + what + "====> " + extra);
-            return true;
-        }
-    }
-
     private static final String TAG = "FireAlarm";
 
+    private static final int MSGID_STOP_PLAYBACK = 1;
+    private static final int MSGID_REQUEST_NEW_EQUATION = 2;
+    private static final int MSGID_RIGHT_ANSWER = 3;
+    private static final int MSGID_WRONG_ANSWER = 4;
+
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
-    private static final int MESSAGE_ID_STOP_PLAYBACK = 1;
     private static final float IN_CALL_VOLUME = 0.125f;
     private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
     private static final int TITLE_MAX_LENGTH = 18;
@@ -99,6 +74,11 @@ public class FireAlarm extends Activity
     private static final float ROLL_THRESHOLD = 75;
     private int mTiltSensingCount = 1;
 
+    private View mMathView;
+    private View mButtonView;
+    private TextView mEquationTextView;
+    private EditText mAnswerEditText;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,7 +97,11 @@ public class FireAlarm extends Activity
         setLabelFromIntent();
         setWindowTitleFromIntent();
 
-        hideMathOrButtonViews();
+        if (sHandler == null) {
+            sHandler = new Handler(new Callback());
+        }
+
+        prepareMathLock();
 
         // Snooze this alarm makes the alarm postponded and saved
         // as a SharedPreferences.
@@ -146,10 +130,7 @@ public class FireAlarm extends Activity
         // Prepare MediaPlayer for playing ringtone.
         boolean ok = prepareMediaPlayer();
         if (savedInstanceState == null && ok) {
-            if (sHandler == null) {
-                sHandler = new Handler(new StopPlayback());
-            }
-            ok = sHandler.sendEmptyMessageDelayed(MESSAGE_ID_STOP_PLAYBACK, PLAYBACK_TIMEOUT);
+            ok = sHandler.sendEmptyMessageDelayed(MSGID_STOP_PLAYBACK, PLAYBACK_TIMEOUT);
         }
 
         if (ok) {
@@ -184,7 +165,7 @@ public class FireAlarm extends Activity
         // When this activity is intended to finish, remove all
         // STOP_PLAYBACK messages from queue.
         if (sHandler != null) {
-            sHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK);
+            sHandler.removeMessages(MSGID_STOP_PLAYBACK);
             sHandler = null;
         }
 
@@ -257,14 +238,14 @@ public class FireAlarm extends Activity
             // Refresh UI of the existing instance.
             setLabelFromIntent();
             setWindowTitleFromIntent();
-            hideMathOrButtonViews();
+            prepareMathLock();
 
             // The ringtone uri might be different and timeout of
             // playback needs to be recounted.
             if (prepareMediaPlayer()) {
-                sHandler.removeMessages(MESSAGE_ID_STOP_PLAYBACK);
+                sHandler.removeMessages(MSGID_STOP_PLAYBACK);
                 // A new TIME_OUT message
-                if (sHandler.sendEmptyMessageDelayed(MESSAGE_ID_STOP_PLAYBACK, PLAYBACK_TIMEOUT)) {
+                if (sHandler.sendEmptyMessageDelayed(MSGID_STOP_PLAYBACK, PLAYBACK_TIMEOUT)) {
                     sMediaPlayer.start();
                 }
             }
@@ -328,27 +309,33 @@ public class FireAlarm extends Activity
         timeWithAMPM.setTime(hourOfDay, minutes);
     }
 
-    private void hideMathOrButtonViews() {
-        Intent i = getIntent();
+    private void prepareMathLock() {
+        if (mMathView == null) {
+            mMathView = findViewById(R.id.math);
+        }
 
-        boolean isMathModeOn = i.getBooleanExtra(AlarmHandler.EXTRA_KEY_MATH_MODE_ON, false);
-        final View mathView = findViewById(R.id.math);
-        final View buttonView = findViewById(R.id.buttons);
-        if (isMathModeOn) {
-            mathView.setVisibility(View.VISIBLE);
-            buttonView.setVisibility(View.GONE);
+        if (mButtonView == null) {
+            mButtonView = findViewById(R.id.buttons);
+        }
+
+        Intent i = getIntent();
+        boolean isMathLockOn = i.getBooleanExtra(AlarmHandler.EXTRA_KEY_MATH_LOCK_ON, false);
+        if (isMathLockOn) {
+            if (mAnswerEditText == null) {
+                mAnswerEditText = (EditText)mMathView.findViewById(R.id.answer);
+            }
+
+            if (mEquationTextView == null) {
+                mEquationTextView = (TextView)mMathView.findViewById(R.id.equation);
+            }
+
+            mMathView.setVisibility(View.VISIBLE);
+            mButtonView.setVisibility(View.GONE);
 
             // Generate a simple equation of the addition of two integers.
-            Random rand1 = new Random();
-            int i1 = rand1.nextInt(500);
-            Random rand2 = new Random();
-            int i2 = rand2.nextInt(500);
-            final int answer = i1 + i2;
-            TextView equationView = (TextView)mathView.findViewById(R.id.equation);
-            equationView.setText(i1 + " + " + i2 + " = ");
+            sHandler.sendEmptyMessage(MSGID_REQUEST_NEW_EQUATION);
 
-            EditText answerView = (EditText)mathView.findViewById(R.id.answer);
-            answerView.setOnEditorActionListener(
+            mAnswerEditText.setOnEditorActionListener(
                 new TextView.OnEditorActionListener() {
                     public boolean onEditorAction(TextView view,
                                                   int actionId,
@@ -358,24 +345,24 @@ public class FireAlarm extends Activity
                             int myAnswer = -1;
                             try {
                                 myAnswer= Integer.parseInt(view.getText().toString());
+                                int answer = (Integer)view.getTag();
                                 if (myAnswer == answer) {
-                                    mathView.setVisibility(View.GONE);
-                                    buttonView.setVisibility(View.VISIBLE);
+                                    sHandler.sendEmptyMessage(MSGID_RIGHT_ANSWER);
                                     wrongAnswerEntered = false;
                                 }
                             } catch (NumberFormatException e) {
                             }
 
                             if (wrongAnswerEntered) {
-                                view.setText("");
+                                sHandler.sendEmptyMessage(MSGID_WRONG_ANSWER);
                             }
                         }
                         return false;
                     }
                 });
         } else {
-            mathView.setVisibility(View.GONE);
-            buttonView.setVisibility(View.VISIBLE);
+            mMathView.setVisibility(View.GONE);
+            mButtonView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -560,4 +547,60 @@ public class FireAlarm extends Activity
             Notification.getInstance().set(this);
         }
     }
+
+    // MediaPlayer enters Prepared state and now a
+    // Handler should be setup to stop playback of
+    // ringtone after some period of time.
+    private class Callback implements Handler.Callback {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+            case MSGID_STOP_PLAYBACK:
+                Log.i(TAG, "===> Ringtone playing timed out.");
+                // This callback is executed because user doesn't
+                // tell me what to do, i.e., dimiss or snooze.
+                FireAlarm.this.autoSnoozeOrDismissAlarm();
+                FireAlarm.this.finish();
+                return true;
+
+                // Generate a new math lock
+            case MSGID_REQUEST_NEW_EQUATION:
+                final Random rand = new Random();
+                int i1 = rand.nextInt(500);
+                rand.setSeed(System.currentTimeMillis() + rand.nextInt());
+                int i2 = rand.nextInt(500);
+                final int answer = i1 + i2;
+
+                mEquationTextView.setText(i1 + " + " + i2 + " = ");
+                mAnswerEditText.setTag(answer);
+                break;
+
+                // Right answer provided by user. Unlock button view.
+            case MSGID_RIGHT_ANSWER:
+                mMathView.setVisibility(View.GONE);
+                mButtonView.setVisibility(View.VISIBLE);
+                break;
+
+                // Wrong answer. Continue to lock buttonView and
+                // generate new equation.
+            case MSGID_WRONG_ANSWER:
+                mAnswerEditText.setText("");
+                sHandler.sendEmptyMessage(MSGID_REQUEST_NEW_EQUATION);
+                break;
+
+            default:
+                break;
+            }
+            return true;
+        }
+    }
+
+    private static class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            Log.e(TAG, "===> onError(): " + what + "====> " + extra);
+            return true;
+        }
+    }
+
 }
