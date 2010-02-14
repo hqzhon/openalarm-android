@@ -481,8 +481,8 @@ class Alarm {
         // and time.
         Calendar calendar = Alarms.getCalendarInstance();
         calendar.add(Calendar.MINUTE, minutesLater);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
+        // calendar.set(Calendar.SECOND, 0);
+        // calendar.set(Calendar.MILLISECOND, 0);
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int minutes = calendar.get(Calendar.MINUTE);
 

@@ -19,8 +19,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
-          android:versionName="20100214-HappyChineseNewYear"
-          android:versionCode="20100214">
+          android:versionName="20100215-HappyChineseNewYear"
+          android:versionCode="20100215">
   <uses-sdk android:minSdkVersion="3"/>
 
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
