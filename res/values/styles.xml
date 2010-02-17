@@ -34,5 +34,10 @@
     <style name="TextAppearanceHuge" parent="android:TextAppearance.Large">
         <item name="android:textSize">56sp</item>
     </style>
+
+    <style name="Theme.Dialog.NoTitleBar" parent="android:Theme.Dialog">
+      <item name="android:windowNoTitle">true</item>
+    </style>
+
 </resources>
 

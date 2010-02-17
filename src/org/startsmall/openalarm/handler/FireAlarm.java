@@ -7,10 +7,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,28 +27,29 @@ import android.view.animation.Animation;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.FileDescriptor;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Random;
 
 public class FireAlarm extends Activity
-                       implements SensorEventListener {
+                       implements View.OnClickListener {
     private static final String TAG = "FireAlarm";
 
     private static final int MSGID_STOP_PLAYBACK = 1;
     private static final int MSGID_REQUEST_NEW_EQUATION = 2;
     private static final int MSGID_RIGHT_ANSWER = 3;
     private static final int MSGID_WRONG_ANSWER = 4;
+    private static final int MSGID_ANIMATE_ANSWER_TEXTVIEW = 5;
 
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
     private static final float IN_CALL_VOLUME = 0.125f;
     private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
-    private static final int TITLE_MAX_LENGTH = 18;
 
     private static final int AUTO_SNOOZE_COUNT_MAX = 3;
     private static int sAutoSnoozeCount = 0;
@@ -66,18 +63,11 @@ public class FireAlarm extends Activity
     private PowerManager.WakeLock mWakeLock;
     private KeyguardManager.KeyguardLock mKeyguardLock;
     private long[] mVibratePattern;
-    private SensorManager mSensorManager;
-    private long mLastUpdateTime = -1;
-    private float mLastRoll;
-    private static final float SLOPE_THRESHOLD_MIN = 1.5f;
-    private static final float SLOPE_THRESHOLD_MAX = 2.0f;
-    private static final float ROLL_THRESHOLD = 75;
-    private int mTiltSensingCount = 1;
 
-    private View mMathView;
-    private View mButtonView;
+    private TableLayout mMathPanel;
+    private LinearLayout mButtonPanel;
     private TextView mEquationTextView;
-    private EditText mAnswerEditText;
+    private TextView[] mAnswerTextView = new TextView[4];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,15 +77,14 @@ public class FireAlarm extends Activity
         mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         mKeyguardManager = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);;
         mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
-        mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 
         acquireWakeLock();
 
-        // requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.fire_alarm);
 
-        setLabelFromIntent();
-        setWindowTitleFromIntent();
+        Intent intent = getIntent();
+        setTimeFromIntent(intent);
+        setLabelFromIntent(intent);
 
         if (sHandler == null) {
             sHandler = new Handler(new Callback());
@@ -166,10 +155,13 @@ public class FireAlarm extends Activity
         // STOP_PLAYBACK messages from queue.
         if (sHandler != null) {
             sHandler.removeMessages(MSGID_STOP_PLAYBACK);
+            sHandler.removeMessages(MSGID_ANIMATE_ANSWER_TEXTVIEW);
             sHandler = null;
         }
 
-        setNotification(false);
+        Log.d(TAG, "===> finish(" + this + ")");
+
+        // setNotification(false);
     }
 
     // FireAlarm comes to the foreground
@@ -183,20 +175,6 @@ public class FireAlarm extends Activity
 
         Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
         findViewById(R.id.icon).startAnimation(shake);
-
-        // Register sensor listener
-        Sensor sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-        if (sensor != null) {
-            mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // Register sensor listener
-        mSensorManager.unregisterListener(this);
     }
 
     @Override
@@ -225,10 +203,10 @@ public class FireAlarm extends Activity
     @Override
     public void onNewIntent(Intent newIntent) {
         if (!getIntent().filterEquals(newIntent)) {
-            // Dismiss the old alarm (when two alarms are
-            // scheduled at the same time, the only difference
-            // between two alarms is the data they are operating
-            // on).
+            // Dismiss the old alarm. This only takes care of the
+            // case that when two alarms are scheduled at the
+            // same time, we should dismiss the old alarm and
+            // override FireAlarm with new alarm.
             dismissAlarm();
             stopVibration();
 
@@ -236,8 +214,8 @@ public class FireAlarm extends Activity
             setIntent(newIntent);
 
             // Refresh UI of the existing instance.
-            setLabelFromIntent();
-            setWindowTitleFromIntent();
+            setTimeFromIntent(newIntent);
+            setLabelFromIntent(newIntent);
             prepareMathLock();
 
             // The ringtone uri might be different and timeout of
@@ -254,55 +232,15 @@ public class FireAlarm extends Activity
         }
     }
 
-    public void onSensorChanged(SensorEvent event) {
-        Sensor sensor = event.sensor;
-        if (sensor.getType() != Sensor.TYPE_ORIENTATION) {
-            return;
-        }
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - mLastUpdateTime > 40) {
-            float roll = event.values[2];
-            float slope = (roll - mLastRoll) / 40;
-
-            Log.d(TAG, "=======================> roll=" + roll + ", slope=" + slope);
-
-            if (roll >= ROLL_THRESHOLD) {
-                if (slope > SLOPE_THRESHOLD_MIN && slope < SLOPE_THRESHOLD_MAX) {
-                    mTiltSensingCount++;
-                } else if (slope > -SLOPE_THRESHOLD_MAX && slope < -SLOPE_THRESHOLD_MIN) {
-                    mTiltSensingCount++;
-                }
-            }
-
-            // if (mTiltSensingCount % 2 == 1) {
-
-            //     Log.d(TAG, "===========================================================> tile sensed, mTiltSensingCount=" + mTiltSensingCount);
-            //     mTiltSensingCount = 1;
-
-            //     // Tilt sensed
-            //     // dismissAlarm();
-            //     // finish();
-            // }
-            mLastRoll = roll;
-            mLastUpdateTime = currentTime;
-        }
+    private void setLabelFromIntent(Intent intent) {
+        String label = intent.getStringExtra(AlarmColumns.LABEL);
+        TextView labelView = (TextView)findViewById(R.id.label);
+        labelView.setText(label);
     }
 
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-
-    private void setWindowTitleFromIntent() {
-        Intent i = getIntent();
-        String label = i.getStringExtra(AlarmColumns.LABEL);
-        if (label.length() > TITLE_MAX_LENGTH) {
-            label = label.substring(0, TITLE_MAX_LENGTH - 3) + " ...";
-        }
-        setTitle(label);
-    }
-
-    private void setLabelFromIntent() {
-        Intent i = getIntent();
-        final int hourOfDay = i.getIntExtra(AlarmColumns.HOUR_OF_DAY, -1);
-        final int minutes = i.getIntExtra(AlarmColumns.MINUTES, -1);
+    private void setTimeFromIntent(Intent intent) {
+        final int hourOfDay = intent.getIntExtra(AlarmColumns.HOUR_OF_DAY, -1);
+        final int minutes = intent.getIntExtra(AlarmColumns.MINUTES, -1);
 
         CompoundTimeTextView timeWithAMPM = (CompoundTimeTextView)findViewById(R.id.time);
         timeWithAMPM.setTextAppearance(this, CompoundTimeTextView.TIME_TEXT, R.style.TextAppearanceHuge);
@@ -310,59 +248,62 @@ public class FireAlarm extends Activity
     }
 
     private void prepareMathLock() {
-        if (mMathView == null) {
-            mMathView = findViewById(R.id.math);
+        if (mMathPanel == null) {
+            mMathPanel = (TableLayout)findViewById(R.id.math_panel);
+
+            TextView tv;
+            final int childCount = mMathPanel.getChildCount();
+            for (int i = 1; i < childCount; i++) {
+                TableRow row = (TableRow)mMathPanel.getChildAt(i);
+                for (int j = 0; j < 2; j++) {
+                    tv = (TextView)row.getChildAt(j);
+                    tv.setOnClickListener(this);
+                    mAnswerTextView[(i - 1 )*2 + j] = tv;
+                }
+            }
+            tv = mAnswerTextView[3];
+            mAnswerTextView[3] = mAnswerTextView[2];
+            mAnswerTextView[2] = tv;
         }
 
-        if (mButtonView == null) {
-            mButtonView = findViewById(R.id.buttons);
+        if (mButtonPanel == null) {
+            mButtonPanel = (LinearLayout)findViewById(R.id.button_panel);
         }
 
-        Intent i = getIntent();
-        boolean isMathLockOn = i.getBooleanExtra(AlarmHandler.EXTRA_KEY_MATH_LOCK_ON, false);
+        Intent intent = getIntent();
+        boolean isMathLockOn = intent.getBooleanExtra(AlarmHandler.EXTRA_KEY_MATH_LOCK_ON, false);
         if (isMathLockOn) {
-            if (mAnswerEditText == null) {
-                mAnswerEditText = (EditText)mMathView.findViewById(R.id.answer);
-            }
-
             if (mEquationTextView == null) {
-                mEquationTextView = (TextView)mMathView.findViewById(R.id.equation);
+                mEquationTextView = (TextView)mMathPanel.findViewById(R.id.equation);
             }
 
-            mMathView.setVisibility(View.VISIBLE);
-            mButtonView.setVisibility(View.GONE);
+            mMathPanel.setVisibility(View.VISIBLE);
+            mButtonPanel.setVisibility(View.GONE);
 
             // Generate a simple equation of the addition of two integers.
             sHandler.sendEmptyMessage(MSGID_REQUEST_NEW_EQUATION);
-
-            mAnswerEditText.setOnEditorActionListener(
-                new TextView.OnEditorActionListener() {
-                    public boolean onEditorAction(TextView view,
-                                                  int actionId,
-                                                  KeyEvent event) {
-                        if (event != null) { // an Enter was pressed.
-                            boolean wrongAnswerEntered = true;
-                            int myAnswer = -1;
-                            try {
-                                myAnswer= Integer.parseInt(view.getText().toString());
-                                int answer = (Integer)view.getTag();
-                                if (myAnswer == answer) {
-                                    sHandler.sendEmptyMessage(MSGID_RIGHT_ANSWER);
-                                    wrongAnswerEntered = false;
-                                }
-                            } catch (NumberFormatException e) {
-                            }
-
-                            if (wrongAnswerEntered) {
-                                sHandler.sendEmptyMessage(MSGID_WRONG_ANSWER);
-                            }
-                        }
-                        return false;
-                    }
-                });
         } else {
-            mMathView.setVisibility(View.GONE);
-            mButtonView.setVisibility(View.VISIBLE);
+            mMathPanel.setVisibility(View.GONE);
+            mButtonPanel.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void onClick(View view) {
+        TextView tv = (TextView)view;
+        boolean wrongAnswerEntered = true;
+        int answer = (Integer)tv.getTag();
+        int userAnswer = -1;
+        try {
+            userAnswer = Integer.parseInt(tv.getText().toString());
+            if (userAnswer == answer) {
+                sHandler.sendEmptyMessage(MSGID_RIGHT_ANSWER);
+                wrongAnswerEntered = false;
+            }
+        } catch (NumberFormatException e) {
+        }
+
+        if (wrongAnswerEntered) {
+            sHandler.sendEmptyMessage(MSGID_WRONG_ANSWER);
         }
     }
 
@@ -390,6 +331,8 @@ public class FireAlarm extends Activity
 
         Alarm alarm = Alarm.getInstance(alarmId);
         alarm.snooze(this, snoozeDuration);
+
+        setNotification(false);
     }
 
     private void dismissAlarm() {
@@ -543,7 +486,13 @@ public class FireAlarm extends Activity
                                             contentText,
                                             intentSender);
             nm.notify(0, notification);
+
+            Log.d(TAG, "====> setNotification(true)");
+
         } else {
+
+            Log.d(TAG, "====> setNotification(false)");
+
             Notification.getInstance().set(this);
         }
     }
@@ -552,6 +501,13 @@ public class FireAlarm extends Activity
     // Handler should be setup to stop playback of
     // ringtone after some period of time.
     private class Callback implements Handler.Callback {
+        private Animation mFadeOut;
+
+        Callback() {
+            mFadeOut = AnimationUtils.loadAnimation(FireAlarm.this, android.R.anim.fade_out);
+            mFadeOut.setDuration(300);
+        }
+
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
@@ -564,29 +520,53 @@ public class FireAlarm extends Activity
                 return true;
 
                 // Generate a new math lock
-            case MSGID_REQUEST_NEW_EQUATION:
+            case MSGID_REQUEST_NEW_EQUATION: {
                 final Random rand = new Random();
-                int i1 = rand.nextInt(500);
-                rand.setSeed(System.currentTimeMillis() + rand.nextInt());
-                int i2 = rand.nextInt(500);
+                int i1 = rand.nextInt(400);
+                int i2 = rand.nextInt(600);
                 final int answer = i1 + i2;
+                final int answerTextViewId = rand.nextInt(3);
 
-                mEquationTextView.setText(i1 + " + " + i2 + " = ");
-                mAnswerEditText.setTag(answer);
+                mEquationTextView.setText(i1 + " + " + i2 + " = ?");
+                final int childCount = mMathPanel.getChildCount();
+                TextView tv;
+                for (int i = 0; i < 4; i++) {
+                    tv = mAnswerTextView[i];
+                    tv.setTag((Integer)answer);
+                    if (i == answerTextViewId) {
+                        tv.setText(Integer.toString(answer));
+                    } else {
+                        tv.setText(Integer.toString(rand.nextInt(300) + i * rand.nextInt(300)));
+                    }
+                }
+
+                sHandler.sendMessageDelayed(
+                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, 0), 500);
                 break;
+            }
 
                 // Right answer provided by user. Unlock button view.
             case MSGID_RIGHT_ANSWER:
-                mMathView.setVisibility(View.GONE);
-                mButtonView.setVisibility(View.VISIBLE);
+                mMathPanel.setVisibility(View.GONE);
+                mButtonPanel.setVisibility(View.VISIBLE);
                 break;
 
                 // Wrong answer. Continue to lock buttonView and
                 // generate new equation.
             case MSGID_WRONG_ANSWER:
-                mAnswerEditText.setText("");
                 sHandler.sendEmptyMessage(MSGID_REQUEST_NEW_EQUATION);
                 break;
+
+            case MSGID_ANIMATE_ANSWER_TEXTVIEW: {
+                int textViewId = msg.arg1;
+                TextView tv = mAnswerTextView[textViewId];
+                tv.startAnimation(mFadeOut);
+
+                int nextTextViewId = (textViewId == 3) ? 0 : textViewId + 1;
+                sHandler.sendMessageDelayed(
+                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, nextTextViewId), 1000);
+                break;
+            }
 
             default:
                 break;
@@ -602,5 +582,4 @@ public class FireAlarm extends Activity
             return true;
         }
     }
-
 }

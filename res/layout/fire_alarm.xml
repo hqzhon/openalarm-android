@@ -8,53 +8,99 @@
   <LinearLayout android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
     <ImageView android:id="@+id/icon"
                android:layout_width="96px"
                android:layout_height="96px"
                android:scaleType="fitXY"
                android:src="@drawable/open_alarm_logo"/>
 
-    <org.startsmall.openalarm.CompoundTimeTextView
-       android:id="@+id/time"
-       android:layout_width="0dp"
-       android:layout_height="fill_parent"
-       android:layout_gravity="center_vertical"
-       android:layout_weight="1"
-       android:paddingLeft="2dp"
-       android:paddingRight="5dp"
-       android:orientation="horizontal"/>
-  </LinearLayout>
-
-  <LinearLayout android:id="@+id/math"
+    <LinearLayout android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:layout_gravity="center_vertical"
+                  android:orientation="vertical"
+                  android:paddingLeft="2dp">
+      <TextView style="?android:attr/textAppearanceMedium"
+                android:id="@+id/label"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="10dp"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:maxLength="15"/>
+
+      <org.startsmall.openalarm.CompoundTimeTextView
+         android:id="@+id/time"
+         android:layout_width="fill_parent"
+         android:layout_height="0dp"
+         android:layout_gravity="fill"
+         android:layout_weight="1"/>
+    </LinearLayout>
+  </LinearLayout>
+
+  <TableLayout android:id="@+id/math_panel"
+               android:layout_width="fill_parent"
+               android:layout_height="0dp"
+               android:paddingTop="10dp"
+               android:layout_weight="1"
+               android:visibility="gone">
     <TextView android:id="@+id/equation"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_gravity="center_vertical"
               android:singleLine="true"
               android:ellipsize="marquee"
               android:gravity="center"
               android:textAppearance="@style/TextAppearanceExtraLarge"/>
 
-    <EditText android:id="@+id/answer"
-              android:layout_width="0dp"
-              android:layout_height="wrap_content"
-              android:layout_gravity="center_vertical"
-              android:layout_weight="1"
-              android:singleLine="true"
-              android:numeric="integer"/>
-  </LinearLayout>
+    <TableRow>
+      <TextView style="?android:attr/textAppearanceMedium"
+                android:background="@drawable/dark_vertical_gradient"
+                android:padding="3dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="2px"
+                android:layout_marginBottom="1px"
+                android:layout_marginRight="1px"
+                android:layout_marginTop="2px"
+                android:gravity="center"/>
+      <TextView style="?android:attr/textAppearanceMedium"
+                android:background="@drawable/dark_vertical_gradient"
+                android:padding="3dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="1px"
+                android:layout_marginBottom="1px"
+                android:layout_marginRight="2px"
+                android:layout_marginTop="2px"
+                android:gravity="center"/>
+    </TableRow>
+    <TableRow>
+      <TextView style="?android:attr/textAppearanceMedium"
+                android:background="@drawable/dark_vertical_gradient"
+                android:padding="3dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="2px"
+                android:layout_marginBottom="2px"
+                android:layout_marginRight="1px"
+                android:layout_marginTop="1px"
+                android:gravity="center"/>
+      <TextView style="?android:attr/textAppearanceMedium"
+                android:background="@drawable/dark_vertical_gradient"
+                android:padding="3dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="1px"
+                android:layout_marginBottom="2px"
+                android:layout_marginRight="2px"
+                android:layout_marginTop="1px"
+                android:gravity="center"/>
+    </TableRow>
+  </TableLayout>
 
-  <LinearLayout android:id="@+id/buttons"
+  <LinearLayout android:id="@+id/button_panel"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="10dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
     <Button style="?android:attr/textAppearanceLargeInverse"
             android:id="@+id/snooze"
             android:layout_gravity="left"
