@@ -44,6 +44,7 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
 import android.widget.AdapterView;
@@ -70,6 +71,7 @@ public class OpenAlarm extends ExpandableListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
 
         // Query currently installed action handlers and create a
