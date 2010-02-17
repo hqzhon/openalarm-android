@@ -541,7 +541,7 @@ public class FireAlarm extends Activity
                 }
 
                 sHandler.sendMessageDelayed(
-                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, 0), 500);
+                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, 0, 0), 500);
                 break;
             }
 
@@ -562,9 +562,9 @@ public class FireAlarm extends Activity
                 TextView tv = mAnswerTextView[textViewId];
                 tv.startAnimation(mFadeOut);
 
-                int nextTextViewId = (textViewId == 3) ? 0 : textViewId + 1;
+                textViewId = (textViewId + 1) % 4;
                 sHandler.sendMessageDelayed(
-                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, nextTextViewId), 1000);
+                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, textViewId, 0), 1000);
                 break;
             }
 
