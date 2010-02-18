@@ -158,7 +158,7 @@ public class AlarmSettings extends PreferenceActivity {
         final String newExtra = getValueOfExtraPreferences(mExtraSettingsCategory);
 
         // Get alarm from cache.
-        Alarm alarm = Alarm.getInstance(mAlarmId);
+        Alarm alarm = Alarm.getInstance(this, mAlarmId);
 
         // Update new values of the alarm.
         boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
@@ -177,7 +177,7 @@ public class AlarmSettings extends PreferenceActivity {
         super.onResume();
 
         // Fetch alarm settings from persistent content
-        Alarm alarm = Alarm.getInstance(mAlarmId);
+        Alarm alarm = Alarm.getInstance(this, mAlarmId);
 
         // Populate alarm settings into Preferences.
         mLabelPreference.setPreferenceValue(alarm.getStringField(Alarm.FIELD_LABEL));
