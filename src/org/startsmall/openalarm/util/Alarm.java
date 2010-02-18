@@ -121,10 +121,6 @@ class Alarm {
         return alarm;
     }
 
-    public static boolean hasAlarms() {
-        return !sMap.isEmpty();
-    }
-
     /**
      * Alarm visitor interface and default visitor which does nothing.
      *
