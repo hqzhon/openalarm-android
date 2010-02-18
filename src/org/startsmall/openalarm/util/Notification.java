@@ -35,7 +35,7 @@ class Notification {
         // Iterate all enabled alarms and find out which one is
         // the next.
         GetNextAlarm getNextAlarm = new GetNextAlarm();
-        Alarm.foreach(getNextAlarm);
+        Alarm.foreach(context, getNextAlarm);
         Alarm nextAlarm = getNextAlarm.result;
 
         if (nextAlarm == null) {

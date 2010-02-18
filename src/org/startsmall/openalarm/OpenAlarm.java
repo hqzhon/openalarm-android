@@ -107,18 +107,6 @@ public class OpenAlarm extends ExpandableListActivity {
                                                 new int[]{R.id.label, R.id.icon});
         setListAdapter(adapter);
 
-        // If there are no alarms in the cache (first start or
-        // killed), try to bring them from content database. In
-        // fact, it is used here only for notification.
-        if (!Alarm.hasAlarms()) {
-            Log.i(TAG, "===> No alarms in cache.. read alarms from content database");
-
-            // If OpenAlarm is killed by task manager, all
-            // scheduled alarms are removed. It is now necessary
-            // to re-schedule all enabled alarms.
-            Alarm.foreach(this, Alarms.getAlarmUri(-1),
-                          new BootService.ScheduleEnabledAlarm());
-        }
         Notification.getInstance().set(this);
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
@@ -183,7 +171,9 @@ public class OpenAlarm extends ExpandableListActivity {
                     android.R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            Alarm.getInstance(alarmId).delete(OpenAlarm.this);                       }
+                            Context context = OpenAlarm.this;
+                            Alarm.getInstance(context, alarmId).delete(context);
+                        }
                     })
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()
@@ -301,7 +291,7 @@ public class OpenAlarm extends ExpandableListActivity {
                         Bundle attachment = (Bundle)view.getTag();
 
                         int alarmId = attachment.getInt(AlarmColumns._ID);
-                        String label = Alarm.getInstance(alarmId).getStringField(Alarm.FIELD_LABEL);
+                        String label = Alarm.getInstance(OpenAlarm.this, alarmId).getStringField(Alarm.FIELD_LABEL);
 
                         menu.setHeaderTitle(label);
                         menu.add(alarmId, MENU_ITEM_ID_DELETE, 0, R.string.menu_item_delete_alarm);
@@ -317,9 +307,8 @@ public class OpenAlarm extends ExpandableListActivity {
                         View parent = (View)buttonView.getParent();
                         Bundle attachment = (Bundle)parent.getTag();
                         int alarmId = attachment.getInt(AlarmColumns._ID);
-                        Alarm alarm = Alarm.getInstance(alarmId);
-
                         Context context = (Context)OpenAlarm.this;
+                        Alarm alarm = Alarm.getInstance(context, alarmId);
                         if (alarm.isValid()) {
                             // Alarm looks good. Enable it or disable it.
                             alarm.update(

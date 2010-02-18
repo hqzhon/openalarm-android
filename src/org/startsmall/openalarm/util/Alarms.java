@@ -210,7 +210,7 @@ public class Alarms {
             sharedPreferences.getInt(AlarmColumns._ID, -1);
 
         if (snoozedAlarmId != -1) {
-            return Alarm.getInstance(snoozedAlarmId);
+            return Alarm.getInstance(context, snoozedAlarmId);
         }
 
         return null;
