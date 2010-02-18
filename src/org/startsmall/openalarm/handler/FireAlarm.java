@@ -305,7 +305,7 @@ public class FireAlarm extends Activity {
     private void autoSnoozeOrDismissAlarm() {
         // Check to see if we have snoozed too many times!
         final int alarmId = getIntent().getIntExtra(AlarmColumns._ID, -1);
-        Alarm alarm = Alarm.getInstance(alarmId);
+        Alarm alarm = Alarm.getInstance(this, alarmId);
 
         if (sAutoSnoozeCount > AUTO_SNOOZE_COUNT_MAX) {
             // have snooze too many times
@@ -324,7 +324,7 @@ public class FireAlarm extends Activity {
         final int snoozeDuration = i.getIntExtra(AlarmHandler.EXTRA_KEY_SNOOZE_DURATION,
                                                  DEFAULT_SNOOZE_DURATION);
 
-        Alarm alarm = Alarm.getInstance(alarmId);
+        Alarm alarm = Alarm.getInstance(this, alarmId);
         alarm.snooze(this, snoozeDuration);
     }
 

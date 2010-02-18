@@ -83,32 +83,16 @@ class Alarm {
      *
      */
     public static Alarm getInstance(Context context, final int id) {
-        if (sMap.containsKey(id)) {
-            return getInstance(id);
+        if (sMap.isEmpty()) {
+            loadFromDatabase(context);
         }
 
-        Cursor cursor = Alarms.getAlarmCursor(context, Alarms.getAlarmUri(id));
-        Alarm alarm;
-        if (cursor.moveToFirst()) {
-            alarm = getInstance(cursor);
-        } else {
-            alarm = getInstance(id);
-        }
-        cursor.close();
-        return alarm;
-    }
-
-    /**
-     * Get an alarm instance from alarm cache. If no such alarm
-     * exists in the cache, throw an exception.
-     *
-     */
-    public static Alarm getInstance(final int id) {
         if (sMap.containsKey(id)) {
             return sMap.get(id);
         }
+
         throw new IllegalArgumentException(
-                    "no such alarm doesn't exist in the cache...");
+            "no such alarm doesn't exist in the cache... this should be a bug");
     }
 
     /**
@@ -117,7 +101,6 @@ class Alarm {
      */
     public static Alarm getInstance(final Cursor cursor) {
         final int id = cursor.getInt(AlarmColumns.PROJECTION_ID_INDEX);
-
         Alarm alarm;
         if (sMap.containsKey(id)) {
             // Note that the settings in cache and content should have been in sync.
@@ -161,23 +144,38 @@ class Alarm {
      *
      */
     public static void foreach(final Context context, final Uri alarmUri, final AbsVisitor visitor) {
+        if (visitor == null) {
+            return;
+        }
+
         Cursor cursor = Alarms.getAlarmCursor(context, alarmUri);
         if(cursor.moveToFirst()) {
             do {
                 Alarm alarm = Alarm.getInstance(cursor);
-                if(visitor != null) {
-                    visitor.onVisit(context, alarm);
-                }
+                visitor.onVisit(context, alarm);
             } while(cursor.moveToNext());
         }
         cursor.close();
+    }
+
+    private static void loadFromDatabase(Context context) {
+        Log.i(TAG, "===> Load all alarms from content database into cache");
+        foreach(context, Alarms.getAlarmUri(-1), new AbsVisitor());
     }
 
     /**
      * Iterate alarms in the internal cache.
      *
      */
-    public static void foreach(final AbsVisitor visitor) {
+    public static void foreach(Context context, final AbsVisitor visitor) {
+        if (visitor == null) {
+            return;
+        }
+
+        if (sMap.isEmpty()) {
+            loadFromDatabase(context);
+        }
+
         Iterator<Alarm> alarms = sMap.values().iterator();
         while (alarms.hasNext()) {
             Alarm alarm = alarms.next();
