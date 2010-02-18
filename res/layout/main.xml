@@ -5,6 +5,16 @@
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
 
+  <!-- <TextView style="@style/TextAppearanceExtraLarge" -->
+  <!-- android:background="@drawable/test_glass_bg" /> -->
+  <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/app_title"
+            android:textSize="28sp"
+            android:background="@drawable/custom_title_bar_background" />
+
   <ExpandableListView android:id="@id/android:list"
                       android:layout_width="fill_parent"
                       android:layout_height="0dp"
