@@ -486,13 +486,7 @@ public class FireAlarm extends Activity
                                             contentText,
                                             intentSender);
             nm.notify(0, notification);
-
-            Log.d(TAG, "====> setNotification(true)");
-
         } else {
-
-            Log.d(TAG, "====> setNotification(false)");
-
             Notification.getInstance().set(this);
         }
     }
@@ -501,12 +495,13 @@ public class FireAlarm extends Activity
     // Handler should be setup to stop playback of
     // ringtone after some period of time.
     private class Callback implements Handler.Callback {
-        private Animation mFadeOut;
+        // private Animation mFadeIn;
+        // private Animation mFadeOut;
 
-        Callback() {
-            mFadeOut = AnimationUtils.loadAnimation(FireAlarm.this, android.R.anim.fade_out);
-            mFadeOut.setDuration(300);
-        }
+        // Callback() {
+        //     mFadeIn = AnimationUtils.loadAnimation(FireAlarm.this, R.anim.grow_fade_in_center);
+        //     mFadeOut = AnimationUtils.loadAnimation(FireAlarm.this, R.anim.shrink_fade_out_center);
+        // }
 
         @Override
         public boolean handleMessage(Message msg) {
@@ -540,8 +535,8 @@ public class FireAlarm extends Activity
                     }
                 }
 
-                sHandler.sendMessageDelayed(
-                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, 0, 0), 500);
+                // sHandler.sendMessageDelayed(
+                //     sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, 0, 0), 500);
                 break;
             }
 
@@ -557,16 +552,28 @@ public class FireAlarm extends Activity
                 sHandler.sendEmptyMessage(MSGID_REQUEST_NEW_EQUATION);
                 break;
 
-            case MSGID_ANIMATE_ANSWER_TEXTVIEW: {
-                int textViewId = msg.arg1;
-                TextView tv = mAnswerTextView[textViewId];
-                tv.startAnimation(mFadeOut);
+            // case MSGID_ANIMATE_ANSWER_TEXTVIEW: {
+            //     int textViewId = msg.arg1;
+            //     TextView tv = mAnswerTextView[textViewId];
+            //     tv.startAnimation(mFadeOut);
 
-                textViewId = (textViewId + 1) % 4;
-                sHandler.sendMessageDelayed(
-                    sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, textViewId, 0), 1000);
-                break;
-            }
+            //     int prevTextViewId = msg.arg2;
+            //     if (textViewId != prevTextViewId) {
+            //         TextView prevTextView = mAnswerTextView[prevTextViewId];
+            //         prevTextView.startAnimation(mFadeIn);
+            //     }
+
+            //     Log.d(TAG, "===> fadeOut=" + textViewId + ", fadeIn=" + prevTextViewId);
+
+            //     textViewId = (textViewId + 1) % 4;
+            //     prevTextViewId = textViewId - 1;
+            //     if (prevTextViewId < 0) {
+            //         prevTextViewId = 3;
+            //     }
+            //     sHandler.sendMessageDelayed(
+            //         sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, textViewId, prevTextViewId), 1100);
+            //     break;
+            // }
 
             default:
                 break;

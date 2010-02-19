@@ -109,6 +109,10 @@ public class OpenAlarm extends ExpandableListActivity {
                                                 new int[]{R.id.label, R.id.icon});
         setListAdapter(adapter);
 
+        if (!Alarm.hasAlarms()) {
+            Alarm.foreach(this, Alarms.getAlarmUri(-1), new BootService.ScheduleEnabledAlarm());
+        }
+
         Notification.getInstance().set(this);
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
