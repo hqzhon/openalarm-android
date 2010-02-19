@@ -66,8 +66,14 @@ class Alarm {
         synchronized (cr) {
             uri = cr.insert(Uri.parse(Alarms.CONTENT_URI_ALL_ALARMS), null);
         }
-        final int id = Integer.parseInt(uri.getLastPathSegment());
-        return getInstance(context, id);
+
+        Cursor c = Alarms.getAlarmCursor(context, uri);
+        if (c.moveToFirst()) {
+            Alarm alarm = getInstance(c);
+            c.close();
+            return alarm;
+        }
+        return null;
     }
 
     /**
