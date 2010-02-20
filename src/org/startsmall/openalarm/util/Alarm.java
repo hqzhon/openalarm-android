@@ -540,6 +540,11 @@ class Alarm {
      *
      */
     public synchronized int delete(Context context) {
+        // if this alarm is enabled, cancel it first.
+        if (mEnabled) {
+            cancel(context);
+        }
+
         // Remove itself from hash map
         sMap.remove(mId);
 
