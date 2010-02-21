@@ -543,6 +543,7 @@ class Alarm {
         // if this alarm is enabled, cancel it first.
         if (mEnabled) {
             cancel(context);
+            unsnooze(context);
         }
 
         // Remove itself from hash map
@@ -554,6 +555,9 @@ class Alarm {
         synchronized (cr) {
             count = cr.delete(getUri(), null, null);
         }
+
+        Log.i(TAG, "===> deleted alarm " + mId);
+
         return count;
     }
 

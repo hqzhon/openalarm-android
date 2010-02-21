@@ -20,7 +20,6 @@ public class ApnHandler extends AbsHandler {
         // Log.v(TAG, "===> ApnHandler.onReceive() start: " + Calendar.getInstance());
 
         // Parse extra settings out of combined value.
-        final int alarmId = intent.getIntExtra("_id", -1);
         final String label = intent.getStringExtra("label");
         final String extra = intent.getStringExtra("extra");
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
@@ -36,12 +35,14 @@ public class ApnHandler extends AbsHandler {
         context.startService(serviceIntent);
 
         // Reshedule this alarm.
-        Intent scheduleIntent = new Intent(intent);
-        scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
-        // Clear explicitly defined component from this Intent to
-        // prevent this receiver to be called recursively.
-        scheduleIntent.setComponent(null);
-        context.sendBroadcast(scheduleIntent);
+        // Intent scheduleIntent = new Intent(intent);
+        // scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
+        // // Clear explicitly defined component from this Intent to
+        // // prevent this receiver to be called recursively.
+        // scheduleIntent.setComponent(null);
+        // context.sendBroadcast(scheduleIntent);
+        final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
+        Alarms.dismissAlarm(context, alarmId);
 
         // Log.v(TAG, "===> ApnHandler.onReceive() end: " + Calendar.getInstance());
     }

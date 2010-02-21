@@ -158,10 +158,6 @@ public class FireAlarm extends Activity
             sHandler.removeMessages(MSGID_ANIMATE_ANSWER_TEXTVIEW);
             sHandler = null;
         }
-
-        Log.d(TAG, "===> finish(" + this + ")");
-
-        // setNotification(false);
     }
 
     // FireAlarm comes to the foreground
@@ -336,12 +332,14 @@ public class FireAlarm extends Activity
     }
 
     private void dismissAlarm() {
-        Intent scheduleIntent = new Intent(getIntent());
-        scheduleIntent.setFlags(
-            scheduleIntent.getFlags() ^ Intent.FLAG_ACTIVITY_NEW_TASK);
-        scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
-        scheduleIntent.setComponent(null);
-        sendBroadcast(scheduleIntent);
+        // Intent scheduleIntent = new Intent(getIntent());
+        // scheduleIntent.setFlags(
+        //     scheduleIntent.getFlags() ^ Intent.FLAG_ACTIVITY_NEW_TASK);
+        // scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
+        // scheduleIntent.setComponent(null);
+        // sendBroadcast(scheduleIntent);
+        final int alarmId = getIntent().getIntExtra(AlarmColumns._ID, -1);
+        Alarms.dismissAlarm(this, alarmId);
     }
 
     private void startVibration() {

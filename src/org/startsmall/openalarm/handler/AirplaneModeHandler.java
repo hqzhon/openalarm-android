@@ -31,12 +31,14 @@ public class AirplaneModeHandler extends AbsHandler {
         }
 
         // Reshedule this alarm.
-        Intent scheduleIntent = new Intent(intent);
-        scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
-        // Clear previously defined component name so that this
-        // BroadcastReceiver isn't called recursively.
-        scheduleIntent.setComponent(null);
-        context.sendBroadcast(scheduleIntent);
+        // Intent scheduleIntent = new Intent(intent);
+        // scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
+        // // Clear previously defined component name so that this
+        // // BroadcastReceiver isn't called recursively.
+        // scheduleIntent.setComponent(null);
+        // context.sendBroadcast(scheduleIntent);
+        final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
+        Alarms.dismissAlarm(context, alarmId);
 
         // Log.v(TAG, "===> AirplaneModeHandler.onReceive() start:" + Calendar.getInstance());
     }

@@ -29,12 +29,14 @@ public class WifiHandler extends AbsHandler {
             setWifiEnabled(context, toggle);
         }
 
-        Intent scheduleIntent = new Intent(intent);
-        scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
-        // Clear explicitly defined component from this Intent to
-        // prevent this receiver to be called recursively.
-        scheduleIntent.setComponent(null);
-        context.sendBroadcast(scheduleIntent);
+        // Intent scheduleIntent = new Intent(intent);
+        // scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
+        // // Clear explicitly defined component from this Intent to
+        // // prevent this receiver to be called recursively.
+        // scheduleIntent.setComponent(null);
+        // context.sendBroadcast(scheduleIntent);
+        final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
+        Alarms.dismissAlarm(context, alarmId);
     }
 
     /**
