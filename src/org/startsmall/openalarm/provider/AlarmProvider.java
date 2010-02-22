@@ -1,13 +1,3 @@
-/**
- * @file   Alarms.java
- * @author  <yenliangl@gmail.com>
- * @date   Wed Sep 30 16:47:42 2009
- *
- * @brief  Content provider.
- *
- * A bridge between content resolver and internal database.
- *
- */
 package org.startsmall.openalarm;
 
 import android.content.ContentProvider;
@@ -52,7 +42,7 @@ public class AlarmProvider extends ContentProvider {
         private static final String TAG = "DatabaseOpenHelper";
         private static final String DATABASE_NAME = "openalarm.db";
         public static final String DATABASE_TABLE_NAME = "alarms";
-        private static final int DATABASE_VERSION = 1;
+        private static final int DATABASE_VERSION = 2;
 
         private static final String DATABASE_CREATE_CMD =
             "CREATE TABLE " + DATABASE_TABLE_NAME + "(" +
@@ -84,9 +74,13 @@ public class AlarmProvider extends ContentProvider {
         public void onUpgrade(SQLiteDatabase db,
                               int oldVersion,
                               int newVersion) {
-            // Log.d(TAG, "===> Upgrading database from " + oldVersion + " to " + newVersion);
-            db.execSQL(DATABASE_DROP_CMD);
-            onCreate(db);
+            if (oldVersion == 1 &&
+                newVersion == 2) {
+                Alarms.upgradeHandlers(db, DATABASE_TABLE_NAME);
+            } else {
+                db.execSQL(DATABASE_DROP_CMD);
+                onCreate(db);
+            }
         }
 
         private void insertDefaultAlarms(SQLiteDatabase db) {

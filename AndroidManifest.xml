@@ -19,8 +19,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
-          android:versionName="20100215-HappyChineseNewYear"
-          android:versionCode="20100215">
+          android:versionName="20100221"
+          android:versionCode="20100221">
   <uses-sdk android:minSdkVersion="3"/>
 
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -36,8 +36,7 @@
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 
   <application android:label="@string/app_name"
-               android:icon="@drawable/open_alarm_logo"
-               android:debuggable="true">
+               android:icon="@drawable/open_alarm_logo">
     <provider android:name=".AlarmProvider"
               android:authorities="org.startsmall.openalarm" />
 
@@ -93,36 +92,9 @@
       </intent-filter>
     </receiver>
 
-    <receiver android:name=".WifiHandler"
-              android:label="@string/wifi_handler"
-              android:icon="@drawable/wifi_handler">
-      <intent-filter>
-        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
-        <category android:name="android.intent.category.ALTERNATIVE"/>
-      </intent-filter>
-    </receiver>
-
     <receiver android:name=".WifiStatusChangedReceiver">
       <intent-filter>
         <action android:name="android.net.wifi.WIFI_STATE_CHANGE"/>
-      </intent-filter>
-    </receiver>
-
-    <receiver android:name=".AirplaneModeHandler"
-              android:label="@string/airplane_mode"
-              android:icon="@drawable/airplanemode_handler">
-      <intent-filter>
-        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
-        <category android:name="android.intent.category.ALTERNATIVE"/>
-      </intent-filter>
-    </receiver>
-
-    <receiver android:name=".ApnHandler"
-              android:label="@string/apn_handler"
-              android:icon="@drawable/apn_handler">
-      <intent-filter>
-        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
-        <category android:name="android.intent.category.ALTERNATIVE"/>
       </intent-filter>
     </receiver>
 
@@ -131,6 +103,15 @@
     <receiver android:name=".CallForMeHandler"
               android:label="@string/callforme_handler"
               android:icon="@drawable/callforme_handler">
+      <intent-filter>
+        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
+        <category android:name="android.intent.category.ALTERNATIVE"/>
+      </intent-filter>
+    </receiver>
+
+    <receiver android:name=".ToggleHandler"
+              android:label="@string/toggle_handler"
+              android:icon="@drawable/toggle_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>

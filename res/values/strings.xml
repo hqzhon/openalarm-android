@@ -84,19 +84,16 @@
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 
-  <!-- WiFi -->
-  <string name="wifi_handler">Wi-Fi</string>
-  <string name="wifi_toggle_dialog_title">Toggle Wi-Fi</string>
-
-  <!-- Airplane mode -->
-  <string name="airplane_mode">Airplane mode</string>
-  <string name="airplanemode_dialog_title">Toggle airplane mode</string>
-
-  <!-- APN -->
-  <string name="apn_handler">Mobile network</string>
-  <string name="apn_toggle_dialog_title">Toggle mobile network</string>
-
   <!-- Call for me -->
   <string name="callforme_handler">Call for me</string>
   <string name="callforme_handler_speakerphone_title">Speakerphone mode</string>
+
+  <!-- Toggle handler -->
+  <string name="toggle_handler">Toggle</string>
+  <string name="toggle_handler_dialog_title">Select one to toggle</string>
+  <string name="toggle_handler_operation_title">Operation</string>
+
+  <string name="toggle_handler_operation_wifi">Wi-Fi</string>
+  <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>
+  <string name="toggle_handler_operation_apn">Mobile network</string>
 </resources>

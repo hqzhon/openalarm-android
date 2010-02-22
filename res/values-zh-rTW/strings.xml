@@ -84,19 +84,17 @@
   <!-- <string name="media_player_error_dialog_title">Unable to play ringtone</string> -->
   <!-- <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string> -->
 
-  <!-- WiFi -->
-  <string name="wifi_handler">無線網路</string>
-  <string name="wifi_toggle_dialog_title">開啟或關閉無線網路</string>
-
-  <!-- Airplane mode -->
-  <string name="airplane_mode">飛航模式</string>
-  <string name="airplanemode_dialog_title">開關飛航模式</string>
-
-  <!-- APN -->
-  <string name="apn_handler">行動網路</string>
-  <string name="apn_toggle_dialog_title">開關行動網路</string>
-
   <!-- Call for me -->
   <string name="callforme_handler">定時撥號</string>
   <string name="callforme_handler_speakerphone_title">擴音模式</string>
+
+  <!-- Toggle handler -->
+  <string name="toggle_handler">開關</string>
+  <string name="toggle_handler_dialog_title">選擇開關那一個</string>
+  <string name="toggle_handler_operation_title">開關</string>
+  <string name="toggle_handler_operation_wifi">無線網路</string>
+  <string name="toggle_handler_operation_airplane_mode">飛航模式</string>
+  <string name="toggle_handler_operation_apn">行動網路</string>
+
+
 </resources>
