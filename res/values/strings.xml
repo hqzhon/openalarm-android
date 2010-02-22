@@ -89,10 +89,8 @@
   <string name="callforme_handler_speakerphone_title">Speakerphone mode</string>
 
   <!-- Toggle handler -->
-  <string name="toggle_handler">Toggle</string>
-  <string name="toggle_handler_dialog_title">Select one to toggle</string>
-  <string name="toggle_handler_operation_title">Operation</string>
-
+  <string name="toggle_handler">Toggle switch</string>
+  <string name="toggle_handler_operation_title">Which to toggle</string>
   <string name="toggle_handler_operation_wifi">Wi-Fi</string>
   <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>
   <string name="toggle_handler_operation_apn">Mobile network</string>

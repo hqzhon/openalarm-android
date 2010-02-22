@@ -53,7 +53,7 @@ public class ToggleHandler extends AbsHandler {
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
         Alarms.dismissAlarm(context, alarmId);
 
-        Log.v(TAG, "===>.onReceive() end");
+        Log.v(TAG, "===>.onReceive()");
     }
 
     public void addMyPreferences(final Context context,
@@ -77,7 +77,7 @@ public class ToggleHandler extends AbsHandler {
 
         operationPref.setValueIndex(OPERATION_AIRPLANE_MODE);
         operationPref.setTitle(context.getString(R.string.toggle_handler_operation_title));
-        operationPref.setDialogTitle(context.getString(R.string.toggle_handler_dialog_title));
+        operationPref.setDialogTitle(context.getString(R.string.toggle_handler_operation_title));
         operationPref.setOnPreferenceChangeListener(
             new Preference.OnPreferenceChangeListener() {
                 @Override
