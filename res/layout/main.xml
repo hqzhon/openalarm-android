@@ -13,20 +13,33 @@
             android:gravity="center"
             android:text="@string/app_title"
             android:textSize="28sp"
-            android:background="@drawable/dark_vertical_gradient" />
+            android:background="@drawable/default_widget_background" />
 
-  <ExpandableListView android:id="@id/android:list"
-                      android:layout_width="fill_parent"
-                      android:layout_height="0dp"
-                      android:layout_weight="1"
-                      android:drawSelectorOnTop="false"/>
+  <ListView android:id="@id/android:list"
+            android:background="@drawable/default_widget_background"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="false"/>
 
   <com.admob.android.ads.AdView android:id="@+id/ad"
                                 android:layout_width="fill_parent"
                                 android:layout_height="wrap_content"
                                 admobsdk:backgroundColor="#000000"
                                 admobsdk:textColor="#FFFFFF"
-                                admobsdk:isGoneWithoutAd="true"/>
-                                admobsdk:keywords="@string/admob_keywords"/>
+                                admobsdk:isGoneWithoutAd="true"
+                                android:visibility="gone"/>
+                                <!-- admobsdk:keywords="@string/admob_keywords"/> -->
+
+  <GridView android:id="@+id/group"
+            android:listSelector="@drawable/toolbar_item_background"
+            android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+            android:horizontalSpacing="8dp"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            android:columnWidth="64dp"
+            android:numColumns="6" />
+
 </LinearLayout>
 

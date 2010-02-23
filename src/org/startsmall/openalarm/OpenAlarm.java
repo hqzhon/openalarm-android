@@ -21,7 +21,7 @@ package org.startsmall.openalarm;
 
 import android.app.Dialog;
 import android.app.AlertDialog;
-import android.app.ExpandableListActivity;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
@@ -48,9 +48,11 @@ import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -61,11 +63,14 @@ import android.text.TextUtils;
 import com.admob.android.ads.AdView;
 import java.util.*;
 
-public class OpenAlarm extends ExpandableListActivity {
+public class OpenAlarm extends ListActivity
+                       implements AdapterView.OnItemClickListener {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
     private static final int DIALOG_ID_ABOUT = 0;
+
+    private GroupAdapter mGroupAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -73,41 +78,6 @@ public class OpenAlarm extends ExpandableListActivity {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
-
-        // Query currently installed action handlers and create a
-        // list of group data map.
-        PackageManager pm = getPackageManager();
-        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
-        List<HashMap<String, Object>> groupData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
-        Iterator<ResolveInfo> infoIter = infoList.iterator();
-        while (infoIter.hasNext()) {
-            ActivityInfo activityInfo = infoIter.next().activityInfo;
-
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            String label = activityInfo.loadLabel(pm).toString();
-            String className = activityInfo.name;
-            Drawable icon = activityInfo.loadIcon(pm);
-
-            map.put(AlarmAdapter.GROUP_DATA_KEY_LABEL, label);
-            map.put(AlarmAdapter.GROUP_DATA_KEY_HANDLER, className);
-            map.put(AlarmAdapter.GROUP_DATA_KEY_ICON, icon);
-
-            groupData.add(map);
-        }
-
-        // Null handler group
-        HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
-        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_LABEL,
-                           getString(R.string.uncategorized));
-        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_HANDLER, "");
-        nullHandlerMap.put(AlarmAdapter.GROUP_DATA_KEY_ICON, null);
-        groupData.add(nullHandlerMap);
-
-        AlarmAdapter adapter = new AlarmAdapter(this, groupData,
-                                                new String[]{AlarmAdapter.GROUP_DATA_KEY_LABEL,
-                                                             AlarmAdapter.GROUP_DATA_KEY_ICON},
-                                                new int[]{R.id.label, R.id.icon});
-        setListAdapter(adapter);
 
         if (!Alarm.hasAlarms()) {
             Alarm.foreach(this, Alarms.getAlarmUri(-1), new BootService.ScheduleEnabledAlarm());
@@ -117,24 +87,22 @@ public class OpenAlarm extends ExpandableListActivity {
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
-        showAds(true);
+        // showAds(true);
+
+        GridView groupView = (GridView)findViewById(R.id.group);
+        mGroupAdapter = new GroupAdapter(this);
+        groupView.setOnItemClickListener(this);
+        groupView.setAdapter(mGroupAdapter);
     }
 
-    // @Override
-    // public void onStop() {
-    //     Log.d(TAG, "===> onStop()");
-    //     super.onStop();
+    public void onResume() {
+        super.onResume();
 
-    //     // Deactivate all opened cursor helpers.
-    //     // AlarmAdapter adapter = (AlarmAdapter)getExpandableListAdapter();
-    //     // adapter.deactivateChildCursors();
-    // }
+        GridView groupView =
+            (GridView)findViewById(R.id.group);
+        Log.d(TAG, "======> " + groupView.getChildAt(0));
 
-    // @Override
-    // public void onDestroy() {
-    //     Log.d(TAG, "===> onDestroy()");
-    //     super.onDestroy();
-    // }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -200,7 +168,8 @@ public class OpenAlarm extends ExpandableListActivity {
             // event, we have to handle it in Activity.
         case KeyEvent.KEYCODE_ENTER:
         case KeyEvent.KEYCODE_DPAD_CENTER:
-            getExpandableListView().getSelectedView().performClick();
+            // getExpandableListView().getSelectedView().performClick();
+            getListView().getSelectedView().performClick();
             return true;
         }
         return false;
@@ -265,16 +234,116 @@ public class OpenAlarm extends ExpandableListActivity {
         }
     }
 
-    private class AlarmAdapter extends ExpandableAlarmAdapter {
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Cursor alarmCursor = mGroupAdapter.getChildCursor(position);
+
+        CursorAdapter oldAlarmAdapter = (CursorAdapter)getListAdapter();
+        if (oldAlarmAdapter == null) {
+            setListAdapter(new AlarmAdapter(this, alarmCursor));
+        } else {
+            oldAlarmAdapter.changeCursor(alarmCursor);
+        }
+    }
+
+    class GroupAdapter extends BaseAdapter {
+        private static final String GROUP_DATA_KEY_LABEL = "label";
+        private static final String GROUP_DATA_KEY_HANDLER = "handler";
+        private static final String GROUP_DATA_KEY_ICON = "icon";
+
+        private ArrayList<HashMap<String, Object>> mGroupData;
+        private Context mContext;
+
+        public GroupAdapter(Context context) {
+            // Query currently installed action handlers and create a
+            // list of group data map.
+            PackageManager pm = context.getPackageManager();
+            List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
+            mGroupData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
+            Iterator<ResolveInfo> infoIter = infoList.iterator();
+            while (infoIter.hasNext()) {
+                ActivityInfo activityInfo = infoIter.next().activityInfo;
+
+                HashMap<String, Object> map = new HashMap<String, Object>();
+                String label = activityInfo.loadLabel(pm).toString();
+                String className = activityInfo.name;
+                Drawable icon = activityInfo.loadIcon(pm);
+
+                map.put(GROUP_DATA_KEY_LABEL, label);
+                map.put(GROUP_DATA_KEY_HANDLER, className);
+                map.put(GROUP_DATA_KEY_ICON, icon);
+
+                mGroupData.add(map);
+            }
+
+            // Sort these handler group by its label
+
+
+
+            // Null handler group
+            HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
+            nullHandlerMap.put(GROUP_DATA_KEY_LABEL,
+                               getString(R.string.uncategorized));
+            nullHandlerMap.put(GROUP_DATA_KEY_HANDLER, "");
+            nullHandlerMap.put(GROUP_DATA_KEY_ICON,
+                               context.getResources().getDrawable(R.drawable.null_handler));
+            mGroupData.add(nullHandlerMap);
+
+            mContext = context;
+        }
+
+        public int getCount() {
+            return mGroupData.size();
+        }
+
+        public Object getItem(int position) {
+            return mGroupData.get(position);
+        }
+
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ImageView i;
+            if (convertView == null) {
+                i = new ImageView(mContext);
+                GridView.LayoutParams params = new GridView.LayoutParams(36, 36);
+                i.setLayoutParams(params);
+            } else {
+                i = (ImageView)convertView;
+            }
+
+            HashMap<String, Object> map = mGroupData.get(position);
+            Drawable icon = (Drawable)map.get(GROUP_DATA_KEY_ICON);
+            i.setImageDrawable(icon);
+            i.setScaleType(ImageView.ScaleType.FIT_XY);
+            return i;
+        }
+
+        public Cursor getChildCursor(int position) {
+            Map<String, ?> data = mGroupData.get(position);
+            String handler = (String)data.get(GROUP_DATA_KEY_HANDLER);
+            Cursor c =
+                mContext.getContentResolver().query(
+                    Alarms.getAlarmUri(-1),
+                    AlarmColumns.QUERY_COLUMNS,
+                    AlarmColumns.HANDLER + "=?",
+                    new String[]{handler},
+                    AlarmColumns.DEFAULT_SORT_ORDER);
+            return c;
+        }
+    }
+
+    class AlarmAdapter extends CursorAdapter {
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
         private LayoutInflater mInflater;
         private int mShowAdsCount = 0;
 
-        AlarmAdapter(Context context,
-                     List<HashMap<String, Object>> groupData, String[] groupFrom, int[] groupTo) {
-            super(context, groupData, groupFrom, groupTo);
+
+        public AlarmAdapter(Context context, Cursor c) {
+            super(context, c);
 
             mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -347,68 +416,11 @@ public class OpenAlarm extends ExpandableListActivity {
                         }
                     }
                 };
+
         }
 
-        @Override
-        protected View newGroupView(ViewGroup parent) {
-            return mInflater.inflate(R.layout.group, parent, false);
-        }
-
-        @Override
-        protected void bindGroupView(View view, Map<String, ?> data, int childrenCount, String[] from, int[] to) {
-            final int len = to.length;
-
-            for (int i = 0; i < len; i++) {
-                View v = view.findViewById(to[i]);
-                if (v instanceof TextView) {
-                    TextView tv = (TextView)v;
-                    tv.setText((String)data.get(from[i]));
-                } else if (v instanceof ImageView) {
-                    ImageView iv = (ImageView)v;
-                    Drawable icon = (Drawable)data.get(from[i]);
-                    if (icon == null) {
-                        iv.setImageResource(R.drawable.null_handler);
-                    } else {
-                        iv.setImageDrawable(icon);
-                    }
-                }
-            }
-
-            //
-            TextView childrenTextView = (TextView)view.findViewById(R.id.children_count);
-            childrenTextView.setText("(" + childrenCount + ")");
-        }
-
-        @Override
-        protected View newChildView(Context context, Cursor childCursor, boolean isLastChild, ViewGroup parent) {
-            LayoutInflater inflater = getLayoutInflater();
-            View view = inflater.inflate(R.layout.alarm_list_item, parent, false);
-
-            Bundle attachment = new Bundle();
-            view.setTag(attachment);
-
-            // Should follow Android's design. Click to go to
-            // item's default activity and long-click to go to
-            // item's extended activities. Here, the first-class
-            // activity is to edit item's settings.
-            view.setOnClickListener(mOnClickListener);
-
-            // The context menu listener of the view must be set
-            // in order for its parent's onCreateMenu() to be
-            // called to create context menu. This should be a
-            // bug but I'm not very sure.
-
-            // The ContextMenu.ContextMenuInfo object is returned
-            // by getContextMenuInfo() overriden by
-            // clients. Here, it is null.
-            view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
-
-            return view;
-        }
-
-        @Override
-        protected void bindChildView(View view, Context context, Cursor childCursor, boolean isLastChild) {
-            Alarm alarm = Alarm.getInstance(childCursor);
+        public void bindView(View view, Context context, Cursor cursor) {
+            Alarm alarm = Alarm.getInstance(cursor);
 
             Bundle attachment = (Bundle)view.getTag();
             attachment.putInt(AlarmColumns._ID,
@@ -464,27 +476,35 @@ public class OpenAlarm extends ExpandableListActivity {
             repeatDaysView.setVisibility(View.VISIBLE);
         }
 
-        @Override
-        public void notifyDataSetChanged() {
-            super.notifyDataSetChanged();
-            Notification.getInstance().set(OpenAlarm.this);
-        }
+        public View newView(Context context, Cursor c, ViewGroup parent) {
+            LayoutInflater inflater = getLayoutInflater();
+            View view = inflater.inflate(R.layout.alarm_list_item, parent, false);
 
-        @Override
-        public void onGroupCollapsed(int groupPosition) {
-            super.onGroupCollapsed(groupPosition);
-            showAdsChecked();
-        }
+            Bundle attachment = new Bundle();
+            view.setTag(attachment);
 
-        @Override
-        public void onGroupExpanded(int groupPosition) {
-            super.onGroupExpanded(groupPosition);
-            showAdsChecked();
+            // Should follow Android's design. Click to go to
+            // item's default activity and long-click to go to
+            // item's extended activities. Here, the first-class
+            // activity is to edit item's settings.
+            view.setOnClickListener(mOnClickListener);
+
+            // The context menu listener of the view must be set
+            // in order for its parent's onCreateMenu() to be
+            // called to create context menu. This should be a
+            // bug but I'm not very sure.
+
+            // The ContextMenu.ContextMenuInfo object is returned
+            // by getContextMenuInfo() overriden by
+            // clients. Here, it is null.
+            view.setOnCreateContextMenuListener(mOnCreateContextMenuListener);
+
+            return view;
         }
 
         private void showAdsChecked() {
             boolean show = false;
-            if (mShowAdsCount > 3) {
+            if (mShowAdsCount > 6) {
                 mShowAdsCount = 0;
                 show = true;
             }
