@@ -74,7 +74,9 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
     private ArrayList<HashMap<String, Object>> mTabData;
 
     private int mShowAdsCount = 0;
-    private int mPreviousTabId = -1;
+    private int mOldTabId = -1;
+
+    private ListView mAlarmListView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,73 +94,8 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
         // showAds(true);
-        addTabs();
-    }
-
-    private void addTabs() {
-        PackageManager pm = getPackageManager();
-        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
-        mTabData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
-        Iterator<ResolveInfo> infoIter = infoList.iterator();
-        while (infoIter.hasNext()) {
-            ActivityInfo activityInfo = infoIter.next().activityInfo;
-
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            String label = activityInfo.loadLabel(pm).toString();
-            String className = activityInfo.name;
-            Drawable icon = activityInfo.loadIcon(pm);
-
-            map.put(GROUP_DATA_KEY_LABEL, label);
-            map.put(GROUP_DATA_KEY_HANDLER, className);
-            map.put(GROUP_DATA_KEY_ICON, icon);
-
-            mTabData.add(map);
-        }
-
-        // Sort these handler map by its label
-        Collections.sort(mTabData,
-                         new Comparator<HashMap<String, Object>>() {
-                             public int compare(HashMap<String, Object> map1,
-                                                HashMap<String, Object> map2) {
-                                 String label1 = (String)map1.get(GROUP_DATA_KEY_LABEL);
-                                 String label2 = (String)map2.get(GROUP_DATA_KEY_LABEL);
-                                 return label1.compareTo(label2);
-                             }
-                         });
-
-        // Null handler group
-        HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
-        nullHandlerMap.put(GROUP_DATA_KEY_LABEL, getString(R.string.uncategorized));
-        nullHandlerMap.put(GROUP_DATA_KEY_HANDLER, "");
-        nullHandlerMap.put(GROUP_DATA_KEY_ICON,
-                           getResources().getDrawable(R.drawable.null_handler));
-        mTabData.add(nullHandlerMap);
-
-        TabHost tabHost = getTabHost();
-        tabHost.setOnTabChangedListener(this);
-        // tabHost.clearAllTabs();
-        for (int position = 0; position < mTabData.size(); position++) {
-            HashMap<String, ?> map = mTabData.get(position);
-            String label = (String)map.get(GROUP_DATA_KEY_LABEL);
-            Drawable icon = (Drawable)map.get(GROUP_DATA_KEY_ICON);
-            TabHost.TabSpec tabSpec =
-                tabHost.newTabSpec(String.valueOf(position)).setIndicator("", icon);
-            tabSpec.setContent(R.id.mycontent);
-            tabHost.addTab(tabSpec);
-        }
-
-        // Finetune widgets
-        // TabWidget tabWidget = getTabWidget();
-        // final int childCount = tabWidget.getChildCount();
-        // for (int childId = 0; childId < childCount; childId++) {
-        //     View tab = tabWidget.getChildAt(childId);
-        //     ImageView tabIconView = (ImageView)tab.findViewById(android.R.id.icon);
-        //     // tabWidget.getChildAt(childId).setBackgroundResource(R.drawable.default_widget_background);
-
-        //     TextView tabTextView = (TextView)tab.findViewById(android.R.id.title);
-        // }
-        // tabHost.setCurrentTab(3);
-        // tabHost.setCurrentTab(0);
+        mAlarmListView = (ListView)getTabHost().getTabContentView().findViewById(android.R.id.list);
+        initTabHost();
     }
 
     @Override
@@ -273,32 +210,88 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
         int tabId = Integer.parseInt(tabTag);
         HashMap<String, ?> map = mTabData.get(tabId);
 
-        ListView alarmListView = (ListView)findViewById(android.R.id.list);
-
-        CursorAdapter adapter = (CursorAdapter)alarmListView.getAdapter();
+        // Change alarm cursor for current tab.
+        CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
         Cursor alarmCursor = getAlarmCursor(tabId);
-        if (adapter == null) {
-
-            Log.d(TAG, "===> new a adapter");
-            alarmListView.forceLayout();
-            alarmListView.setAdapter(new AlarmAdapter(this, alarmCursor));
+        if (alarmAdapter == null) {
+            alarmAdapter = new AlarmAdapter(this, alarmCursor);
+            mAlarmListView.setAdapter(alarmAdapter);
         } else {
-            adapter.changeCursor(alarmCursor);
+            alarmAdapter.changeCursor(alarmCursor);
         }
 
+        // Show ads
         showAdsChecked();
 
+        // Animate ListView
         Animation anim;
-        if (tabId > mPreviousTabId) {
+        if (tabId > mOldTabId) {
             anim = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
         } else {
             anim = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
         }
-        alarmListView.startAnimation(anim);
-        mPreviousTabId = tabId;
+        mAlarmListView.startAnimation(anim);
+        mOldTabId = tabId;
     }
 
-    public Cursor getAlarmCursor(int position) {
+    private void initTabHost() {
+        PackageManager pm = getPackageManager();
+        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
+        mTabData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
+        Iterator<ResolveInfo> infoIter = infoList.iterator();
+        while (infoIter.hasNext()) {
+            ActivityInfo activityInfo = infoIter.next().activityInfo;
+
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            String label = activityInfo.loadLabel(pm).toString();
+            String className = activityInfo.name;
+            Drawable icon = activityInfo.loadIcon(pm);
+
+            map.put(GROUP_DATA_KEY_LABEL, label);
+            map.put(GROUP_DATA_KEY_HANDLER, className);
+            map.put(GROUP_DATA_KEY_ICON, icon);
+
+            mTabData.add(map);
+        }
+
+        // Sort these handler map by its label
+        Collections.sort(mTabData,
+                         new Comparator<HashMap<String, Object>>() {
+                             public int compare(HashMap<String, Object> map1,
+                                                HashMap<String, Object> map2) {
+                                 String label1 = (String)map1.get(GROUP_DATA_KEY_LABEL);
+                                 String label2 = (String)map2.get(GROUP_DATA_KEY_LABEL);
+                                 return label1.compareTo(label2);
+                             }
+                         });
+
+        // Null handler group
+        HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
+        nullHandlerMap.put(GROUP_DATA_KEY_LABEL, getString(R.string.uncategorized));
+        nullHandlerMap.put(GROUP_DATA_KEY_HANDLER, "");
+        nullHandlerMap.put(GROUP_DATA_KEY_ICON,
+                           getResources().getDrawable(R.drawable.null_handler));
+        mTabData.add(nullHandlerMap);
+
+        // Prepare TabHost.
+        TabHost tabHost = getTabHost();
+        tabHost.setOnTabChangedListener(this);
+        // tabHost.clearAllTabs();
+        final int tabCount = mTabData.size();
+        for (int position = 0; position < tabCount; position++) {
+            HashMap<String, ?> map = mTabData.get(position);
+            // String label = (String)map.get(GROUP_DATA_KEY_LABEL);
+            Drawable icon = (Drawable)map.get(GROUP_DATA_KEY_ICON);
+            TabHost.TabSpec tabSpec =
+                tabHost.newTabSpec(String.valueOf(position)).setIndicator("", icon)
+                                                            .setContent(R.id.mycontent);
+            tabHost.addTab(tabSpec);
+        }
+        tabHost.setCurrentTab(tabCount - 1);
+        tabHost.setCurrentTab(0);
+    }
+
+    private Cursor getAlarmCursor(int position) {
         HashMap<String, ?> map = mTabData.get(position);
         String handler = (String)map.get(GROUP_DATA_KEY_HANDLER);
         Cursor c =
@@ -489,9 +482,6 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
                 repeatDaysView.addView(dayLabel, params);
             }
             repeatDaysView.setVisibility(View.VISIBLE);
-
-            Log.d(TAG, "===<> bindView");
-
         }
 
         public View newView(Context context, Cursor c, ViewGroup parent) {
