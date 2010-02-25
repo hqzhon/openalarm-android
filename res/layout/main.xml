@@ -5,41 +5,49 @@
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
 
-  <!-- <TextView style="@style/TextAppearanceExtraLarge" -->
-  <!-- android:background="@drawable/test_glass_bg" /> -->
   <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/app_title"
             android:textSize="28sp"
-            android:background="@drawable/default_widget_background" />
+            android:background="@drawable/banner_background"/>
 
-  <ListView android:id="@id/android:list"
-            android:background="@drawable/default_widget_background"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:drawSelectorOnTop="false"/>
+  <TabHost android:id="@id/android:tabhost"
+           android:background="@drawable/default_widget_background"
+           android:layout_width="fill_parent"
+           android:layout_height="0dp"
+           android:layout_weight="1">
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="fill_parent"
+                  android:layout_height="fill_parent">
+      <FrameLayout android:id="@id/android:tabcontent"
+                   android:layout_width="fill_parent"
+                   android:layout_height="0dp"
+                   android:layout_weight="1">
+        <LinearLayout android:id="@+id/mycontent"
+                      android:orientation="vertical"
+                      android:layout_width="fill_parent"
+                      android:layout_height="fill_parent">
+          <ListView android:id="@id/android:list"
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:divider="@drawable/list_dividers" />
+          <com.admob.android.ads.AdView android:id="@+id/ad"
+                                        android:layout_width="fill_parent"
+                                        android:layout_height="wrap_content"
+                                        admobsdk:backgroundColor="#000000"
+                                        admobsdk:textColor="#FFFFFF"
+                                        admobsdk:isGoneWithoutAd="true"/>
+                                        <!-- android:visibility="gone"/> -->
+                                        <!-- admobsdk:keywords="@string/admob_keywords"/> -->
+        </LinearLayout>
+      </FrameLayout>
 
-  <com.admob.android.ads.AdView android:id="@+id/ad"
-                                android:layout_width="fill_parent"
-                                android:layout_height="wrap_content"
-                                admobsdk:backgroundColor="#000000"
-                                admobsdk:textColor="#FFFFFF"
-                                admobsdk:isGoneWithoutAd="true"
-                                android:visibility="gone"/>
-                                <!-- admobsdk:keywords="@string/admob_keywords"/> -->
-
-  <GridView android:id="@+id/group"
-            android:listSelector="@drawable/toolbar_item_background"
-            android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-            android:horizontalSpacing="8dp"
-            android:stretchMode="columnWidth"
-            android:gravity="center"
-            android:columnWidth="64dp"
-            android:numColumns="6" />
-
+      <TabWidget android:id="@id/android:tabs"
+                 android:layout_width="fill_parent"
+                 android:layout_height="wrap_content"/>
+    </LinearLayout>
+  </TabHost>
 </LinearLayout>
-

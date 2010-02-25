@@ -21,7 +21,7 @@ package org.startsmall.openalarm;
 
 import android.app.Dialog;
 import android.app.AlertDialog;
-import android.app.ListActivity;
+import android.app.TabActivity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
@@ -29,9 +29,7 @@ import android.content.pm.PackageManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.animation.Animation;
@@ -48,29 +46,35 @@ import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ExpandableListView;
+import android.widget.TabHost;
+import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
 import com.admob.android.ads.AdView;
 import java.util.*;
 
-public class OpenAlarm extends ListActivity
-                       implements AdapterView.OnItemClickListener {
+public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListener {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
     private static final int DIALOG_ID_ABOUT = 0;
 
-    private GroupAdapter mGroupAdapter;
+    // Build tabs by querying alarm handlers
+    private static final String GROUP_DATA_KEY_LABEL = "label";
+    private static final String GROUP_DATA_KEY_HANDLER = "handler";
+    private static final String GROUP_DATA_KEY_ICON = "icon";
+
+    private ArrayList<HashMap<String, Object>> mTabData;
+
+    private int mShowAdsCount = 0;
+    private int mPreviousTabId = -1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,20 +92,73 @@ public class OpenAlarm extends ListActivity
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
         // showAds(true);
-
-        GridView groupView = (GridView)findViewById(R.id.group);
-        mGroupAdapter = new GroupAdapter(this);
-        groupView.setOnItemClickListener(this);
-        groupView.setAdapter(mGroupAdapter);
+        addTabs();
     }
 
-    public void onResume() {
-        super.onResume();
+    private void addTabs() {
+        PackageManager pm = getPackageManager();
+        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
+        mTabData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
+        Iterator<ResolveInfo> infoIter = infoList.iterator();
+        while (infoIter.hasNext()) {
+            ActivityInfo activityInfo = infoIter.next().activityInfo;
 
-        GridView groupView =
-            (GridView)findViewById(R.id.group);
-        Log.d(TAG, "======> " + groupView.getChildAt(0));
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            String label = activityInfo.loadLabel(pm).toString();
+            String className = activityInfo.name;
+            Drawable icon = activityInfo.loadIcon(pm);
 
+            map.put(GROUP_DATA_KEY_LABEL, label);
+            map.put(GROUP_DATA_KEY_HANDLER, className);
+            map.put(GROUP_DATA_KEY_ICON, icon);
+
+            mTabData.add(map);
+        }
+
+        // Sort these handler map by its label
+        Collections.sort(mTabData,
+                         new Comparator<HashMap<String, Object>>() {
+                             public int compare(HashMap<String, Object> map1,
+                                                HashMap<String, Object> map2) {
+                                 String label1 = (String)map1.get(GROUP_DATA_KEY_LABEL);
+                                 String label2 = (String)map2.get(GROUP_DATA_KEY_LABEL);
+                                 return label1.compareTo(label2);
+                             }
+                         });
+
+        // Null handler group
+        HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
+        nullHandlerMap.put(GROUP_DATA_KEY_LABEL, getString(R.string.uncategorized));
+        nullHandlerMap.put(GROUP_DATA_KEY_HANDLER, "");
+        nullHandlerMap.put(GROUP_DATA_KEY_ICON,
+                           getResources().getDrawable(R.drawable.null_handler));
+        mTabData.add(nullHandlerMap);
+
+        TabHost tabHost = getTabHost();
+        tabHost.setOnTabChangedListener(this);
+        // tabHost.clearAllTabs();
+        for (int position = 0; position < mTabData.size(); position++) {
+            HashMap<String, ?> map = mTabData.get(position);
+            String label = (String)map.get(GROUP_DATA_KEY_LABEL);
+            Drawable icon = (Drawable)map.get(GROUP_DATA_KEY_ICON);
+            TabHost.TabSpec tabSpec =
+                tabHost.newTabSpec(String.valueOf(position)).setIndicator("", icon);
+            tabSpec.setContent(R.id.mycontent);
+            tabHost.addTab(tabSpec);
+        }
+
+        // Finetune widgets
+        // TabWidget tabWidget = getTabWidget();
+        // final int childCount = tabWidget.getChildCount();
+        // for (int childId = 0; childId < childCount; childId++) {
+        //     View tab = tabWidget.getChildAt(childId);
+        //     ImageView tabIconView = (ImageView)tab.findViewById(android.R.id.icon);
+        //     // tabWidget.getChildAt(childId).setBackgroundResource(R.drawable.default_widget_background);
+
+        //     TextView tabTextView = (TextView)tab.findViewById(android.R.id.title);
+        // }
+        // tabHost.setCurrentTab(3);
+        // tabHost.setCurrentTab(0);
     }
 
     @Override
@@ -169,7 +226,16 @@ public class OpenAlarm extends ListActivity
         case KeyEvent.KEYCODE_ENTER:
         case KeyEvent.KEYCODE_DPAD_CENTER:
             // getExpandableListView().getSelectedView().performClick();
-            getListView().getSelectedView().performClick();
+
+
+            Log.d(TAG, "===> onKeyUp()");
+
+
+
+            // getListView().getSelectedView().performClick();
+
+
+
             return true;
         }
         return false;
@@ -203,6 +269,48 @@ public class OpenAlarm extends ListActivity
         return dialog;
     }
 
+    public void onTabChanged(String tabTag) {
+        int tabId = Integer.parseInt(tabTag);
+        HashMap<String, ?> map = mTabData.get(tabId);
+
+        ListView alarmListView = (ListView)findViewById(android.R.id.list);
+
+        CursorAdapter adapter = (CursorAdapter)alarmListView.getAdapter();
+        Cursor alarmCursor = getAlarmCursor(tabId);
+        if (adapter == null) {
+
+            Log.d(TAG, "===> new a adapter");
+            alarmListView.forceLayout();
+            alarmListView.setAdapter(new AlarmAdapter(this, alarmCursor));
+        } else {
+            adapter.changeCursor(alarmCursor);
+        }
+
+        showAdsChecked();
+
+        Animation anim;
+        if (tabId > mPreviousTabId) {
+            anim = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
+        } else {
+            anim = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
+        }
+        alarmListView.startAnimation(anim);
+        mPreviousTabId = tabId;
+    }
+
+    public Cursor getAlarmCursor(int position) {
+        HashMap<String, ?> map = mTabData.get(position);
+        String handler = (String)map.get(GROUP_DATA_KEY_HANDLER);
+        Cursor c =
+            getContentResolver().query(
+                Alarms.getAlarmUri(-1),
+                AlarmColumns.QUERY_COLUMNS,
+                AlarmColumns.HANDLER + "=?",
+                new String[]{handler},
+                AlarmColumns.DEFAULT_SORT_ORDER);
+        return c;
+    }
+
     private void sendFeedback() {
         Intent i = new Intent(Intent.ACTION_SENDTO);
         i.setData(Uri.parse("mailto:yenliangl@gmail.com"));
@@ -225,7 +333,8 @@ public class OpenAlarm extends ListActivity
     }
 
     private void showAds(boolean show) {
-        AdView ads = (AdView)findViewById(R.id.ad);
+        View tabContentView = getTabHost().getTabContentView();
+        AdView ads = (AdView)tabContentView.findViewById(R.id.ad);
         int currentVisibility = ads.getVisibility();
         if (show && currentVisibility == View.GONE) {
             ads.setVisibility(View.VISIBLE);
@@ -234,104 +343,14 @@ public class OpenAlarm extends ListActivity
         }
     }
 
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Cursor alarmCursor = mGroupAdapter.getChildCursor(position);
-
-        CursorAdapter oldAlarmAdapter = (CursorAdapter)getListAdapter();
-        if (oldAlarmAdapter == null) {
-            setListAdapter(new AlarmAdapter(this, alarmCursor));
-        } else {
-            oldAlarmAdapter.changeCursor(alarmCursor);
+    private void showAdsChecked() {
+        boolean show = false;
+        if (mShowAdsCount > 6) {
+            mShowAdsCount = 0;
+            show = true;
         }
-    }
-
-    class GroupAdapter extends BaseAdapter {
-        private static final String GROUP_DATA_KEY_LABEL = "label";
-        private static final String GROUP_DATA_KEY_HANDLER = "handler";
-        private static final String GROUP_DATA_KEY_ICON = "icon";
-
-        private ArrayList<HashMap<String, Object>> mGroupData;
-        private Context mContext;
-
-        public GroupAdapter(Context context) {
-            // Query currently installed action handlers and create a
-            // list of group data map.
-            PackageManager pm = context.getPackageManager();
-            List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
-            mGroupData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
-            Iterator<ResolveInfo> infoIter = infoList.iterator();
-            while (infoIter.hasNext()) {
-                ActivityInfo activityInfo = infoIter.next().activityInfo;
-
-                HashMap<String, Object> map = new HashMap<String, Object>();
-                String label = activityInfo.loadLabel(pm).toString();
-                String className = activityInfo.name;
-                Drawable icon = activityInfo.loadIcon(pm);
-
-                map.put(GROUP_DATA_KEY_LABEL, label);
-                map.put(GROUP_DATA_KEY_HANDLER, className);
-                map.put(GROUP_DATA_KEY_ICON, icon);
-
-                mGroupData.add(map);
-            }
-
-            // Sort these handler group by its label
-
-
-
-            // Null handler group
-            HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
-            nullHandlerMap.put(GROUP_DATA_KEY_LABEL,
-                               getString(R.string.uncategorized));
-            nullHandlerMap.put(GROUP_DATA_KEY_HANDLER, "");
-            nullHandlerMap.put(GROUP_DATA_KEY_ICON,
-                               context.getResources().getDrawable(R.drawable.null_handler));
-            mGroupData.add(nullHandlerMap);
-
-            mContext = context;
-        }
-
-        public int getCount() {
-            return mGroupData.size();
-        }
-
-        public Object getItem(int position) {
-            return mGroupData.get(position);
-        }
-
-        public long getItemId(int position) {
-            return position;
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ImageView i;
-            if (convertView == null) {
-                i = new ImageView(mContext);
-                GridView.LayoutParams params = new GridView.LayoutParams(36, 36);
-                i.setLayoutParams(params);
-            } else {
-                i = (ImageView)convertView;
-            }
-
-            HashMap<String, Object> map = mGroupData.get(position);
-            Drawable icon = (Drawable)map.get(GROUP_DATA_KEY_ICON);
-            i.setImageDrawable(icon);
-            i.setScaleType(ImageView.ScaleType.FIT_XY);
-            return i;
-        }
-
-        public Cursor getChildCursor(int position) {
-            Map<String, ?> data = mGroupData.get(position);
-            String handler = (String)data.get(GROUP_DATA_KEY_HANDLER);
-            Cursor c =
-                mContext.getContentResolver().query(
-                    Alarms.getAlarmUri(-1),
-                    AlarmColumns.QUERY_COLUMNS,
-                    AlarmColumns.HANDLER + "=?",
-                    new String[]{handler},
-                    AlarmColumns.DEFAULT_SORT_ORDER);
-            return c;
-        }
+        showAds(show);
+        mShowAdsCount++;
     }
 
     class AlarmAdapter extends CursorAdapter {
@@ -339,8 +358,6 @@ public class OpenAlarm extends ListActivity
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
         private LayoutInflater mInflater;
-        private int mShowAdsCount = 0;
-
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
@@ -397,7 +414,6 @@ public class OpenAlarm extends ListActivity
                                 alarm.getStringField(Alarm.FIELD_EXTRA));
 
                             showAdsChecked();
-
                         } else {
                             // Alarm can't be set because its
                             // settings are't good enough. Bring
@@ -416,7 +432,6 @@ public class OpenAlarm extends ListActivity
                         }
                     }
                 };
-
         }
 
         public void bindView(View view, Context context, Cursor cursor) {
@@ -474,6 +489,9 @@ public class OpenAlarm extends ListActivity
                 repeatDaysView.addView(dayLabel, params);
             }
             repeatDaysView.setVisibility(View.VISIBLE);
+
+            Log.d(TAG, "===<> bindView");
+
         }
 
         public View newView(Context context, Cursor c, ViewGroup parent) {
@@ -502,14 +520,9 @@ public class OpenAlarm extends ListActivity
             return view;
         }
 
-        private void showAdsChecked() {
-            boolean show = false;
-            if (mShowAdsCount > 6) {
-                mShowAdsCount = 0;
-                show = true;
-            }
-            OpenAlarm.this.showAds(show);
-            mShowAdsCount++;
+        protected void onContentChanged() {
+            super.onContentChanged();
+            Notification.getInstance().set(OpenAlarm.this);
         }
     }
 }
