@@ -32,6 +32,7 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
@@ -77,6 +78,7 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
     private int mOldTabId = -1;
 
     private ListView mAlarmListView;
+    private TextView mBannerTextView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,6 +97,7 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
 
         // showAds(true);
         mAlarmListView = (ListView)getTabHost().getTabContentView().findViewById(android.R.id.list);
+        mBannerTextView = (TextView)findViewById(R.id.banner);
         initTabHost();
     }
 
@@ -209,6 +212,8 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
     public void onTabChanged(String tabTag) {
         int tabId = Integer.parseInt(tabTag);
         HashMap<String, ?> map = mTabData.get(tabId);
+        String label = (String)map.get(GROUP_DATA_KEY_LABEL);
+        mBannerTextView.setText(label);
 
         // Change alarm cursor for current tab.
         CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
@@ -308,7 +313,17 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
         Intent i = new Intent(Intent.ACTION_SENDTO);
         i.setData(Uri.parse("mailto:yenliangl@gmail.com"));
         i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
-        i.putExtra(Intent.EXTRA_TEXT, "Hi Josh!" );
+
+        String sep = "===================================================\n";
+        String deviceInfo =
+            String.format("Build.BOARD=%s\nBuild.BRAND=%s\nBuild.DEVICE=%s\nBuild.DISPLAY=%s\nBuild.FINGERPRINT=%s\nBuild.HOST=%s\nBuild.ID=%s\nBuild.MODEL=%s\nBuild.PRODUCT=%s\nBuild.TYPE=%s\nBuild.USER=%s",
+                          Build.BOARD, Build.BRAND, Build.DEVICE, Build.DISPLAY, Build.FINGERPRINT, Build.HOST, Build.ID, Build.MODEL, Build.PRODUCT, Build.TYPE, Build.USER);
+       String content =
+           String.format("Hi Josh!\n\n\nThese lines are device info that may be helpful to trace problems.\nStill, it's ok to remove them if you feel uncomfortable.\n%s%s",
+                         sep, deviceInfo);
+        Log.d(TAG, content);
+
+        i.putExtra(Intent.EXTRA_TEXT, content);
         startActivity(
             Intent.createChooser(
                 i, getString(R.string.menu_item_send_feedback)));
