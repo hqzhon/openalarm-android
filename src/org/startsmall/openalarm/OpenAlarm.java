@@ -46,11 +46,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -61,7 +59,8 @@ import android.text.TextUtils;
 import com.admob.android.ads.AdView;
 import java.util.*;
 
-public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListener {
+public class OpenAlarm extends TabActivity
+                       implements TabHost.OnTabChangeListener, ListView.OnKeyListener {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
@@ -79,6 +78,9 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
+    private AdView mAdView;
+    private Animation mSlideInLeft;
+    private Animation mSlideOutRight;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,10 +97,17 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
-        // showAds(true);
-        mAlarmListView = (ListView)getTabHost().getTabContentView().findViewById(android.R.id.list);
         mBannerTextView = (TextView)findViewById(R.id.banner);
+        mAlarmListView = (ListView)getTabHost().getTabContentView().findViewById(android.R.id.list);
+        mAlarmListView.setOnKeyListener(this);
+        mAdView = (AdView)getTabHost().findViewById(R.id.ad);
+
+        mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
+        mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
+
         initTabHost();
+
+        showAds(true);
     }
 
     @Override
@@ -159,23 +168,16 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
         switch (keyCode) {
-            // ListView doesn't handle DPAD_CENTER and CENTER key
-            // event, we have to handle it in Activity.
+            // AdapterView doesn't handle DPAD_CENTER and CENTER key
+            // event, it propagate key event up to ListView.
         case KeyEvent.KEYCODE_ENTER:
         case KeyEvent.KEYCODE_DPAD_CENTER:
-            // getExpandableListView().getSelectedView().performClick();
-
-
-            Log.d(TAG, "===> onKeyUp()");
-
-
-
-            // getListView().getSelectedView().performClick();
-
-
-
+            View selectedAlarmView = mAlarmListView.getSelectedView();
+            if (selectedAlarmView != null) {
+                selectedAlarmView.performClick();
+            }
             return true;
         }
         return false;
@@ -210,32 +212,20 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
     }
 
     public void onTabChanged(String tabTag) {
-        int tabId = Integer.parseInt(tabTag);
-        HashMap<String, ?> map = mTabData.get(tabId);
-        String label = (String)map.get(GROUP_DATA_KEY_LABEL);
+        final int tabId = Integer.parseInt(tabTag);
+        final HashMap<String, ?> map = mTabData.get(tabId);
+        final String label = (String)map.get(GROUP_DATA_KEY_LABEL);
         mBannerTextView.setText(label);
 
         // Change alarm cursor for current tab.
-        CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
-        Cursor alarmCursor = getAlarmCursor(tabId);
-        if (alarmAdapter == null) {
-            alarmAdapter = new AlarmAdapter(this, alarmCursor);
-            mAlarmListView.setAdapter(alarmAdapter);
-        } else {
-            alarmAdapter.changeCursor(alarmCursor);
-        }
+        final CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
+        alarmAdapter.changeCursor(getAlarmCursor(tabId));
 
         // Show ads
         showAdsChecked();
 
         // Animate ListView
-        Animation anim;
-        if (tabId > mOldTabId) {
-            anim = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
-        } else {
-            anim = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
-        }
-        mAlarmListView.startAnimation(anim);
+        mAlarmListView.startAnimation(tabId > mOldTabId ? mSlideInLeft : mSlideOutRight);
         mOldTabId = tabId;
     }
 
@@ -279,21 +269,34 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
         mTabData.add(nullHandlerMap);
 
         // Prepare TabHost.
-        TabHost tabHost = getTabHost();
-        tabHost.setOnTabChangedListener(this);
-        // tabHost.clearAllTabs();
+        final TabHost tabHost = getTabHost();
         final int tabCount = mTabData.size();
+        ArrayList<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>(tabCount);
         for (int position = 0; position < tabCount; position++) {
             HashMap<String, ?> map = mTabData.get(position);
             // String label = (String)map.get(GROUP_DATA_KEY_LABEL);
             Drawable icon = (Drawable)map.get(GROUP_DATA_KEY_ICON);
-            TabHost.TabSpec tabSpec =
+            tabSpecs.add(
                 tabHost.newTabSpec(String.valueOf(position)).setIndicator("", icon)
-                                                            .setContent(R.id.mycontent);
-            tabHost.addTab(tabSpec);
+                                                            .setContent(android.R.id.list));
         }
-        tabHost.setCurrentTab(tabCount - 1);
-        tabHost.setCurrentTab(0);
+
+        // Note that every TabHost.setContent() put the passed
+        // view in GONE state and addTab() only set VISIBLE state
+        // for first tab. Later calls of setContent() will still
+        // put the same view in GONE state. To avoid this, defer
+        // addTab as late as possible.
+        for (int tabId = 0; tabId < tabCount; tabId++) {
+            tabHost.addTab(tabSpecs.get(tabId));
+        }
+
+        // Initialize an CursorAdapter for ListView for first Tab
+        CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
+        if (alarmAdapter == null) {
+            mAlarmListView.setAdapter(
+                new AlarmAdapter(this, getAlarmCursor(0)));
+        }
+        tabHost.setOnTabChangedListener(this);
     }
 
     private Cursor getAlarmCursor(int position) {
@@ -341,13 +344,11 @@ public class OpenAlarm extends TabActivity implements TabHost.OnTabChangeListene
     }
 
     private void showAds(boolean show) {
-        View tabContentView = getTabHost().getTabContentView();
-        AdView ads = (AdView)tabContentView.findViewById(R.id.ad);
-        int currentVisibility = ads.getVisibility();
-        if (show && currentVisibility == View.GONE) {
-            ads.setVisibility(View.VISIBLE);
+        final int visibility = mAdView.getVisibility();
+        if (show && visibility == View.GONE) {
+            mAdView.setVisibility(View.VISIBLE);
         } else {
-            ads.setVisibility(View.GONE);
+            mAdView.setVisibility(View.GONE);
         }
     }
 

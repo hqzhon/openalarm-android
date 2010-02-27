@@ -42,10 +42,6 @@ public class FireAlarm extends Activity
     private static final String TAG = "FireAlarm";
 
     private static final int MSGID_STOP_PLAYBACK = 1;
-    private static final int MSGID_REQUEST_NEW_EQUATION = 2;
-    private static final int MSGID_RIGHT_ANSWER = 3;
-    private static final int MSGID_WRONG_ANSWER = 4;
-    private static final int MSGID_ANIMATE_ANSWER_TEXTVIEW = 5;
 
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
     private static final float IN_CALL_VOLUME = 0.125f;
@@ -54,8 +50,8 @@ public class FireAlarm extends Activity
     private static final int AUTO_SNOOZE_COUNT_MAX = 3;
     private static int sAutoSnoozeCount = 0;
 
-    private static MediaPlayer sMediaPlayer;
-    private static Handler sHandler;
+    private MediaPlayer mMediaPlayer;
+    private Handler mHandler;
     private Vibrator mVibrator;
     private PowerManager mPowerManager;
     private TelephonyManager mTelephonyManager;
@@ -77,6 +73,23 @@ public class FireAlarm extends Activity
         mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         mKeyguardManager = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);;
         mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+        mHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    switch (msg.what) {
+                    case MSGID_STOP_PLAYBACK:
+                        Log.i(TAG, "===> Ringtone playing timed out.");
+                        // This callback is executed because user doesn't
+                        // tell me what to do, i.e., dimiss or snooze.
+                        autoSnoozeOrDismissAlarm();
+                        finish();
+                        break;
+
+                    default:
+                        break;
+                    }
+                }
+            };
 
         acquireWakeLock();
 
@@ -85,10 +98,6 @@ public class FireAlarm extends Activity
         Intent intent = getIntent();
         setTimeFromIntent(intent);
         setLabelFromIntent(intent);
-
-        if (sHandler == null) {
-            sHandler = new Handler(new Callback());
-        }
 
         prepareMathLock();
 
@@ -99,8 +108,8 @@ public class FireAlarm extends Activity
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FireAlarm.this.snoozeAlarm();
-                    FireAlarm.this.finish();
+                    snoozeAlarm();
+                    finish();
                 }
             });
 
@@ -111,53 +120,46 @@ public class FireAlarm extends Activity
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FireAlarm.this.dismissAlarm();
-                    FireAlarm.this.finish();
+                    dismissAlarm();
+                    finish();
                 }
             });
 
         // Prepare MediaPlayer for playing ringtone.
-        boolean ok = prepareMediaPlayer();
-        if (savedInstanceState == null && ok) {
-            ok = sHandler.sendEmptyMessageDelayed(MSGID_STOP_PLAYBACK, PLAYBACK_TIMEOUT);
-        }
-
-        if (ok) {
-            sMediaPlayer.start();
-        }
+        prepareMediaPlayer();
 
         startVibration();
 
         setNotification(true);
+
+        Log.d(TAG, "===> onCreate()");
+
     }
 
     @Override
     public void onDestroy() {
+
+        Log.d(TAG, "===> onDestroy()");
+
         super.onDestroy();
 
         releaseWakeLock();
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
-
-        stopVibration();
 
         // Stop and release MediaPlayer object.
-        if (sMediaPlayer != null) {
-            sMediaPlayer.stop();
-            sMediaPlayer.release();
-            sMediaPlayer = null;
+        if (mMediaPlayer != null) {
+            mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
         }
 
         // When this activity is intended to finish, remove all
         // STOP_PLAYBACK messages from queue.
-        if (sHandler != null) {
-            sHandler.removeMessages(MSGID_STOP_PLAYBACK);
-            sHandler.removeMessages(MSGID_ANIMATE_ANSWER_TEXTVIEW);
-            sHandler = null;
+        if (mHandler != null) {
+            mHandler.removeMessages(MSGID_STOP_PLAYBACK);
+            mHandler = null;
         }
+
+        stopVibration();
     }
 
     // FireAlarm comes to the foreground
@@ -180,11 +182,6 @@ public class FireAlarm extends Activity
         // Returns to keyguarded mode if the phone was in this
         // mode.
         enableKeyguard();
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event)  {
-        return super.onKeyUp(keyCode, event);
     }
 
     @Override
@@ -216,14 +213,8 @@ public class FireAlarm extends Activity
 
             // The ringtone uri might be different and timeout of
             // playback needs to be recounted.
-            if (prepareMediaPlayer()) {
-                sHandler.removeMessages(MSGID_STOP_PLAYBACK);
-                // A new TIME_OUT message
-                if (sHandler.sendEmptyMessageDelayed(MSGID_STOP_PLAYBACK, PLAYBACK_TIMEOUT)) {
-                    sMediaPlayer.start();
-                }
-            }
-
+            mHandler.removeMessages(MSGID_STOP_PLAYBACK);
+            prepareMediaPlayer();
             startVibration();
         }
     }
@@ -244,43 +235,56 @@ public class FireAlarm extends Activity
     }
 
     private void prepareMathLock() {
-        if (mMathPanel == null) {
-            mMathPanel = (TableLayout)findViewById(R.id.math_panel);
-
-            TextView tv;
-            final int childCount = mMathPanel.getChildCount();
-            for (int i = 1; i < childCount; i++) {
-                TableRow row = (TableRow)mMathPanel.getChildAt(i);
-                for (int j = 0; j < 2; j++) {
-                    tv = (TextView)row.getChildAt(j);
-                    tv.setOnClickListener(this);
-                    mAnswerTextView[(i - 1 )*2 + j] = tv;
-                }
+        mMathPanel = (TableLayout)findViewById(R.id.math_panel);
+        TextView tv;
+        final int childCount = mMathPanel.getChildCount();
+        for (int i = 1; i < childCount; i++) {
+            TableRow row = (TableRow)mMathPanel.getChildAt(i);
+            for (int j = 0; j < 2; j++) {
+                tv = (TextView)row.getChildAt(j);
+                tv.setOnClickListener(this);
+                mAnswerTextView[(i - 1 )*2 + j] = tv;
             }
-            tv = mAnswerTextView[3];
-            mAnswerTextView[3] = mAnswerTextView[2];
-            mAnswerTextView[2] = tv;
         }
+        tv = mAnswerTextView[3];
+        mAnswerTextView[3] = mAnswerTextView[2];
+        mAnswerTextView[2] = tv;
 
-        if (mButtonPanel == null) {
-            mButtonPanel = (LinearLayout)findViewById(R.id.button_panel);
-        }
+        mButtonPanel = (LinearLayout)findViewById(R.id.button_panel);
 
         Intent intent = getIntent();
         boolean isMathLockOn = intent.getBooleanExtra(AlarmHandler.EXTRA_KEY_MATH_LOCK_ON, false);
         if (isMathLockOn) {
-            if (mEquationTextView == null) {
-                mEquationTextView = (TextView)mMathPanel.findViewById(R.id.equation);
-            }
+            mEquationTextView = (TextView)mMathPanel.findViewById(R.id.equation);
 
             mMathPanel.setVisibility(View.VISIBLE);
             mButtonPanel.setVisibility(View.GONE);
 
             // Generate a simple equation of the addition of two integers.
-            sHandler.sendEmptyMessage(MSGID_REQUEST_NEW_EQUATION);
-        } else {
+            requestNewEquation();
+       } else {
             mMathPanel.setVisibility(View.GONE);
             mButtonPanel.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void requestNewEquation() {
+        final Random rand = new Random();
+        int i1 = rand.nextInt(400);
+        int i2 = rand.nextInt(600);
+        final int answer = i1 + i2;
+        final int answerTextViewId = rand.nextInt(3);
+
+        mEquationTextView.setText(i1 + " + " + i2 + " = ?");
+        TextView tv;
+        for (int i = 0; i < 4; i++) {
+            tv = mAnswerTextView[i];
+            tv.setTag((Integer)answer);
+            if (i == answerTextViewId) {
+                tv.setText(Integer.toString(answer));
+            } else {
+                tv.setText(Integer.toString(rand.nextInt(300) + i * rand.nextInt(300)));
+            }
         }
     }
 
@@ -292,14 +296,15 @@ public class FireAlarm extends Activity
         try {
             userAnswer = Integer.parseInt(tv.getText().toString());
             if (userAnswer == answer) {
-                sHandler.sendEmptyMessage(MSGID_RIGHT_ANSWER);
+                mMathPanel.setVisibility(View.GONE);
+                mButtonPanel.setVisibility(View.VISIBLE);
                 wrongAnswerEntered = false;
             }
         } catch (NumberFormatException e) {
         }
 
         if (wrongAnswerEntered) {
-            sHandler.sendEmptyMessage(MSGID_WRONG_ANSWER);
+            requestNewEquation();
         }
     }
 
@@ -332,12 +337,6 @@ public class FireAlarm extends Activity
     }
 
     private void dismissAlarm() {
-        // Intent scheduleIntent = new Intent(getIntent());
-        // scheduleIntent.setFlags(
-        //     scheduleIntent.getFlags() ^ Intent.FLAG_ACTIVITY_NEW_TASK);
-        // scheduleIntent.setAction(Alarm.ACTION_SCHEDULE);
-        // scheduleIntent.setComponent(null);
-        // sendBroadcast(scheduleIntent);
         final int alarmId = getIntent().getIntExtra(AlarmColumns._ID, -1);
         Alarms.dismissAlarm(this, alarmId);
     }
@@ -348,11 +347,17 @@ public class FireAlarm extends Activity
             if (mVibratePattern == null) {
                 mVibratePattern = new long[]{500, 500};
             }
+
+            Log.d(TAG, "=====> vibrating...");
+
             mVibrator.vibrate(mVibratePattern, 0);
         }
     }
 
     private void stopVibration() {
+
+        Log.d(TAG, "===> stop vibration");
+
         mVibrator.cancel();
     }
 
@@ -389,15 +394,15 @@ public class FireAlarm extends Activity
         mKeyguardLock.disableKeyguard();
     }
 
-    private boolean prepareMediaPlayer() {
-        if (sMediaPlayer == null) {
-            sMediaPlayer = new MediaPlayer();
+    private void prepareMediaPlayer() {
+        if (mMediaPlayer == null) {
+            mMediaPlayer = new MediaPlayer();
         } else {
             // Stop and reset MediaPlayer here is required
             // because onNewIntent() might override the old
             // settings. Use new settings for MediaPlayer.
-            sMediaPlayer.stop();
-            sMediaPlayer.reset();
+            mMediaPlayer.stop();
+            mMediaPlayer.reset();
         }
 
         // Whether we should use fallback ringtone?
@@ -420,33 +425,36 @@ public class FireAlarm extends Activity
                 // and no errors thrown from it.
                 AssetFileDescriptor afd =
                     getResources().openRawResourceFd(R.raw.in_call_ringtone);
-                sMediaPlayer.setDataSource(afd.getFileDescriptor(),
+                mMediaPlayer.setDataSource(afd.getFileDescriptor(),
                                            afd.getStartOffset(),
                                            afd.getLength());
                 afd.close();
 
                 if (mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
                     Log.i(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
-                    sMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+                    mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
                 }
             } else {
-                sMediaPlayer.setDataSource(this, Uri.parse(uriString));
+                mMediaPlayer.setDataSource(this, Uri.parse(uriString));
             }
         } catch (java.io.IOException e) {
-            return false;
+            return;
         }
 
-        sMediaPlayer.setLooping(true);
+        mMediaPlayer.setLooping(true);
 
         // Prepare MediaPlayer into Prepared state and
         // MediaPlayer is ready to play.
         try {
-            sMediaPlayer.prepare();
+            mMediaPlayer.prepare();
         } catch (java.io.IOException e) {
-            return false;
+            return;
         }
 
-        return true;
+        if (mHandler.sendEmptyMessageDelayed(MSGID_STOP_PLAYBACK,
+                                             PLAYBACK_TIMEOUT)) {
+            mMediaPlayer.start();
+        }
     }
 
     private void setNotification(boolean enable) {
@@ -486,97 +494,6 @@ public class FireAlarm extends Activity
             nm.notify(0, notification);
         } else {
             Notification.getInstance().set(this);
-        }
-    }
-
-    // MediaPlayer enters Prepared state and now a
-    // Handler should be setup to stop playback of
-    // ringtone after some period of time.
-    private class Callback implements Handler.Callback {
-        // private Animation mFadeIn;
-        // private Animation mFadeOut;
-
-        // Callback() {
-        //     mFadeIn = AnimationUtils.loadAnimation(FireAlarm.this, R.anim.grow_fade_in_center);
-        //     mFadeOut = AnimationUtils.loadAnimation(FireAlarm.this, R.anim.shrink_fade_out_center);
-        // }
-
-        @Override
-        public boolean handleMessage(Message msg) {
-            switch (msg.what) {
-            case MSGID_STOP_PLAYBACK:
-                Log.i(TAG, "===> Ringtone playing timed out.");
-                // This callback is executed because user doesn't
-                // tell me what to do, i.e., dimiss or snooze.
-                FireAlarm.this.autoSnoozeOrDismissAlarm();
-                FireAlarm.this.finish();
-                return true;
-
-                // Generate a new math lock
-            case MSGID_REQUEST_NEW_EQUATION: {
-                final Random rand = new Random();
-                int i1 = rand.nextInt(400);
-                int i2 = rand.nextInt(600);
-                final int answer = i1 + i2;
-                final int answerTextViewId = rand.nextInt(3);
-
-                mEquationTextView.setText(i1 + " + " + i2 + " = ?");
-                final int childCount = mMathPanel.getChildCount();
-                TextView tv;
-                for (int i = 0; i < 4; i++) {
-                    tv = mAnswerTextView[i];
-                    tv.setTag((Integer)answer);
-                    if (i == answerTextViewId) {
-                        tv.setText(Integer.toString(answer));
-                    } else {
-                        tv.setText(Integer.toString(rand.nextInt(300) + i * rand.nextInt(300)));
-                    }
-                }
-
-                // sHandler.sendMessageDelayed(
-                //     sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, 0, 0), 500);
-                break;
-            }
-
-                // Right answer provided by user. Unlock button view.
-            case MSGID_RIGHT_ANSWER:
-                mMathPanel.setVisibility(View.GONE);
-                mButtonPanel.setVisibility(View.VISIBLE);
-                break;
-
-                // Wrong answer. Continue to lock buttonView and
-                // generate new equation.
-            case MSGID_WRONG_ANSWER:
-                sHandler.sendEmptyMessage(MSGID_REQUEST_NEW_EQUATION);
-                break;
-
-            // case MSGID_ANIMATE_ANSWER_TEXTVIEW: {
-            //     int textViewId = msg.arg1;
-            //     TextView tv = mAnswerTextView[textViewId];
-            //     tv.startAnimation(mFadeOut);
-
-            //     int prevTextViewId = msg.arg2;
-            //     if (textViewId != prevTextViewId) {
-            //         TextView prevTextView = mAnswerTextView[prevTextViewId];
-            //         prevTextView.startAnimation(mFadeIn);
-            //     }
-
-            //     Log.d(TAG, "===> fadeOut=" + textViewId + ", fadeIn=" + prevTextViewId);
-
-            //     textViewId = (textViewId + 1) % 4;
-            //     prevTextViewId = textViewId - 1;
-            //     if (prevTextViewId < 0) {
-            //         prevTextViewId = 3;
-            //     }
-            //     sHandler.sendMessageDelayed(
-            //         sHandler.obtainMessage(MSGID_ANIMATE_ANSWER_TEXTVIEW, textViewId, prevTextViewId), 1100);
-            //     break;
-            // }
-
-            default:
-                break;
-            }
-            return true;
         }
     }
 

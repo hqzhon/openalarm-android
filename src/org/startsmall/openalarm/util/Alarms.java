@@ -221,18 +221,10 @@ public class Alarms {
         Alarm alarm = Alarm.getInstance(context, alarmId);
 
         // Try to schedule the alarm.
-        Log.d(TAG, "===> 1 dismissAlarm() begin " + alarmId);
         if (alarm.schedule()) {
             alarm.set(context);
             Notification.getInstance().set(context);
-            Log.d(TAG, "===> 2 schedule alarm " + alarmId);
-        } else {
-
-            Log.e(TAG, "===> Unable to schedule alarm " + alarmId);
-
         }
-
-        Log.d(TAG, "===> 3 dismissAlarm() end");
     }
 
    /**
