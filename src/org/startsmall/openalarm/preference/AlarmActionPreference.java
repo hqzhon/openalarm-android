@@ -100,9 +100,11 @@ public class AlarmActionPreference extends ListPreference {
             entries.ensureCapacity(numberOfHandlers);
             entryValues.ensureCapacity(numberOfHandlers);
 
+            CharSequence label;
             for (ResolveInfo i : handlers) {
                 ActivityInfo activityInfo = i.activityInfo;
-                entries.add(activityInfo.loadLabel(pm));
+                label = activityInfo.loadLabel(pm);
+                entries.add(label.subSequence(1, label.length()));
                 entryValues.add(activityInfo.name);
             }
         }

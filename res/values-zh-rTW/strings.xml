@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">OpenAlarm</string>
-  <string name="app_title">我的鬧鐘</string>
-
-  <!-- <string name="admob_keywords">android application utility</string> -->
 
   <string name="on">開啟</string>
   <string name="off">關閉</string>
@@ -18,6 +15,8 @@
   <!-- <string name="menu_item_set_theme_title">Theme</string> -->
   <string name="menu_item_send_feedback">傳送意見</string>
   <string name="menu_item_about">關於</string>
+
+  <string name="feedback_mail_content">Hi Josh!\n\n\n====================\n"下面資訊僅用於除錯!!"\n====================\n%s</string>
 
   <!-- Context menu item -->
   <string name="menu_item_edit_alarm">編輯</string>
@@ -53,10 +52,10 @@
   <!-- <string name="alarm_settings_extra_category_key">extra_settings</string> -->
 
   <!-- Alarm notifications -->
-  <string name="alarm_set_toast_text">"鬧鈴"%s"會在"%s"動作"</string>
+  <string name="alarm_set_toast_text">"鬧鐘"%s"會在"%s"動作"</string>
   <string name="alarm_handler_unset_message">請指定要我要做甚麼</string>
   <string name="alarm_repeat_days_unset_message">請指定哪幾天要動作</string>
-  <string name="alarm_set_notification_ticker">"下個鬧鈴": %s</string>
+  <string name="alarm_set_notification_ticker">"下個鬧鐘": %s</string>
   <string name="alarm_set_notification_content">"動作時間在"%s</string>
 
   <!-- Group -->
@@ -69,7 +68,7 @@
   <string name="phone_number_dialog_title">輸入電話號碼</string>
 
   <!-- Alarm handler -->
-  <string name="alarm_handler">鬧鐘</string>
+  <string name="alarm_handler">A鬧鐘</string>
   <string name="alarm_handler_snooze_duration_title">貪睡間隔</string>
   <string name="alarm_handler_snooze_duration_dialog_title">貪睡幾分鐘</string>
   <string name="alarm_handler_vibrate_title">振動</string>
@@ -85,11 +84,11 @@
   <!-- <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string> -->
 
   <!-- Call for me -->
-  <string name="callforme_handler">定時撥號</string>
+  <string name="callforme_handler">C定時撥號</string>
   <string name="callforme_handler_speakerphone_title">擴音模式</string>
 
   <!-- Toggle handler -->
-  <string name="toggle_handler">雙向開關</string>
+  <string name="toggle_handler">T"開關"</string>
   <string name="toggle_handler_operation_title">切換</string>
   <string name="toggle_handler_operation_wifi">無線網路</string>
   <string name="toggle_handler_operation_airplane_mode">飛航模式</string>

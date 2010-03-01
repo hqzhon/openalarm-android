@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">OpenAlarm</string>
-  <string name="app_title">My Alarms</string>
-
-  <string name="admob_keywords">android application utility</string>
 
   <string name="on">On</string>
   <string name="off">Off</string>
@@ -18,6 +15,8 @@
   <!-- <string name="menu_item_set_theme_title">Theme</string> -->
   <string name="menu_item_send_feedback">Send feedback</string>
   <string name="menu_item_about">About</string>
+
+  <string name="feedback_mail_content">Hi Josh!\n\n\n====================\nFollowing lines are ONLY used in debugging. No malicious use.\n====================\n%s</string>
 
   <!-- Context menu item -->
   <string name="menu_item_edit_alarm">Edit</string>
@@ -69,7 +68,7 @@
   <string name="phone_number_dialog_title">Enter phone number</string>
 
   <!-- Alarm handler -->
-  <string name="alarm_handler">Alarm</string>
+  <string name="alarm_handler">AAlarm</string>
   <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
   <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
   <string name="alarm_handler_vibrate_title">Vibrate</string>
@@ -85,11 +84,11 @@
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 
   <!-- Call for me -->
-  <string name="callforme_handler">Call for me</string>
+  <string name="callforme_handler">CCall for me</string>
   <string name="callforme_handler_speakerphone_title">Speakerphone mode</string>
 
   <!-- Toggle handler -->
-  <string name="toggle_handler">Toggle switch</string>
+  <string name="toggle_handler">TToggle switch</string>
   <string name="toggle_handler_operation_title">Which to toggle</string>
   <string name="toggle_handler_operation_wifi">Wi-Fi</string>
   <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>

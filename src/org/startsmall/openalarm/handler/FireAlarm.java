@@ -131,16 +131,10 @@ public class FireAlarm extends Activity
         startVibration();
 
         setNotification(true);
-
-        Log.d(TAG, "===> onCreate()");
-
     }
 
     @Override
     public void onDestroy() {
-
-        Log.d(TAG, "===> onDestroy()");
-
         super.onDestroy();
 
         releaseWakeLock();
@@ -347,17 +341,11 @@ public class FireAlarm extends Activity
             if (mVibratePattern == null) {
                 mVibratePattern = new long[]{500, 500};
             }
-
-            Log.d(TAG, "=====> vibrating...");
-
             mVibrator.vibrate(mVibratePattern, 0);
         }
     }
 
     private void stopVibration() {
-
-        Log.d(TAG, "===> stop vibration");
-
         mVibrator.cancel();
     }
 

@@ -68,6 +68,7 @@ public class OpenAlarm extends TabActivity
 
     // Build tabs by querying alarm handlers
     private static final String GROUP_DATA_KEY_LABEL = "label";
+    private static final String GROUP_DATA_KEY_SORT = "sort";
     private static final String GROUP_DATA_KEY_HANDLER = "handler";
     private static final String GROUP_DATA_KEY_ICON = "icon";
 
@@ -242,23 +243,13 @@ public class OpenAlarm extends TabActivity
             String className = activityInfo.name;
             Drawable icon = activityInfo.loadIcon(pm);
 
-            map.put(GROUP_DATA_KEY_LABEL, label);
+            map.put(GROUP_DATA_KEY_LABEL, label.substring(1));
+            map.put(GROUP_DATA_KEY_SORT, label.charAt(0));
             map.put(GROUP_DATA_KEY_HANDLER, className);
             map.put(GROUP_DATA_KEY_ICON, icon);
 
             mTabData.add(map);
         }
-
-        // Sort these handler map by its label
-        Collections.sort(mTabData,
-                         new Comparator<HashMap<String, Object>>() {
-                             public int compare(HashMap<String, Object> map1,
-                                                HashMap<String, Object> map2) {
-                                 String label1 = (String)map1.get(GROUP_DATA_KEY_LABEL);
-                                 String label2 = (String)map2.get(GROUP_DATA_KEY_LABEL);
-                                 return label1.compareTo(label2);
-                             }
-                         });
 
         // Null handler group
         HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
@@ -317,16 +308,12 @@ public class OpenAlarm extends TabActivity
         i.setData(Uri.parse("mailto:yenliangl@gmail.com"));
         i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
 
-        String sep = "===================================================\n";
         String deviceInfo =
-            String.format("Build.BOARD=%s\nBuild.BRAND=%s\nBuild.DEVICE=%s\nBuild.DISPLAY=%s\nBuild.FINGERPRINT=%s\nBuild.HOST=%s\nBuild.ID=%s\nBuild.MODEL=%s\nBuild.PRODUCT=%s\nBuild.TYPE=%s\nBuild.USER=%s",
-                          Build.BOARD, Build.BRAND, Build.DEVICE, Build.DISPLAY, Build.FINGERPRINT, Build.HOST, Build.ID, Build.MODEL, Build.PRODUCT, Build.TYPE, Build.USER);
-       String content =
-           String.format("Hi Josh!\n\n\nThese lines are device info that may be helpful to trace problems.\nStill, it's ok to remove them if you feel uncomfortable.\n%s%s",
-                         sep, deviceInfo);
-        Log.d(TAG, content);
+            String.format("Build.DISPLAY=%s\nBuild.FINGERPRINT=%s\nBuild.HOST=%s\nBuild.ID=%s\nBuild.MODEL=%s\nBuild.PRODUCT=%s\nBuild.TYPE=%s\nBuild.USER=%s\n",
+                          Build.DISPLAY, Build.FINGERPRINT, Build.HOST, Build.ID, Build.MODEL, Build.PRODUCT, Build.TYPE, Build.USER);
 
-        i.putExtra(Intent.EXTRA_TEXT, content);
+        i.putExtra(Intent.EXTRA_TEXT,
+                   getString(R.string.feedback_mail_content, deviceInfo));
         startActivity(
             Intent.createChooser(
                 i, getString(R.string.menu_item_send_feedback)));
@@ -344,12 +331,14 @@ public class OpenAlarm extends TabActivity
     }
 
     private void showAds(boolean show) {
-        final int visibility = mAdView.getVisibility();
-        if (show && visibility == View.GONE) {
+        if (show) {
             mAdView.setVisibility(View.VISIBLE);
-        } else {
-            mAdView.setVisibility(View.GONE);
+            if (mAdView.getVisibility() == View.VISIBLE &&
+                mAdView.hasAd()) {
+                return;
+            }
         }
+        mAdView.setVisibility(View.GONE);
     }
 
     private void showAdsChecked() {
