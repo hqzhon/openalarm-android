@@ -34,8 +34,8 @@
                                   android:layout_width="fill_parent"
                                   android:layout_height="wrap_content"
                                   admobsdk:backgroundColor="#000000"
-                                  admobsdk:textColor="#FFFFFF"
-                                  android:visibility="gone"/>
+                                  admobsdk:isGoneWithoutAd="true"
+                                  admobsdk:textColor="#FFFFFF"/>
 
     <TabWidget android:id="@id/android:tabs"
                android:layout_width="fill_parent"

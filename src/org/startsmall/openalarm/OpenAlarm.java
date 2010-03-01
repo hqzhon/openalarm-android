@@ -102,13 +102,10 @@ public class OpenAlarm extends TabActivity
         mAlarmListView = (ListView)getTabHost().getTabContentView().findViewById(android.R.id.list);
         mAlarmListView.setOnKeyListener(this);
         mAdView = (AdView)getTabHost().findViewById(R.id.ad);
-
         mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
         mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
 
         initTabHost();
-
-        showAds(true);
     }
 
     @Override
@@ -333,17 +330,14 @@ public class OpenAlarm extends TabActivity
     private void showAds(boolean show) {
         if (show) {
             mAdView.setVisibility(View.VISIBLE);
-            if (mAdView.getVisibility() == View.VISIBLE &&
-                mAdView.hasAd()) {
-                return;
-            }
+        } else {
+            mAdView.setVisibility(View.GONE);
         }
-        mAdView.setVisibility(View.GONE);
     }
 
     private void showAdsChecked() {
         boolean show = false;
-        if (mShowAdsCount > 6) {
+        if (mShowAdsCount > 5) {
             mShowAdsCount = 0;
             show = true;
         }
@@ -385,8 +379,6 @@ public class OpenAlarm extends TabActivity
 
                         menu.setHeaderTitle(label);
                         menu.add(alarmId, MENU_ITEM_ID_DELETE, 0, R.string.menu_item_delete_alarm);
-
-                        showAdsChecked();
                     }
                 };
 
