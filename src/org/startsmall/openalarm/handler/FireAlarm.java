@@ -136,24 +136,13 @@ public class FireAlarm extends Activity
     @Override
     public void onDestroy() {
         super.onDestroy();
+        shutdown();
+    }
 
-        releaseWakeLock();
-
-        // Stop and release MediaPlayer object.
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
-
-        // When this activity is intended to finish, remove all
-        // STOP_PLAYBACK messages from queue.
-        if (mHandler != null) {
-            mHandler.removeMessages(MSGID_STOP_PLAYBACK);
-            mHandler = null;
-        }
-
-        stopVibration();
+    @Override
+    public void finish() {
+        super.finish();
+        shutdown();
     }
 
     // FireAlarm comes to the foreground
@@ -211,6 +200,26 @@ public class FireAlarm extends Activity
             prepareMediaPlayer();
             startVibration();
         }
+    }
+
+    private void shutdown() {
+        releaseWakeLock();
+
+        // Stop and release MediaPlayer object.
+        if (mMediaPlayer != null) {
+            mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+
+        // When this activity is intended to finish, remove all
+        // STOP_PLAYBACK messages from queue.
+        if (mHandler != null) {
+            mHandler.removeMessages(MSGID_STOP_PLAYBACK);
+            mHandler = null;
+        }
+
+        stopVibration();
     }
 
     private void setLabelFromIntent(Intent intent) {
