@@ -41,7 +41,7 @@
               android:authorities="org.startsmall.openalarm" />
 
     <activity android:name=".OpenAlarm"
-              android:theme="@android:style/Theme.NoTitleBar"
+              android:theme="@style/Theme.OpenAlarm"
               android:label="@string/app_name"
               android:launchMode="singleTask"
               android:configChanges="orientation|keyboardHidden|keyboard|navigation">

@@ -39,5 +39,10 @@
       <item name="android:windowNoTitle">true</item>
     </style>
 
+    <style name="Theme.OpenAlarm" parent="android:Theme">
+      <item name="android:windowBackground">@null</item>
+      <item name="android:windowNoTitle">true</item>
+    </style>
+
 </resources>
 
