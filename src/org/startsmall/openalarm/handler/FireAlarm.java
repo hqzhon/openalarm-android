@@ -45,6 +45,7 @@ public class FireAlarm extends Activity
 
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
     private static final float IN_CALL_VOLUME = 0.125f;
+    private static final float NORMAL_VOLUME = 0.85f;
     private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
 
     private static final int AUTO_SNOOZE_COUNT_MAX = 3;
@@ -433,6 +434,7 @@ public class FireAlarm extends Activity
                 }
             } else {
                 mMediaPlayer.setDataSource(this, Uri.parse(uriString));
+                mMediaPlayer.setVolume(NORMAL_VOLUME, NORMAL_VOLUME);
             }
         } catch (java.io.IOException e) {
             return;

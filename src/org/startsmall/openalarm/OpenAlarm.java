@@ -61,7 +61,7 @@ import java.util.*;
 
 public class OpenAlarm extends TabActivity
                        implements TabHost.OnTabChangeListener, ListView.OnKeyListener {
-    private static final String TAG = "OpenAlarm";
+	// private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
     private static final int DIALOG_ID_ABOUT = 0;
@@ -349,12 +349,12 @@ public class OpenAlarm extends TabActivity
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
-        private LayoutInflater mInflater;
+        // private LayoutInflater mInflater;
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
 
-            mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            // mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
             mOnClickListener =
                 new View.OnClickListener() {
