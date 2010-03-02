@@ -233,9 +233,9 @@ public class FireAlarm extends Activity
         final int hourOfDay = intent.getIntExtra(AlarmColumns.HOUR_OF_DAY, -1);
         final int minutes = intent.getIntExtra(AlarmColumns.MINUTES, -1);
 
-        CompoundTimeTextView timeWithAMPM = (CompoundTimeTextView)findViewById(R.id.time);
-        timeWithAMPM.setTextAppearance(this, CompoundTimeTextView.TIME_TEXT, R.style.TextAppearanceHuge);
-        timeWithAMPM.setTime(hourOfDay, minutes);
+        TimeAmPmView timeAmPmView = (TimeAmPmView)findViewById(R.id.time_am_pm);
+        timeAmPmView.setTextAppearance(this, TimeAmPmView.TIME_TEXT, R.style.TextAppearanceHuge);
+        timeAmPmView.setTime(hourOfDay, minutes);
     }
 
     private void prepareMathLock() {

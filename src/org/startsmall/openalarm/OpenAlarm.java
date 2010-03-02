@@ -437,9 +437,9 @@ public class OpenAlarm extends TabActivity
             labelView.setText(alarm.getStringField(Alarm.FIELD_LABEL));
 
             // Time of an alarm: hourOfDay and minutes
-            final CompoundTimeTextView timeTextView =
-                (CompoundTimeTextView)view.findViewById(R.id.time);
-            timeTextView.setTime(
+            final TimeAmPmView timeAmPmView =
+                (TimeAmPmView)view.findViewById(R.id.time_am_pm);
+            timeAmPmView.setTime(
                 alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY),
                 alarm.getIntField(Alarm.FIELD_MINUTES));
 

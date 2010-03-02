@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
-              android:paddingLeft="15dp"
+              android:paddingLeft="5dp"
               android:paddingRight="5dp"
               android:layout_width="fill_parent"
               android:layout_height="?android:attr/listPreferredItemHeight">
@@ -38,8 +38,8 @@
   </LinearLayout>
 
   <!-- Time with AM/PM label -->
-  <org.startsmall.openalarm.CompoundTimeTextView
-     android:id="@+id/time"
+  <org.startsmall.openalarm.TimeAmPmView
+     android:id="@+id/time_am_pm"
      android:layout_width="wrap_content"
      android:layout_height="fill_parent"
      android:layout_gravity="center_vertical"/>

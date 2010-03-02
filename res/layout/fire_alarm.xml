@@ -28,8 +28,8 @@
                 android:ellipsize="marquee"
                 android:maxLength="15"/>
 
-      <org.startsmall.openalarm.CompoundTimeTextView
-         android:id="@+id/time"
+      <org.startsmall.openalarm.TimeAmPmView
+         android:id="@+id/time_am_pm"
          android:layout_width="fill_parent"
          android:layout_height="0dp"
          android:layout_gravity="fill"

@@ -1,13 +1,3 @@
-/**
- * @file   CompoundTimeTextView.java
- * @author josh <yenliangl at gmail dot com>
- * @date   Fri Nov 27 11:32:13 2009
- *
- * @brief
- *
- *
- */
-
 package org.startsmall.openalarm;
 
 import android.content.Context;
@@ -22,7 +12,7 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 
-public class CompoundTimeTextView extends LinearLayout {
+public class TimeAmPmView extends LinearLayout {
     public static final int TIME_TEXT = 0;
     public static final int AMPM_TEXT = 1;
 
@@ -30,25 +20,15 @@ public class CompoundTimeTextView extends LinearLayout {
     private final TextView mAmTextView;
     private final TextView mPmTextView;
 
-    public CompoundTimeTextView(Context context, AttributeSet attrs) {
+    public TimeAmPmView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         setOrientation(0);       // horizontal
 
+        LayoutInflater.from(context).inflate(R.layout.time_am_pm, this, true);
+
         // Time text view;
-        mTimeTextView = new TextView(context);
-        mTimeTextView.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);
-        mTimeTextView.setTextAppearance(context, android.R.style.TextAppearance_Large);
-        LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
-                                               LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.CENTER_VERTICAL;
-        this.addView(mTimeTextView, params);
-
-        LayoutInflater inflater =
-            (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View amPmView = inflater.inflate(R.layout.am_pm_widget, this, false);
-        addView(amPmView);
-
+        mTimeTextView = (TextView)findViewById(R.id.time);
         mAmTextView = (TextView)findViewById(R.id.am);
         mAmTextView.setText(DateUtils.getAMPMString(Calendar.AM).toUpperCase());
         mPmTextView = (TextView)findViewById(R.id.pm);

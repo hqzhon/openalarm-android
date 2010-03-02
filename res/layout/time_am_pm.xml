@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <TextView style="?android:attr/textAppearanceLarge"
+            android:id="@+id/time"
+            android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"/>
+
+  <LinearLayout android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent">
+
+    <TextView style="?android:attr/textAppearanceSmall"
+              android:textSize="10sp"
+              android:id="@+id/am"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:paddingTop="10dp"
+              android:gravity="center_vertical" />
+
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="wrap_content"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"/>
+
+    <TextView style="?android:attr/textAppearanceSmall"
+              android:textSize="10sp"
+              android:id="@+id/pm"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:paddingBottom="10dp"
+              android:gravity="center_vertical"/>
+  </LinearLayout>
+</merge>
