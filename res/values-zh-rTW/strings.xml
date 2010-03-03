@@ -51,4 +51,11 @@
     <string name="toggle_handler_operation_wifi">無線網路</string>
     <string name="toggle_handler_operation_airplane_mode">飛航模式</string>
     <string name="toggle_handler_operation_apn">行動網路</string>
+
+  <string name="textforme_handler">S"定時簡訊"</string>
+  <string name="textforme_handler_subject_title">主旨</string>
+  <string name="textforme_handler_body_title">內容</string>
+  <string name="textforme_handler_subject_dialog_title">輸入主旨</string>
+  <string name="textforme_handler_body_dialog_title">輸入內容</string>
+
 </resources>

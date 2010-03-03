@@ -155,13 +155,14 @@ class Alarm {
         }
 
         Cursor cursor = Alarms.getAlarmCursor(context, alarmUri);
-        if(cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 Alarm alarm = Alarm.getInstance(cursor);
                 visitor.onVisit(context, alarm);
             } while(cursor.moveToNext());
+
+            cursor.close();
         }
-        cursor.close();
     }
 
     private static void loadFromDatabase(Context context) {

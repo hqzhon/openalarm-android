@@ -93,4 +93,12 @@
   <!-- <string name="toggle_handler_operation_wifi">Wi-fi</string> -->
   <string name="toggle_handler_operation_airplane_mode">飞行模式</string>
   <string name="toggle_handler_operation_apn">移动网络</string>
+
+  <!-- Text for me -->
+  <string name="textforme_handler">S"定时短信"</string>
+  <string name="textforme_handler_subject_title">主旨</string>
+  <string name="textforme_handler_body_title">內容</string>
+  <string name="textforme_handler_subject_dialog_title">输入</string>
+  <string name="textforme_handler_body_dialog_title">输入內容</string>
+
 </resources>

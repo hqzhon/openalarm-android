@@ -93,4 +93,12 @@
   <string name="toggle_handler_operation_wifi">Wi-Fi</string>
   <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>
   <string name="toggle_handler_operation_apn">Mobile network</string>
+
+  <!-- Text for me -->
+  <string name="textforme_handler">SText for me</string>
+  <string name="textforme_handler_subject_title">Subject</string>
+  <string name="textforme_handler_body_title">Body</string>
+  <string name="textforme_handler_subject_dialog_title">Enter text subject</string>
+  <string name="textforme_handler_body_dialog_title">Enter text body</string>
+
 </resources>
