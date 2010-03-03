@@ -1,96 +1,54 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <resources>
-  <string name="app_name">OpenAlarm</string>
-
-  <string name="on">開啟</string>
-  <string name="off">關閉</string>
-
-  <!-- About HTML file name -->
-  <string name="about_this_application">關於此程式</string>
-  <string name="about_html">about_zh-rTW.html</string>
-
-  <!-- Options menu item -->
-  <string name="menu_item_add">新增</string>
-  <!-- <string name="menu_item_preferences">Preferences</string> -->
-  <!-- <string name="menu_item_set_theme_title">Theme</string> -->
-  <string name="menu_item_send_feedback">傳送意見</string>
-  <string name="menu_item_about">關於</string>
-
-  <string name="feedback_mail_content">Hi Josh!\n\n\n====================\n"下面資訊僅用於除錯!!"\n====================\n%s</string>
-
-  <!-- Context menu item -->
-  <string name="menu_item_edit_alarm">編輯</string>
-  <string name="menu_item_delete_alarm">刪除</string>
-
-  <!-- Delete alarm message -->
-  <string name="confirm_alarm_deletion_title">刪除確認</string>
-  <string name="delete_alarm_message">您確定要刪除她嗎？</string>
-
-  <!-- Alarm settings -->
-  <string name="alarm_basic_settings_title">基本設定</string>
-  <string name="alarm_extra_settings_title">動作設定</string>
-
-  <string name="alarm_settings_label_title">名稱</string>
-  <!-- <string name="alarm_settings_label_key">label</string> -->
-  <string name="alarm_settings_label_dialog_title">輸入名稱</string>
-
-  <string name="alarm_settings_time_title">時間</string>
-  <!-- <string name="alarm_settings_time_key">time</string> -->
-
-  <string name="alarm_settings_action_title">動作</string>
-  <string name="alarm_settings_action_summary">選擇動作</string>
-  <!-- <string name="alarm_settings_action_key">action</string> -->
-  <string name="alarm_settings_action_dialog_title">使用那一個動作</string>
-
-  <string name="alarm_settings_repeat_days_title">重複</string>
-  <string name="alarm_settings_repeat_days_summary">每天</string>
-  <!-- <string name="alarm_settings_repeat_days_key">repeat_days</string> -->
-  <string name="alarm_settings_repeat_days_dialog_title">哪幾天啊？</string>
-  <string name="repeat_on_everyday">每天</string>
-  <string name="no_repeat_days">未定</string>
-
-  <!-- <string name="alarm_settings_extra_category_key">extra_settings</string> -->
-
-  <!-- Alarm notifications -->
-  <string name="alarm_set_toast_text">"鬧鐘"%s"會在"%s"動作"</string>
-  <string name="alarm_handler_unset_message">請指定要我要做甚麼</string>
-  <string name="alarm_repeat_days_unset_message">請指定哪幾天要動作</string>
-  <string name="alarm_set_notification_ticker">"下個鬧鐘": %s</string>
-  <string name="alarm_set_notification_content">"動作時間在"%s</string>
-
-  <!-- Group -->
-  <string name="uncategorized">未歸類</string>
-
-  <!-- Handler -->
-  <string name="ringtone_title">音樂鈴聲</string>
-  <string name="toggle_title">開或關</string>
-  <string name="phone_number_title">電話號碼</string>
-  <string name="phone_number_dialog_title">輸入電話號碼</string>
-
-  <!-- Alarm handler -->
-  <string name="alarm_handler">A鬧鐘</string>
-  <string name="alarm_handler_snooze_duration_title">貪睡間隔</string>
-  <string name="alarm_handler_snooze_duration_dialog_title">貪睡幾分鐘</string>
-  <string name="alarm_handler_vibrate_title">振動</string>
-  <string name="alarm_handler_math_lock_title">算術鎖</string>
-
-  <!-- FireAlarm -->
-  <string name="fire_alarm_snooze_text">再瞇一下</string>
-  <string name="fire_alarm_dismiss_text">起來了</string>
-  <string name="fire_alarm_set_notification_ticker">%s: "再瞇一下還是起來"?</string>
-
-  <!-- MediaPlayer -->
-  <!-- <string name="media_player_error_dialog_title">Unable to play ringtone</string> -->
-  <!-- <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string> -->
-
-  <!-- Call for me -->
-  <string name="callforme_handler">C定時撥號</string>
-  <string name="callforme_handler_speakerphone_title">擴音模式</string>
-
-  <!-- Toggle handler -->
-  <string name="toggle_handler">T"開關"</string>
-  <string name="toggle_handler_operation_title">切換</string>
-  <string name="toggle_handler_operation_wifi">無線網路</string>
-  <string name="toggle_handler_operation_airplane_mode">飛航模式</string>
-  <string name="toggle_handler_operation_apn">行動網路</string>
+    <string name="app_name">OpenAlarm</string>
+    <string name="on">開啟</string>
+    <string name="off">關閉</string>
+    <string name="about_this_application">關於此程式</string>
+    <string name="about_html">about_zh-rTW.html</string>
+    <string name="menu_item_add">新增</string>
+    <string name="menu_item_send_feedback">傳送意見</string>
+    <string name="menu_item_about">關於</string>
+    <string name="feedback_mail_content">Hi Josh!\n\n\n====================\n"下面資訊僅用於除錯!!"\n====================\n%s</string>
+    <string name="menu_item_edit_alarm">編輯</string>
+    <string name="menu_item_delete_alarm">刪除</string>
+    <string name="confirm_alarm_deletion_title">刪除確認</string>
+    <string name="delete_alarm_message">您確定要刪除她嗎？</string>
+    <string name="alarm_basic_settings_title">基本設定</string>
+    <string name="alarm_extra_settings_title">動作設定</string>
+    <string name="alarm_settings_label_title">名稱</string>
+    <string name="alarm_settings_label_dialog_title">輸入名稱</string>
+    <string name="alarm_settings_time_title">時間</string>
+    <string name="alarm_settings_action_title">動作</string>
+    <string name="alarm_settings_action_summary">選擇動作</string>
+    <string name="alarm_settings_action_dialog_title">使用那一個動作</string>
+    <string name="alarm_settings_repeat_days_title">重複</string>
+    <string name="alarm_settings_repeat_days_summary">每天</string>
+    <string name="alarm_settings_repeat_days_dialog_title">哪幾天啊？</string>
+    <string name="repeat_on_everyday">每天</string>
+    <string name="no_repeat_days">未定</string>
+    <string name="alarm_set_toast_text">"鬧鐘"%s"會在"%s"動作"</string>
+    <string name="alarm_handler_unset_message">請指定要我要做甚麼</string>
+    <string name="alarm_repeat_days_unset_message">請指定哪幾天要動作</string>
+    <string name="alarm_set_notification_ticker">"下個鬧鐘": %s</string>
+    <string name="alarm_set_notification_content">"動作時間在"%s</string>
+    <string name="uncategorized">未歸類</string>
+    <string name="ringtone_title">音樂鈴聲</string>
+    <string name="toggle_title">開或關</string>
+    <string name="phone_number_title">電話號碼</string>
+    <string name="phone_number_dialog_title">輸入電話號碼</string>
+    <string name="alarm_handler">A鬧鐘</string>
+    <string name="alarm_handler_snooze_duration_title">貪睡間隔</string>
+    <string name="alarm_handler_snooze_duration_dialog_title">貪睡幾分鐘</string>
+    <string name="alarm_handler_vibrate_title">振動</string>
+    <string name="alarm_handler_math_lock_title">算術鎖</string>
+    <string name="fire_alarm_snooze_text">再瞇一下</string>
+    <string name="fire_alarm_dismiss_text">起來了</string>
+    <string name="fire_alarm_set_notification_ticker">%s: "再瞇一下還是起來"?</string>
+    <string name="callforme_handler">C"定時撥號"</string>
+    <string name="callforme_handler_speakerphone_title">擴音模式</string>
+    <string name="toggle_handler">T"開關"</string>
+    <string name="toggle_handler_operation_title">切換</string>
+    <string name="toggle_handler_operation_wifi">無線網路</string>
+    <string name="toggle_handler_operation_airplane_mode">飛航模式</string>
+    <string name="toggle_handler_operation_apn">行動網路</string>
 </resources>
