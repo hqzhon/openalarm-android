@@ -46,6 +46,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
@@ -61,7 +62,7 @@ import java.util.*;
 
 public class OpenAlarm extends TabActivity
                        implements TabHost.OnTabChangeListener, ListView.OnKeyListener {
-	// private static final String TAG = "OpenAlarm";
+    private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
     private static final int DIALOG_ID_ABOUT = 0;
@@ -354,16 +355,12 @@ public class OpenAlarm extends TabActivity
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
 
-            // mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
             mOnClickListener =
                 new View.OnClickListener() {
                     // @Override
                     public void onClick(View view) {
-                        Bundle attachment = (Bundle)view.getTag();
-
-                        int alarmId = attachment.getInt(AlarmColumns._ID);
-                        editAlarm(alarmId);
+                        DataHolder attachment = (DataHolder)view.getTag();
+                        editAlarm(attachment.alarmId);
                     }
                 };
 
@@ -372,9 +369,8 @@ public class OpenAlarm extends TabActivity
                     public void onCreateContextMenu(ContextMenu menu,
                                                     View view,
                                                     ContextMenu.ContextMenuInfo menuInfo) {
-                        Bundle attachment = (Bundle)view.getTag();
-
-                        int alarmId = attachment.getInt(AlarmColumns._ID);
+                        DataHolder attachment = (DataHolder)view.getTag();
+                        final int alarmId = attachment.alarmId;
                         String label = Alarm.getInstance(OpenAlarm.this, alarmId).getStringField(Alarm.FIELD_LABEL);
 
                         menu.setHeaderTitle(label);
@@ -384,11 +380,10 @@ public class OpenAlarm extends TabActivity
 
             mOnCheckedChangeListener =
                 new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged(CompoundButton buttonView,
-                                                 boolean isChecked) {
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         View parent = (View)buttonView.getParent();
-                        Bundle attachment = (Bundle)parent.getTag();
-                        int alarmId = attachment.getInt(AlarmColumns._ID);
+                        DataHolder attachment = (DataHolder)parent.getTag();
+                        final int alarmId = attachment.alarmId;
                         Context context = (Context)OpenAlarm.this;
                         Alarm alarm = Alarm.getInstance(context, alarmId);
                         if (alarm.isValid()) {
@@ -427,25 +422,19 @@ public class OpenAlarm extends TabActivity
         public void bindView(View view, Context context, Cursor cursor) {
             Alarm alarm = Alarm.getInstance(cursor);
 
-            Bundle attachment = (Bundle)view.getTag();
-            attachment.putInt(AlarmColumns._ID,
-                              alarm.getIntField(Alarm.FIELD_ID));
+            DataHolder attachment = (DataHolder)view.getTag();
+            attachment.alarmId = alarm.getIntField(Alarm.FIELD_ID);
 
             // Label
-            final TextView labelView =
-                (TextView)view.findViewById(R.id.label);
-            labelView.setText(alarm.getStringField(Alarm.FIELD_LABEL));
+            attachment.labelView.setText(alarm.getStringField(Alarm.FIELD_LABEL));
 
             // Time of an alarm: hourOfDay and minutes
-            final TimeAmPmView timeAmPmView =
-                (TimeAmPmView)view.findViewById(R.id.time_am_pm);
-            timeAmPmView.setTime(
+            attachment.timeAmPmView.setTime(
                 alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY),
                 alarm.getIntField(Alarm.FIELD_MINUTES));
 
             // Enabled?
-            final CheckBox enabledCheckBox =
-                (CheckBox)view.findViewById(R.id.enabled);
+            final CheckBox enabledCheckBox = attachment.enabledView;
             // Set checkbox's listener to null. If set, the
             // defined listener will try to update the database
             // and make bindView() called which enters an
@@ -455,8 +444,7 @@ public class OpenAlarm extends TabActivity
             enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
 
             // RepeatDays
-            final LinearLayout repeatDaysView =
-                (LinearLayout)view.findViewById(R.id.repeat_days);
+            final LinearLayout repeatDaysView = attachment.repeatDaysView;
             repeatDaysView.removeAllViews();
             Iterator<String> days =
                 Alarms.RepeatWeekdays.toStringList(
@@ -482,22 +470,18 @@ public class OpenAlarm extends TabActivity
         }
 
         public View newView(Context context, Cursor c, ViewGroup parent) {
-            LayoutInflater inflater = getLayoutInflater();
-            View view = inflater.inflate(R.layout.alarm_list_item, parent, false);
+            // LayoutInflater inflater = getLayoutInflater();
+            // View view = inflater.inflate(R.layout.alarm_list_item, parent, false);
+            View view = LayoutInflater.from(context).inflate(R.layout.alarm_list_item, parent, false);
 
-            Bundle attachment = new Bundle();
+            DataHolder attachment = new DataHolder();
+            attachment.labelView = (TextView)view.findViewById(R.id.label);
+            attachment.timeAmPmView = (TimeAmPmView)view.findViewById(R.id.time_am_pm);
+            attachment.enabledView = (CheckBox)view.findViewById(R.id.enabled);
+            attachment.repeatDaysView = (LinearLayout)view.findViewById(R.id.repeat_days);
             view.setTag(attachment);
 
-            // Should follow Android's design. Click to go to
-            // item's default activity and long-click to go to
-            // item's extended activities. Here, the first-class
-            // activity is to edit item's settings.
             view.setOnClickListener(mOnClickListener);
-
-            // The context menu listener of the view must be set
-            // in order for its parent's onCreateMenu() to be
-            // called to create context menu. This should be a
-            // bug but I'm not very sure.
 
             // The ContextMenu.ContextMenuInfo object is returned
             // by getContextMenuInfo() overriden by
@@ -511,5 +495,14 @@ public class OpenAlarm extends TabActivity
             super.onContentChanged();
             Notification.getInstance().set(OpenAlarm.this);
         }
+
+    }
+
+    static class DataHolder {
+        int alarmId;
+        TextView labelView;
+        TimeAmPmView timeAmPmView;
+        CheckBox enabledView;
+        LinearLayout repeatDaysView;
     }
 }
