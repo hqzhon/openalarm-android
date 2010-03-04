@@ -103,9 +103,9 @@
 
     <service android:exported="true" android:name=".ApnService"/>
 
-    <receiver android:name=".CallForMeHandler"
-              android:label="@string/callforme_handler"
-              android:icon="@drawable/callforme_handler">
+    <receiver android:name=".PhoneHandler"
+              android:label="@string/phone_handler"
+              android:icon="@drawable/phone_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
@@ -121,9 +121,18 @@
       </intent-filter>
     </receiver>
 
-    <receiver android:name=".TextForMeHandler"
-              android:label="@string/textforme_handler"
-              android:icon="@drawable/textforme_handler">
+    <receiver android:name=".TextHandler"
+              android:label="@string/text_handler"
+              android:icon="@drawable/text_handler">
+      <intent-filter>
+        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
+        <category android:name="android.intent.category.ALTERNATIVE"/>
+      </intent-filter>
+    </receiver>
+
+    <receiver android:name=".MusicHandler"
+              android:label="@string/music_handler"
+              android:icon="@drawable/music_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>

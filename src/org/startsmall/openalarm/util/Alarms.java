@@ -285,37 +285,4 @@ public class Alarms {
         }
         return sHandlerList;
     }
-
-    public static void upgradeHandlers(SQLiteDatabase db, String tableName) {
-
-        Log.d(TAG, "===> upgrading handlers...");
-
-        ContentValues values = new ContentValues();
-        values.put(AlarmColumns.HANDLER,
-                   "org.startsmall.openalarm.ToggleHandler");
-
-        // Update AirplaneModeHandler
-        values.put(AlarmColumns.EXTRA,
-                   "operation=0" + AbsHandler.SEPARATOR);
-        db.update(tableName,
-                  values,
-                  AlarmColumns.HANDLER + " like ?",
-                  new String[]{"%Airplane%"});
-
-        // Update ApnHandler
-        values.put(AlarmColumns.EXTRA,
-                   "operation=1" + AbsHandler.SEPARATOR);
-        db.update(tableName,
-                  values,
-                  AlarmColumns.HANDLER + " like ?",
-                  new String[]{"%Apn%"});
-
-        // Update WifiHandler
-        values.put(AlarmColumns.EXTRA,
-                   "operation=2" + AbsHandler.SEPARATOR);
-        db.update(tableName,
-                  values,
-                  AlarmColumns.HANDLER + " like ?",
-                  new String[]{"%Wifi%"});
-    }
 }

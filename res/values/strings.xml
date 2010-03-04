@@ -83,9 +83,9 @@
   <string name="media_player_error_dialog_title">Unable to play ringtone</string>
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 
-  <!-- Call for me -->
-  <string name="callforme_handler">CCall for me</string>
-  <string name="callforme_handler_speakerphone_title">Speakerphone mode</string>
+  <!-- Phone handler -->
+  <string name="phone_handler">CCall for me</string>
+  <string name="phone_handler_speakerphone_title">Speakerphone mode</string>
 
   <!-- Toggle handler -->
   <string name="toggle_handler">TToggle switch</string>
@@ -94,11 +94,18 @@
   <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>
   <string name="toggle_handler_operation_apn">Mobile network</string>
 
-  <!-- Text for me -->
-  <string name="textforme_handler">SText for me</string>
-  <string name="textforme_handler_subject_title">Subject</string>
-  <string name="textforme_handler_body_title">Body</string>
-  <string name="textforme_handler_subject_dialog_title">Enter text subject</string>
-  <string name="textforme_handler_body_dialog_title">Enter text body</string>
+  <!-- Text handler -->
+  <string name="text_handler">SText</string>
+  <string name="text_handler_subject_title">Subject</string>
+  <string name="text_handler_body_title">Body</string>
+  <string name="text_handler_subject_dialog_title">Enter text subject</string>
+  <string name="text_handler_body_dialog_title">Enter text body</string>
+
+  <!-- Music handler -->
+  <string name="music_handler">MMusic</string>
+  <string name="music_handler_playlist_title">Playlist</string>
+  <string name="music_handler_looping_title">Looping</string>
+  <string name="music_handler_minutes_title">Minutes</string>
+  <string name="music_handler_warning_no_playlists">No playlists in your device. Create some for me</string>
 
 </resources>

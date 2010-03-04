@@ -17,15 +17,15 @@ import android.text.TextUtils;
 import android.util.Log;
 import java.util.*;
 
-public class TextForMeHandler extends AbsHandler {
-    private static final String TAG = "TextForMeHandler";
+public class TextHandler extends AbsHandler {
+    private static final String TAG = "TextHandler";
     private static final String EXTRA_KEY_PHONE_NUMBER = "phone_number";
     private static final String EXTRA_KEY_SUBJECT = "subject";
     private static final String EXTRA_KEY_BODY = "body";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.v(TAG, "===> TextForMeHandler.onReceive()");
+        Log.v(TAG, "===> TextHandler.onReceive()");
 
         final String extra = intent.getStringExtra(AlarmColumns.EXTRA);
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
@@ -42,7 +42,7 @@ public class TextForMeHandler extends AbsHandler {
             sm.sendTextMessage(
                 phoneNumber,
                 null,
-                body,
+                body + "\n\n" + "sent via OpenAlarm",
                 null, null);
 
             String subject = intent.getStringExtra(EXTRA_KEY_SUBJECT);
@@ -89,18 +89,18 @@ public class TextForMeHandler extends AbsHandler {
         EditTextPreference subjectPref = new EditTextPreference(context);
         subjectPref.setKey(EXTRA_KEY_SUBJECT);
         subjectPref.setPersistent(true);
-        subjectPref.setTitle(R.string.textforme_handler_subject_title);
+        subjectPref.setTitle(R.string.text_handler_subject_title);
         subjectPref.setOnPreferenceChangeListener(prefChangeListener);
-        subjectPref.setDialogTitle(R.string.textforme_handler_subject_dialog_title);
+        subjectPref.setDialogTitle(R.string.text_handler_subject_dialog_title);
         category.addPreference(subjectPref);
 
         // SMS body
         EditTextPreference bodyPref = new EditTextPreference(context);
         bodyPref.setKey(EXTRA_KEY_BODY);
         bodyPref.setPersistent(true);
-        bodyPref.setTitle(R.string.textforme_handler_body_title);
+        bodyPref.setTitle(R.string.text_handler_body_title);
         bodyPref.setOnPreferenceChangeListener(prefChangeListener);
-        bodyPref.setDialogTitle(R.string.textforme_handler_body_dialog_title);
+        bodyPref.setDialogTitle(R.string.text_handler_body_dialog_title);
         category.addPreference(bodyPref);
 
         // Get settings from extra.
@@ -213,28 +213,17 @@ public class TextForMeHandler extends AbsHandler {
         return resolver.insert(uri, values);
     }
 
-    private static long getOrCreateThreadId(Context context, String recipient) {
-        Set<String> recipients = new HashSet<String>();
-
-        recipients.add(recipient);
-        return getOrCreateThreadId(context, recipients);
-    }
-
     private static final Uri THREAD_ID_CONTENT_URI = Uri.parse(
         "content://mms-sms/threadID");
 
-    public static long getOrCreateThreadId(Context context, Set<String> recipients) {
-        Uri.Builder uriBuilder = THREAD_ID_CONTENT_URI.buildUpon();
-        for (String recipient : recipients) {
-            uriBuilder.appendQueryParameter("recipient", recipient);
-        }
-        Uri uri = uriBuilder.build();
-
+    private static long getOrCreateThreadId(Context context, String recipient) {
         Cursor cursor =
             context.getContentResolver().query(
-                uri, new String[]{AlarmColumns._ID}, null, null, null);
+                THREAD_ID_CONTENT_URI,
+                new String[]{AlarmColumns._ID},
+                "recipient=" + recipient, null, null);
         try {
-            if (cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 return cursor.getLong(0);
             } else {
                 Log.e(TAG, "getOrCreateThreadId returned no rows!");
@@ -243,7 +232,6 @@ public class TextForMeHandler extends AbsHandler {
             cursor.close();
         }
 
-        Log.e(TAG, "getOrCreateThreadId failed with uri " + uri.toString());
         throw new IllegalArgumentException("Unable to find or allocate a thread ID.");
     }
 }

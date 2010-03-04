@@ -42,7 +42,7 @@ public class AlarmProvider extends ContentProvider {
         private static final String TAG = "DatabaseOpenHelper";
         private static final String DATABASE_NAME = "openalarm.db";
         public static final String DATABASE_TABLE_NAME = "alarms";
-        private static final int DATABASE_VERSION = 2;
+        private static final int DATABASE_VERSION = 3;
 
         private static final String DATABASE_CREATE_CMD =
             "CREATE TABLE " + DATABASE_TABLE_NAME + "(" +
@@ -74,10 +74,7 @@ public class AlarmProvider extends ContentProvider {
         public void onUpgrade(SQLiteDatabase db,
                               int oldVersion,
                               int newVersion) {
-            if (oldVersion == 1 &&
-                newVersion == 2) {
-                Alarms.upgradeHandlers(db, DATABASE_TABLE_NAME);
-            } else {
+            if (!upgradeHandlers(db, DATABASE_TABLE_NAME, oldVersion, newVersion)) {
                 db.execSQL(DATABASE_DROP_CMD);
                 onCreate(db);
             }
@@ -96,6 +93,50 @@ public class AlarmProvider extends ContentProvider {
             db.execSQL(cmd + "('Go to work', 7, 00, 0, 1, 0, '', '');");
             db.execSQL(cmd + "('Pick up kids', 8, 30, 0, 5, 0, '', '');");
             db.execSQL(cmd + "('See her mom', 9, 00, 0, 9, 0, '', '');");
+        }
+
+        private boolean upgradeHandlers(SQLiteDatabase db,
+                                        String tableName,
+                                        int oldVersion,
+                                        int newVersion) {
+            if (oldVersion == 1 && newVersion == 2) {
+                ContentValues values = new ContentValues();
+                values.put(AlarmColumns.HANDLER,
+                           "org.startsmall.openalarm.ToggleHandler");
+
+                // Update AirplaneModeHandler
+                values.put(AlarmColumns.EXTRA,
+                           "operation=0" + AbsHandler.SEPARATOR);
+                db.update(tableName, values,
+                          AlarmColumns.HANDLER + " like ?",
+                          new String[]{"%Airplane%"});
+
+                // Update ApnHandler
+                values.put(AlarmColumns.EXTRA,
+                           "operation=1" + AbsHandler.SEPARATOR);
+                db.update(tableName, values,
+                          AlarmColumns.HANDLER + " like ?",
+                          new String[]{"%Apn%"});
+
+                // Update WifiHandler
+                values.put(AlarmColumns.EXTRA,
+                           "operation=2" + AbsHandler.SEPARATOR);
+                db.update(tableName, values,
+                          AlarmColumns.HANDLER + " like ?",
+                          new String[]{"%Wifi%"});
+            } else if (oldVersion == 2 && newVersion == 3) {
+                ContentValues values = new ContentValues();
+                values.put(AlarmColumns.HANDLER, "org.startsmall.openalarm.PhoneHandler");
+                // Update CallForMeHandler
+                db.update(tableName, values,
+                          AlarmColumns.HANDLER + " like ?",
+                          new String[]{"%CallForMe%"});
+            } else {
+                return false;
+            }
+
+            Log.i(TAG, "===> upgraded database from version " + oldVersion + " to version " + newVersion);
+            return true;
         }
     }
 

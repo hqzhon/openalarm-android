@@ -19,15 +19,15 @@ import android.text.TextUtils;
 import android.util.Log;
 // import java.util.Calendar;
 
-public class CallForMeHandler extends AbsHandler {
-    private static final String TAG = "CallForMeHandler";
+public class PhoneHandler extends AbsHandler {
+    private static final String TAG = "PhoneHandler";
     static final String EXTRA_KEY_PHONE_NUMBER = "phone_number";
     static final String EXTRA_KEY_SPEAKERPHONE_MODE = "speakerphone_on";
     static final String EXTRA_KEY_VOICE_URI = "voice_uri";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // Log.i(TAG, "===> CallForMeHandler.onReceive()");
+        // Log.i(TAG, "===> PhoneHandler.onReceive()");
 
         final String extra = intent.getStringExtra("extra");
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
@@ -72,7 +72,7 @@ public class CallForMeHandler extends AbsHandler {
         Alarms.dismissAlarm(context, alarmId);
 
 
-        // Log.i(TAG, "===> CallForMeHandler.onReceive()");
+        // Log.i(TAG, "===> PhoneHandler.onReceive()");
     }
 
     @Override
@@ -102,7 +102,7 @@ public class CallForMeHandler extends AbsHandler {
         CheckBoxPreference speakerPhonePref = new CheckBoxPreference(context);
         speakerPhonePref.setKey(EXTRA_KEY_SPEAKERPHONE_MODE);
         speakerPhonePref.setPersistent(true);
-        speakerPhonePref.setTitle(R.string.callforme_handler_speakerphone_title);
+        speakerPhonePref.setTitle(R.string.phone_handler_speakerphone_title);
         speakerPhonePref.setSummaryOn(R.string.on);
         speakerPhonePref.setSummaryOff(R.string.off);
         category.addPreference(speakerPhonePref);

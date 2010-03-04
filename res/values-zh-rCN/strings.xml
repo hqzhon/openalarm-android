@@ -83,9 +83,9 @@
   <!-- <string name="media_player_error_dialog_title">Unable to play ringtone</string> -->
   <!-- <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string> -->
 
-  <!-- Call for me -->
-  <string name="callforme_handler">C"定时拨号"</string>
-  <string name="callforme_handler_speakerphone_title">扩音模式</string>
+  <!-- Phone handler -->
+  <string name="phone_handler">C"定时拨号"</string>
+  <string name="phone_handler_speakerphone_title">扩音模式</string>
 
   <!-- Toggle handler -->
   <string name="toggle_handler">T"开关"</string>
@@ -94,11 +94,11 @@
   <string name="toggle_handler_operation_airplane_mode">飞行模式</string>
   <string name="toggle_handler_operation_apn">移动网络</string>
 
-  <!-- Text for me -->
-  <string name="textforme_handler">S"定时短信"</string>
-  <string name="textforme_handler_subject_title">主旨</string>
-  <string name="textforme_handler_body_title">內容</string>
-  <string name="textforme_handler_subject_dialog_title">输入</string>
-  <string name="textforme_handler_body_dialog_title">输入內容</string>
+  <!-- Text handler -->
+  <string name="text_handler">S"定时短信"</string>
+  <string name="text_handler_subject_title">主旨</string>
+  <string name="text_handler_body_title">內容</string>
+  <string name="text_handler_subject_dialog_title">输入</string>
+  <string name="text_handler_body_dialog_title">输入內容</string>
 
 </resources>
