@@ -38,11 +38,12 @@ public class TextHandler extends AbsHandler {
         if (!TextUtils.isEmpty(phoneNumber) &&
             !TextUtils.isEmpty(body)) {
 
+            body.concat("Sent via OpenAlarm");
             SmsManager sm = SmsManager.getDefault();
             sm.sendTextMessage(
                 phoneNumber,
                 null,
-                body + "\n\n" + "sent via OpenAlarm",
+                body,
                 null, null);
 
             String subject = intent.getStringExtra(EXTRA_KEY_SUBJECT);
@@ -217,21 +218,52 @@ public class TextHandler extends AbsHandler {
         "content://mms-sms/threadID");
 
     private static long getOrCreateThreadId(Context context, String recipient) {
+        // Cursor cursor =
+        //     context.getContentResolver().query(
+        //         THREAD_ID_CONTENT_URI,
+        //         new String[]{AlarmColumns._ID},
+        //         "recipient=" + recipient, null, null);
+        // try {
+        //     if (cursor != null && cursor.moveToFirst()) {
+        //         return cursor.getLong(0);
+        //     } else {
+        //         Log.e(TAG, "getOrCreateThreadId returned no rows!");
+        //     }
+        // } finally {
+        //     cursor.close();
+        // }
+
+        // throw new IllegalArgumentException("Unable to find or allocate a thread ID.");
+
+
+        Uri.Builder uriBuilder = THREAD_ID_CONTENT_URI.buildUpon();
+        // for (String recipient : recipients) {
+            // if (Mms.isEmailAddress(recipient)) {
+            //         recipient = Mms.extractAddrSpec(recipient);
+            //     }
+
+        uriBuilder.appendQueryParameter("recipient", recipient);
+        // }
+
+        Uri uri = uriBuilder.build();
         Cursor cursor =
             context.getContentResolver().query(
-                THREAD_ID_CONTENT_URI,
-                new String[]{AlarmColumns._ID},
-                "recipient=" + recipient, null, null);
-        try {
-            if (cursor != null && cursor.moveToFirst()) {
-                return cursor.getLong(0);
-            } else {
-                Log.e(TAG, "getOrCreateThreadId returned no rows!");
+                uri,
+                new String[]{"_id"},
+                null, null, null);
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    return cursor.getLong(0);
+                } else {
+                    Log.e(TAG, "getOrCreateThreadId returned no rows!");
+                }
+            } finally {
+                cursor.close();
             }
-        } finally {
-            cursor.close();
         }
 
+        Log.e(TAG, "getOrCreateThreadId failed with uri " + uri.toString());
         throw new IllegalArgumentException("Unable to find or allocate a thread ID.");
     }
 }

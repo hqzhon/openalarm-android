@@ -21,11 +21,12 @@ package org.startsmall.openalarm;
 
 import android.app.Dialog;
 import android.app.AlertDialog;
-import android.app.TabActivity;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -52,16 +53,15 @@ import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TabHost;
-import android.widget.TabWidget;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
 import com.admob.android.ads.AdView;
 import java.util.*;
 
-public class OpenAlarm extends TabActivity
-                       implements TabHost.OnTabChangeListener, ListView.OnKeyListener {
+public class OpenAlarm extends Activity
+    implements ListView.OnKeyListener, BarWidget.OnChildSelectionChangedListener {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
@@ -69,27 +69,21 @@ public class OpenAlarm extends TabActivity
 
     // Build tabs by querying alarm handlers
     private static final String GROUP_DATA_KEY_LABEL = "label";
-    private static final String GROUP_DATA_KEY_SORT = "sort";
     private static final String GROUP_DATA_KEY_HANDLER = "handler";
     private static final String GROUP_DATA_KEY_ICON = "icon";
 
-    private ArrayList<HashMap<String, Object>> mTabData;
-
     private int mShowAdsCount = 0;
-    private int mOldTabId = -1;
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
     private AdView mAdView;
+    private BarWidget mBar;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.main);
 
         if (!Alarm.hasAlarms()) {
             Alarm.foreach(this, Alarms.getAlarmUri(-1), new BootService.ScheduleEnabledAlarm());
@@ -99,14 +93,40 @@ public class OpenAlarm extends TabActivity
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
+        updateLayout();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateLayout();
+    }
+
+    private void updateLayout() {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.main);
+
         mBannerTextView = (TextView)findViewById(R.id.banner);
-        mAlarmListView = (ListView)getTabHost().getTabContentView().findViewById(android.R.id.list);
-        mAlarmListView.setOnKeyListener(this);
-        mAdView = (AdView)getTabHost().findViewById(R.id.ad);
+        mAdView = (AdView)findViewById(R.id.ad);
+
         mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
         mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
 
-        initTabHost();
+        mBar = (BarWidget)findViewById(R.id.bar);
+        initBarWidget();
+
+        // Initialize ListView for alarm.
+        mAlarmListView = (ListView)findViewById(android.R.id.list);
+        mAlarmListView.setOnKeyListener(this);
+        CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
+        if (alarmAdapter == null) {
+            View v = mBar.getChildAt(0);
+            if (v != null && v instanceof ImageView) {
+                ViewAttachment attachment = (ViewAttachment)v.getTag();
+                Cursor cursor = getAlarmCursor(attachment.handler);
+                mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
+            }
+        }
     }
 
     @Override
@@ -210,87 +230,59 @@ public class OpenAlarm extends TabActivity
         return dialog;
     }
 
-    public void onTabChanged(String tabTag) {
-        final int tabId = Integer.parseInt(tabTag);
-        final HashMap<String, ?> map = mTabData.get(tabId);
-        final String label = (String)map.get(GROUP_DATA_KEY_LABEL);
-        mBannerTextView.setText(label);
-
-        // Change alarm cursor for current tab.
-        final CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
-        alarmAdapter.changeCursor(getAlarmCursor(tabId));
-
-        // Show ads
-        showAdsChecked();
-
-        // Animate ListView
-        mAlarmListView.startAnimation(tabId > mOldTabId ? mSlideInLeft : mSlideOutRight);
-        mOldTabId = tabId;
+    static class ViewAttachment {
+        String label;
+        String handler;
     }
 
-    private void initTabHost() {
+    private void initBarWidget() {
         PackageManager pm = getPackageManager();
         List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
-        mTabData = new ArrayList<HashMap<String, Object>>(infoList.size() + 1);
         Iterator<ResolveInfo> infoIter = infoList.iterator();
         while (infoIter.hasNext()) {
             ActivityInfo activityInfo = infoIter.next().activityInfo;
 
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            String label = activityInfo.loadLabel(pm).toString();
-            String className = activityInfo.name;
-            Drawable icon = activityInfo.loadIcon(pm);
-
-            map.put(GROUP_DATA_KEY_LABEL, label.substring(1));
-            map.put(GROUP_DATA_KEY_SORT, label.charAt(0));
-            map.put(GROUP_DATA_KEY_HANDLER, className);
-            map.put(GROUP_DATA_KEY_ICON, icon);
-
-            mTabData.add(map);
+            View view = createBarChild(activityInfo.loadLabel(pm).toString().substring(1),
+                                       activityInfo.name,
+                                       activityInfo.loadIcon(pm));
+            mBar.addView(view);
         }
 
         // Null handler group
-        HashMap<String, Object> nullHandlerMap = new HashMap<String, Object>();
-        nullHandlerMap.put(GROUP_DATA_KEY_LABEL, getString(R.string.uncategorized));
-        nullHandlerMap.put(GROUP_DATA_KEY_HANDLER, "");
-        nullHandlerMap.put(GROUP_DATA_KEY_ICON,
-                           getResources().getDrawable(R.drawable.null_handler));
-        mTabData.add(nullHandlerMap);
-
-        // Prepare TabHost.
-        final TabHost tabHost = getTabHost();
-        final int tabCount = mTabData.size();
-        ArrayList<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>(tabCount);
-        for (int position = 0; position < tabCount; position++) {
-            HashMap<String, ?> map = mTabData.get(position);
-            // String label = (String)map.get(GROUP_DATA_KEY_LABEL);
-            Drawable icon = (Drawable)map.get(GROUP_DATA_KEY_ICON);
-            tabSpecs.add(
-                tabHost.newTabSpec(String.valueOf(position)).setIndicator("", icon)
-                                                            .setContent(android.R.id.list));
-        }
-
-        // Note that every TabHost.setContent() put the passed
-        // view in GONE state and addTab() only set VISIBLE state
-        // for first tab. Later calls of setContent() will still
-        // put the same view in GONE state. To avoid this, defer
-        // addTab as late as possible.
-        for (int tabId = 0; tabId < tabCount; tabId++) {
-            tabHost.addTab(tabSpecs.get(tabId));
-        }
-
-        // Initialize an CursorAdapter for ListView for first Tab
-        CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
-        if (alarmAdapter == null) {
-            mAlarmListView.setAdapter(
-                new AlarmAdapter(this, getAlarmCursor(0)));
-        }
-        tabHost.setOnTabChangedListener(this);
+        View view = createBarChild(getString(R.string.uncategorized),
+                                   "",
+                                   getResources().getDrawable(R.drawable.null_handler));
+        mBar.addView(view);
+        mBar.setOnChildSelectionChangedListener(this);
     }
 
-    private Cursor getAlarmCursor(int position) {
-        HashMap<String, ?> map = mTabData.get(position);
-        String handler = (String)map.get(GROUP_DATA_KEY_HANDLER);
+    @Override
+    public void onChildSelectionChanged(int childIndex, boolean click) {
+        View v = mBar.getChildAt(childIndex);
+        CursorAdapter adapter = (CursorAdapter)mAlarmListView.getAdapter();
+
+        ViewAttachment attachment = (ViewAttachment)v.getTag();
+        Cursor cursor = getAlarmCursor(attachment.handler);
+        adapter.changeCursor(cursor);
+        mBannerTextView.setText(attachment.label);
+
+        showAdsChecked();
+    }
+
+    private View createBarChild(String label, String handler, Drawable icon) {
+        ViewAttachment attachment = new ViewAttachment();
+        attachment.label = label;
+        attachment.handler = handler;
+
+        ImageView view = new ImageView(this);
+        view.setImageDrawable(icon);
+        view.setTag(attachment);
+        view.setBackgroundResource(R.drawable.bar_button_background);
+
+        return view;
+    }
+
+    private Cursor getAlarmCursor(String handler) {
         Cursor c =
             getContentResolver().query(
                 Alarms.getAlarmUri(-1),
@@ -350,7 +342,6 @@ public class OpenAlarm extends TabActivity
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
-        // private LayoutInflater mInflater;
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
