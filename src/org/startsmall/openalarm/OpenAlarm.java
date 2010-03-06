@@ -84,6 +84,7 @@ public class OpenAlarm extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         if (!Alarm.hasAlarms()) {
             Alarm.foreach(this, Alarms.getAlarmUri(-1), new BootService.ScheduleEnabledAlarm());
@@ -103,7 +104,6 @@ public class OpenAlarm extends Activity
     }
 
     private void updateLayout() {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
 
         mBannerTextView = (TextView)findViewById(R.id.banner);
@@ -125,6 +125,20 @@ public class OpenAlarm extends Activity
                 ViewAttachment attachment = (ViewAttachment)v.getTag();
                 Cursor cursor = getAlarmCursor(attachment.handler);
                 mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
+            }
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // Cleanup the unclosed Cursor used by ListView if necessary.
+        CursorAdapter adapter = (CursorAdapter)mAlarmListView.getAdapter();
+        if (adapter != null) {
+            Cursor cursor = adapter.getCursor();
+            if (cursor != null) {
+                cursor.close();
             }
         }
     }

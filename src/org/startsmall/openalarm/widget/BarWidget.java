@@ -56,9 +56,6 @@ class BarWidget extends LinearLayout
     }
 
     public void onFocusChange(View v, boolean hasFocus) {
-
-        Log.d(TAG, "===> onFocusChange(): v=" + v +", hasFocus=" + hasFocus);
-
         if (v == this && hasFocus) {
             getChildAt(mSelectedChild).requestFocus();
             return;
