@@ -96,7 +96,7 @@ public class OpenAlarm extends Activity
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
         // start media playback service
-        startMediaService();
+        // startMediaService();
 
         updateLayout();
     }
@@ -293,6 +293,7 @@ public class OpenAlarm extends Activity
         attachment.handler = handler;
 
         ImageView view = new ImageView(this);
+        view.setScaleType(ImageView.ScaleType.FIT_XY);
         view.setImageDrawable(icon);
         view.setTag(attachment);
         view.setBackgroundResource(R.drawable.bar_button_background);
@@ -516,22 +517,23 @@ public class OpenAlarm extends Activity
 
     private boolean startMediaService() {
         ComponentName service =
+            new ComponentName("com.htc.music",
+                              "com.htc.music.MediaPlaybackService");
+        ComponentName started = startService(new Intent().setComponent(service));
+        if (started != null && started.equals(service)) {
+            Log.i(TAG, "===> Started com.htc.music.MediaPlaybackService...");
+            return true;
+        }
+
+        service =
             new ComponentName("com.android.music",
                               "com.android.music.MediaPlaybackService");
-        ComponentName started = startService(new Intent().setComponent(service));
+        started = startService(new Intent().setComponent(service));
         if (started != null && started.equals(service)) {
             Log.i(TAG, "===> Started com.android.music.MediaPlaybackService...");
             return true;
         }
 
-        service =
-            new ComponentName("com.htc.music",
-                              "com.htc.music.MediaPlaybackService");
-        started = startService(new Intent().setComponent(service));
-        if (started != null && started.equals(service)) {
-            Log.i(TAG, "===> Started com.htc.music.MediaPlaybackService...");
-            return true;
-        }
         return false;
     }
 }

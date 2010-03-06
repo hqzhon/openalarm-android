@@ -5,6 +5,8 @@
   <string name="on">On</string>
   <string name="off">Off</string>
 
+  <string name="no_external_storage_found">External storage inserted?</string>
+
   <!-- About HTML file name -->
   <string name="about_this_application">About this application</string>
   <string name="about_html">about.html</string>

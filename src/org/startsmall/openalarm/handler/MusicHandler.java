@@ -22,8 +22,6 @@ import java.util.*;
 public class MusicHandler extends AbsHandler {
     private static final String TAG = "MusicHandler";
     private static final String EXTRA_KEY_PLAYLIST_ID = "playlist_id";
-    private static final String EXTRA_KEY_IS_LOOPING = "is_looping";
-    private static final String EXTRA_KEY_MINUTES = "minutes";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -35,23 +33,24 @@ public class MusicHandler extends AbsHandler {
         final int playlistId = intent.getIntExtra(EXTRA_KEY_PLAYLIST_ID, -1);
         if (playlistId != -1) {
             // Now, we have playlist id, we should start a
-            // service to play members of this playlist.
+            // service to play members of this playlist. We also
+            // need to consider the situation when external
+            // storage is not inserted.
             Uri memberUri =
                 MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
-            Cursor cursor =
-                context.getContentResolver().query(
-                    memberUri,
-                    new String[]{MediaStore.Audio.Playlists.Members.AUDIO_ID,
-                                 MediaStore.Audio.Playlists.Members.DATA}, // TODO: should be removed later
-                    null,
-                    null,
-                    MediaStore.Audio.Playlists.Members.DEFAULT_SORT_ORDER);
+            Cursor cursor = null;
             try {
+                cursor =
+                    context.getContentResolver().query(
+                        memberUri,
+                        new String[]{MediaStore.Audio.Playlists.Members.AUDIO_ID},
+                        null,
+                        null,
+                        MediaStore.Audio.Playlists.Members.DEFAULT_SORT_ORDER);
                 if (cursor != null && cursor.moveToFirst()) {
-                    long[] audioIds = new long[cursor.getCount()];
+                    int[] audioIds = new int[cursor.getCount()];
                     do {
-                        long audioId = cursor.getLong(0);
-                        String audioData = cursor.getString(1);
+                        int audioId = cursor.getInt(0);
                         audioIds[cursor.getPosition()] = audioId;
                     } while (cursor.moveToNext());
 
@@ -65,8 +64,11 @@ public class MusicHandler extends AbsHandler {
                                          audioIds);
                     context.startService(musicIntent);
                 }
+            } catch (Exception e) {
             } finally {
-                cursor.close();
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
 
@@ -98,9 +100,6 @@ public class MusicHandler extends AbsHandler {
             new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference p, Object newValue) {
-
-                    Log.d(TAG, "======> " + (String)newValue);
-
                     int id = Integer.parseInt((String)newValue);
                     p.setSummary(
                         getPlaylistName(p.getContext(), id));
@@ -108,61 +107,24 @@ public class MusicHandler extends AbsHandler {
                 }
             });
         category.addPreference(playlistPref);
-
-        // // SMS subject
-        // EditTextPreference subjectPref = new EditTextPreference(context);
-        // subjectPref.setKey(EXTRA_KEY_SUBJECT);
-        // subjectPref.setPersistent(true);
-        // subjectPref.setTitle(R.string.textforme_handler_subject_title);
-        // subjectPref.setOnPreferenceChangeListener(prefChangeListener);
-        // subjectPref.setDialogTitle(R.string.textforme_handler_subject_dialog_title);
-        // category.addPreference(subjectPref);
-
-        // // SMS body
-        // EditTextPreference bodyPref = new EditTextPreference(context);
-        // bodyPref.setKey(EXTRA_KEY_BODY);
-        // bodyPref.setPersistent(true);
-        // bodyPref.setTitle(R.string.textforme_handler_body_title);
-        // bodyPref.setOnPreferenceChangeListener(prefChangeListener);
-        // bodyPref.setDialogTitle(R.string.textforme_handler_body_dialog_title);
-        // category.addPreference(bodyPref);
-        Log.d(TAG, "===> 1: " + extra);
+        if (!playlistPref.isEnabled()) {
+            return;
+        }
 
         // Get settings from extra.
         if (TextUtils.isEmpty(extra)) {
-            Log.d(TAG, "===> 21");
             playlistPref.setValueIndex(0);
             playlistPref.setSummary("");
-            // subjectPref.setText("");
-            // subjectPref.setSummary("");
-            // bodyPref.setText("");
-            // bodyPref.setSummary("");
-            Log.d(TAG, "===> 22");
         } else {
             Bundle result = getBundleFromExtra(extra);
 
-            Log.d(TAG, "===> 31");
             final int playlistId = result.getInt(EXTRA_KEY_PLAYLIST_ID);
-            Log.d(TAG, "===> 32");
             if(playlistId != -1) {
                 playlistPref.setValue(String.valueOf(playlistId));
                 String playlistName = getPlaylistName(context, playlistId);
                 playlistPref.setSummary(playlistName);
             }
-
-            // String subjectString = result.getString(EXTRA_KEY_SUBJECT);
-            // if(!TextUtils.isEmpty(subjectString)) {
-            //     subjectPref.setText(subjectString);
-            //     subjectPref.setSummary(subjectString);
-            // }
-
-            // String bodyString = result.getString(EXTRA_KEY_BODY);
-            // if(!TextUtils.isEmpty(bodyString)) {
-            //     bodyPref.setText(bodyString);
-            //     bodyPref.setSummary(bodyString);
-            // }
         }
-        Log.d(TAG, "===> 3");
     }
 
     @Override
@@ -171,16 +133,6 @@ public class MusicHandler extends AbsHandler {
         if (playlistId != -1) {
             intent.putExtra(EXTRA_KEY_PLAYLIST_ID, playlistId);
         }
-
-        // final String subject = bundle.getString(EXTRA_KEY_SUBJECT);
-        // if (!TextUtils.isEmpty(subject)) {
-        //     intent.putExtra(EXTRA_KEY_SUBJECT, subject);
-        // }
-
-        // final String body = bundle.getString(EXTRA_KEY_BODY);
-        // if (!TextUtils.isEmpty(body)) {
-        //     intent.putExtra(EXTRA_KEY_BODY, body);
-        // }
     }
 
     @Override
@@ -204,16 +156,6 @@ public class MusicHandler extends AbsHandler {
                         }
                     }
                 }
-
-                // else if (elems[0].equals(EXTRA_KEY_SUBJECT)) {
-                //     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                //         result.putString(EXTRA_KEY_SUBJECT, elems[1]);
-                //     }
-                // } else if (elems[0].equals(EXTRA_KEY_BODY)) {
-                //     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                //         result.putString(EXTRA_KEY_BODY, elems[1]);
-                //     }
-                // }
             }
         }
         return result;
@@ -223,17 +165,20 @@ public class MusicHandler extends AbsHandler {
         ListPreference preference = new ListPreference(context);
         preference.setSummary(context.getString(R.string.music_handler_warning_no_playlists));
 
-        Cursor cursor =
-            context.getContentResolver().query(
-                MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Audio.Playlists.NAME,
-                             MediaStore.Audio.Playlists._ID},
-                null, null, null);
-        final int count = cursor.getCount();
-        if (count > 0) {
-            CharSequence[] entries = new CharSequence[count];
-            CharSequence[] entryValues = new CharSequence[count];
-            try {
+        Cursor cursor = null;
+        try {
+            cursor =
+                context.getContentResolver().query(
+                    MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+                    new String[]{MediaStore.Audio.Playlists.NAME,
+                                 MediaStore.Audio.Playlists._ID},
+                    null, null, null);
+            // No SD card inserted might happens
+
+            final int count = cursor.getCount();
+            if (count > 0) {
+                CharSequence[] entries = new CharSequence[count];
+                CharSequence[] entryValues = new CharSequence[count];
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
                         int position = cursor.getPosition();
@@ -246,15 +191,17 @@ public class MusicHandler extends AbsHandler {
                     preference.setSummary("");
                     return preference;
                 }
-            } finally {
+            }
+        } catch (Exception e) {
+            preference.setSummary(
+                context.getString(R.string.no_external_storage_found));
+        } finally {
+            if (cursor != null) {
                 cursor.close();
             }
-
-            Log.e(TAG, "createPlaylistPreference failed with uri " + MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI);
-            throw new IllegalArgumentException("Unable to create Preference for playlist");
         }
 
-        // This is the case ListPreference is not usable. Disable it first.
+        Log.e(TAG, "createPlaylistPreference failed with uri " + MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI);
         preference.setEnabled(false);
         return preference;
     }
@@ -269,7 +216,6 @@ public class MusicHandler extends AbsHandler {
 
         try {
             if (cursor != null && cursor.moveToFirst()) {
-                Log.d(TAG, "===> getPlaylistName returns " + cursor.getString(0));
                 return cursor.getString(0);
             } else {
                 Log.e(TAG, "getPlaylistName returned no rows.");
@@ -281,4 +227,5 @@ public class MusicHandler extends AbsHandler {
         // Log.e(TAG, "getPlaylistName failed with uri " + uri);
         throw new IllegalArgumentException("Unable to find a playlist ID");
     }
+
 }
