@@ -22,6 +22,7 @@ package org.startsmall.openalarm;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
@@ -93,6 +94,9 @@ public class OpenAlarm extends Activity
         Notification.getInstance().set(this);
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
+
+        // start media playback service
+        startMediaService();
 
         updateLayout();
     }
@@ -500,7 +504,6 @@ public class OpenAlarm extends Activity
             super.onContentChanged();
             Notification.getInstance().set(OpenAlarm.this);
         }
-
     }
 
     static class DataHolder {
@@ -509,5 +512,26 @@ public class OpenAlarm extends Activity
         TimeAmPmView timeAmPmView;
         CheckBox enabledView;
         LinearLayout repeatDaysView;
+    }
+
+    private boolean startMediaService() {
+        ComponentName service =
+            new ComponentName("com.android.music",
+                              "com.android.music.MediaPlaybackService");
+        ComponentName started = startService(new Intent().setComponent(service));
+        if (started != null && started.equals(service)) {
+            Log.i(TAG, "===> Started com.android.music.MediaPlaybackService...");
+            return true;
+        }
+
+        service =
+            new ComponentName("com.htc.music",
+                              "com.htc.music.MediaPlaybackService");
+        started = startService(new Intent().setComponent(service));
+        if (started != null && started.equals(service)) {
+            Log.i(TAG, "===> Started com.htc.music.MediaPlaybackService...");
+            return true;
+        }
+        return false;
     }
 }

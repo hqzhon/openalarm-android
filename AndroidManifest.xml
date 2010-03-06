@@ -130,6 +130,16 @@
       </intent-filter>
     </receiver>
 
+    <receiver android:name=".MusicHandler"
+              android:label="@string/music_handler"
+              android:icon="@drawable/music_handler">
+      <intent-filter>
+        <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
+        <category android:name="android.intent.category.ALTERNATIVE"/>
+      </intent-filter>
+    </receiver>
+    <service android:name=".MusicService"/>
+
     <!-- The application's publisher ID assigned by AdMob -->
     <meta-data android:value="a14b5bc24b5db07" android:name="ADMOB_PUBLISHER_ID" />
   </application>
