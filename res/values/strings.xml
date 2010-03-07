@@ -86,7 +86,7 @@
   <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
 
   <!-- Phone handler -->
-  <string name="phone_handler">CCall for me</string>
+  <string name="phone_handler">CPhone call</string>
   <string name="phone_handler_speakerphone_title">Speakerphone mode</string>
 
   <!-- Toggle handler -->
