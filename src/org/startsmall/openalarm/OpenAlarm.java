@@ -58,7 +58,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
-import com.admob.android.ads.AdView;
 import java.util.*;
 
 public class OpenAlarm extends Activity
@@ -77,7 +76,6 @@ public class OpenAlarm extends Activity
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private AdView mAdView;
     private BarWidget mBar;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
@@ -111,7 +109,6 @@ public class OpenAlarm extends Activity
         setContentView(R.layout.main);
 
         mBannerTextView = (TextView)findViewById(R.id.banner);
-        mAdView = (AdView)findViewById(R.id.ad);
 
         mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
         mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
@@ -283,8 +280,6 @@ public class OpenAlarm extends Activity
         Cursor cursor = getAlarmCursor(attachment.handler);
         adapter.changeCursor(cursor);
         mBannerTextView.setText(attachment.label);
-
-        showAdsChecked();
     }
 
     private View createBarChild(String label, String handler, Drawable icon) {
@@ -339,24 +334,6 @@ public class OpenAlarm extends Activity
         startActivity(intent);
     }
 
-    private void showAds(boolean show) {
-        if (show) {
-            mAdView.setVisibility(View.VISIBLE);
-        } else {
-            mAdView.setVisibility(View.GONE);
-        }
-    }
-
-    private void showAdsChecked() {
-        boolean show = false;
-        if (mShowAdsCount > 5) {
-            mShowAdsCount = 0;
-            show = true;
-        }
-        showAds(show);
-        mShowAdsCount++;
-    }
-
     class AlarmAdapter extends CursorAdapter {
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
@@ -407,8 +384,6 @@ public class OpenAlarm extends Activity
                                 alarm.getIntField(Alarm.FIELD_REPEAT_DAYS),
                                 alarm.getStringField(Alarm.FIELD_HANDLER),
                                 alarm.getStringField(Alarm.FIELD_EXTRA));
-
-                            showAdsChecked();
                         } else {
                             // Alarm can't be set because its
                             // settings are't good enough. Bring

@@ -15,26 +15,56 @@ import java.util.Arrays;
 public class MusicService extends Service {
     public static final String EXTRA_KEY_AUDIO_ID_ARRAY = "audio_id_array";
     private static final String TAG = "MusicService";
+    private static final String ACTION_HTC_MUSIC_PLAYBACKCOMPLETE = "com.htc.music.playbackcomplete";
+    private static final String ACTION_ANDROID_MUSIC_PLAYBACKCOMPLETE = "com.android.music.playbackcomplete";
+    private BroadcastReceiver mPlaybackCompletedReceiver;
     private ServiceConnection mConnection;
 
     @Override
     public void onStart(Intent intent, int startId) {
+        handleStart(intent, startId);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        handleStart(intent, startId);
+        return START_NOT_STICKY;
+    }
+
+    private void handleStart(Intent intent, int startId) {
         int[] playlist = intent.getIntArrayExtra(EXTRA_KEY_AUDIO_ID_ARRAY);
         if (playlist != null && playlist.length > 0) {
-            if (!bindToHtcMediaService(playlist)) {
-                bindToAndroidMediaService(playlist);
+            boolean success = bindToHtcMediaService(playlist);
+            if (!success) {
+                success = bindToAndroidMediaService(playlist);
+            }
+
+            if (success) {
+                mPlaybackCompletedReceiver = new BroadcastReceiver() {
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            String action = intent.getAction();
+                            if (action.equals(ACTION_HTC_MUSIC_PLAYBACKCOMPLETE) ||
+                                action.equals(ACTION_ANDROID_MUSIC_PLAYBACKCOMPLETE)) {
+                                unbindService(mConnection);
+                                stopSelf();
+                            }
+                        }
+                    };
+
+                IntentFilter iFilter = new IntentFilter();
+                iFilter.addAction(ACTION_ANDROID_MUSIC_PLAYBACKCOMPLETE);
+                iFilter.addAction(ACTION_HTC_MUSIC_PLAYBACKCOMPLETE);
+                registerReceiver(mPlaybackCompletedReceiver, iFilter);
             }
         }
-
-        IntentFilter iFilter = new IntentFilter();
-        iFilter.addAction("com.android.music.playbackcomplete");
-        iFilter.addAction("com.htc.music.playbackcomplete");
-        registerReceiver(mPlaybackCompletedReceiver, iFilter);
     }
 
     @Override
     public void onDestroy() {
-        unregisterReceiver(mPlaybackCompletedReceiver);
+        if (mPlaybackCompletedReceiver != null) {
+            unregisterReceiver(mPlaybackCompletedReceiver);
+        }
     }
 
     @Override
@@ -53,19 +83,11 @@ public class MusicService extends Service {
                         }
                         s.open(playlist, 0);
                         s.play();
+                        Log.d(TAG, "===> Connected com.htc.music.MediaPlaybackService");
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
-
-                    // In Android 2.1, we can call
-                    // unbindService() right here. But, below,
-                    // unbindService decrements the reference
-                    // count of service record which makes
-                    // Android decide to kill this
-                    // MediaPlaybackService immediately because
-                    // no one refers to it!
                 }
-
                 public void onServiceDisconnected(ComponentName comp) {}
             };
 
@@ -101,6 +123,7 @@ public class MusicService extends Service {
                         }
                         s.open(data, 0);
                         s.play();
+                        Log.d(TAG, "===> Connected to com.android.music.MediaPlaybackService");
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -117,19 +140,7 @@ public class MusicService extends Service {
             unbindService(mConnection);
             mConnection = null;
         }
-
         return success;
     }
 
-    private BroadcastReceiver mPlaybackCompletedReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals("com.htc.music.playbackcomplete") ||
-                action.equals("com.android.music.playbackcomplete")) {
-                unbindService(mConnection);
-                stopSelf();
-            }
-        }
-    };
 }

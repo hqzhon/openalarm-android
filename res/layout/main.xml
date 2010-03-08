@@ -2,35 +2,29 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:admobsdk="http://schemas.android.com/apk/res/org.startsmall.openalarm"
-              android:background="@drawable/default_widget_background"
+              android:background="@drawable/main_background"
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
 
   <TextView android:id="@+id/banner"
+            android:background="@drawable/banner_background"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/app_name"
-            android:textSize="26sp"
-            android:background="@drawable/banner_background"/>
+            android:textSize="26sp"/>
 
   <ListView android:id="@id/android:list"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:divider="@drawable/list_dividers"/>
-
-  <com.admob.android.ads.AdView android:id="@+id/ad"
-                                android:layout_width="fill_parent"
-                                android:layout_height="wrap_content"
-                                admobsdk:backgroundColor="#000000"
-                                admobsdk:isGoneWithoutAd="true"
-                                admobsdk:textColor="#FFFFFF"/>
+            android:layout_weight="1"/>
+            <!-- android:divider="@drawable/list_dividers"/> -->
 
   <HorizontalScrollView android:layout_width="fill_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/panel_background">
     <org.startsmall.openalarm.BarWidget android:id="@+id/bar"
                                         android:orientation="horizontal"
                                         android:layout_width="fill_parent"
