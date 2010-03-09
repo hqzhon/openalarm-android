@@ -24,7 +24,8 @@
 
   <HorizontalScrollView android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/panel_background">
+                        android:background="@drawable/panel_background"
+                        android:fadingEdgeLength="100sp">
     <org.startsmall.openalarm.BarWidget android:id="@+id/bar"
                                         android:orientation="horizontal"
                                         android:layout_width="fill_parent"

@@ -52,7 +52,7 @@
               android:theme="@style/Theme.OpenAlarm"
               android:label="@string/app_name"
               android:launchMode="singleTask"
-              android:configChanges="orientation|keyboardHidden|keyboard|navigation">
+              android:configChanges="keyboardHidden|keyboard|navigation">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
