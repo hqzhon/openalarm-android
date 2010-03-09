@@ -21,7 +21,6 @@
   <string name="feedback_mail_content">Hi Josh!\n\n\n====================\nFollowing lines are ONLY used in debugging. No malicious use.\n====================\n%s</string>
 
   <!-- Context menu item -->
-  <string name="menu_item_edit_alarm">Edit</string>
   <string name="menu_item_delete_alarm">Delete</string>
 
   <!-- Delete alarm message -->

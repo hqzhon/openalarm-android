@@ -93,9 +93,6 @@ public class OpenAlarm extends Activity
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
-        // start media playback service
-        // startMediaService();
-
         updateLayout();
     }
 
@@ -125,21 +122,8 @@ public class OpenAlarm extends Activity
             if (v != null && v instanceof ImageView) {
                 ViewAttachment attachment = (ViewAttachment)v.getTag();
                 Cursor cursor = getAlarmCursor(attachment.handler);
+                startManagingCursor(cursor);
                 mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
-            }
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        // Cleanup the unclosed Cursor used by ListView if necessary.
-        CursorAdapter adapter = (CursorAdapter)mAlarmListView.getAdapter();
-        if (adapter != null) {
-            Cursor cursor = adapter.getCursor();
-            if (cursor != null) {
-                cursor.close();
             }
         }
     }

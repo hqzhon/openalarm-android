@@ -38,19 +38,18 @@ public class TextHandler extends AbsHandler {
         if (!TextUtils.isEmpty(phoneNumber) &&
             !TextUtils.isEmpty(body)) {
 
-            String mybody = body.concat("\n!via OpenAlarm!");
             SmsManager sm = SmsManager.getDefault();
             sm.sendTextMessage(
                 phoneNumber,
                 null,
-                mybody,
+                body,
                 null, null);
 
             String subject = intent.getStringExtra(EXTRA_KEY_SUBJECT);
             addMessageToUri(context.getContentResolver(),
                             Uri.parse("content://sms/sent"),
                             phoneNumber,
-                            mybody, subject,
+                            body, subject,
                             System.currentTimeMillis(),
                             true,
                             false,

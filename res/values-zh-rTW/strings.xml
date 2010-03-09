@@ -4,7 +4,7 @@
   <string name="on">開啟</string>
   <string name="off">關閉</string>
 
-  <string name="no_external_storage_found">有插入記憶卡?</string>
+  <string name="no_external_storage_found">有插入SD卡?</string>
 
   <string name="about_this_application">關於此程式</string>
   <string name="about_html">about_zh-rTW.html</string>
@@ -12,7 +12,6 @@
   <string name="menu_item_send_feedback">傳送意見</string>
   <string name="menu_item_about">關於</string>
   <string name="feedback_mail_content">Hi Josh!\n\n\n====================\n"下面資訊僅用於除錯!!"\n====================\n%s</string>
-  <string name="menu_item_edit_alarm">編輯</string>
   <string name="menu_item_delete_alarm">刪除</string>
   <string name="confirm_alarm_deletion_title">刪除確認</string>
   <string name="delete_alarm_message">您確定要刪除她嗎？</string>
@@ -63,10 +62,9 @@
   <string name="text_handler_subject_dialog_title">輸入主旨</string>
   <string name="text_handler_body_dialog_title">輸入內容</string>
 
-  <string name="music_handler">M"音樂撥放"</string>
+  <!-- Music handler -->
+  <string name="music_handler">M"音樂播放"</string>
   <string name="music_handler_playlist_title">播放清單</string>
-  <string name="music_handler_looping_title">重複播放</string>
-  <string name="music_handler_minutes_title">幾分鐘後停止</string>
   <string name="music_handler_warning_no_playlists">手機裡沒有播放清單</string>
 
 </resources>
