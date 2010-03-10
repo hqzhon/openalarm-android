@@ -1,0 +1,7 @@
+<resources>
+  <string-array name="group_by">
+    <item>None</item>
+    <item>Action</item>
+    <item>Repeat days</item>
+  </string-array>
+</resources>
