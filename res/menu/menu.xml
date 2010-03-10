@@ -1,18 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:id="@+id/menu_item_add"
         android:title="@string/menu_item_add"
-        android:icon="@drawable/ic_menu_new"/>
+        android:icon="@drawable/android:ic_menu_add"/>
 
-  <!-- <item android:id="@+id/menu_item_preferences" -->
-  <!--       android:title="@string/menu_item_preferences" -->
-  <!--       android:icon="@drawable/android:ic_menu_preferences"/> -->
+  <item android:id="@+id/menu_item_sort"
+        android:title="Sort by"
+        android:icon="@drawable/android:ic_menu_sort_by_size"/>
 
   <item android:id="@+id/menu_item_send_feedback"
         android:title="@string/menu_item_send_feedback"
-        android:icon="@drawable/ic_menu_feedback" />
+        android:icon="@drawable/android:ic_menu_send" />
 
   <item android:id="@+id/menu_item_about"
         android:title="@string/menu_item_about"
-        android:icon="@drawable/ic_menu_info" />
+        android:icon="@drawable/android:ic_menu_info_details" />
 
 </menu>

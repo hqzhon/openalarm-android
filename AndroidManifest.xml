@@ -19,8 +19,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
-          android:versionName="20100302"
-          android:versionCode="20100302">
+          android:versionName="20100309"
+          android:versionCode="20100309">
   <uses-sdk android:minSdkVersion="3"
             android:targetSdkVersion="4"/>
   <supports-screens android:anyDensity="true"
@@ -72,8 +72,7 @@
     </activity>
 
     <receiver android:name=".AlarmHandler"
-              android:label="@string/alarm_handler"
-              android:icon="@drawable/alarm_handler">
+              android:label="@string/alarm_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
@@ -109,8 +108,7 @@
     <service android:exported="true" android:name=".ApnService"/>
 
     <receiver android:name=".PhoneHandler"
-              android:label="@string/phone_handler"
-              android:icon="@drawable/phone_handler">
+              android:label="@string/phone_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
@@ -118,8 +116,7 @@
     </receiver>
 
     <receiver android:name=".ToggleHandler"
-              android:label="@string/toggle_handler"
-              android:icon="@drawable/toggle_handler">
+              android:label="@string/toggle_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
@@ -127,8 +124,7 @@
     </receiver>
 
     <receiver android:name=".TextHandler"
-              android:label="@string/text_handler"
-              android:icon="@drawable/text_handler">
+              android:label="@string/text_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>
@@ -136,8 +132,7 @@
     </receiver>
 
     <receiver android:name=".MusicHandler"
-              android:label="@string/music_handler"
-              android:icon="@drawable/music_handler">
+              android:label="@string/music_handler">
       <intent-filter>
         <action android:name="org.startsmall.openalarm.action.HANDLE_ALARM"/>
         <category android:name="android.intent.category.ALTERNATIVE"/>

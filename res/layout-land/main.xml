@@ -1,40 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:admobsdk="http://schemas.android.com/apk/res/org.startsmall.openalarm"
               android:background="@drawable/main_background"
-              android:orientation="horizontal"
+              android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
-
-  <LinearLayout android:orientation="vertical"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="fill_parent">
-
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
     <TextView android:id="@+id/banner"
               android:background="@drawable/banner_background"
-              android:layout_width="fill_parent"
+              android:layout_width="0dp"
               android:layout_height="wrap_content"
+              android:layout_weight="1"
               android:layout_gravity="center"
               android:gravity="center"
               android:text="@string/app_name"
               android:textSize="26sp"/>
 
-    <ListView android:id="@id/android:list"
-              android:layout_width="fill_parent"
-              android:layout_height="0dp"
-              android:layout_weight="1"
-              android:divider="@drawable/list_divider"/>
+    <ImageView android:id="@+id/filter"
+               android:layout_width="36dp"
+               android:layout_height="36dp"
+               android:layout_gravity="right|center_vertical"
+               android:src="@drawable/android:ic_menu_search"/>
   </LinearLayout>
 
-  <ScrollView android:background="@drawable/rounded_transparent_box"
-              android:fadingEdgeLength="18dp"
-              android:layout_width="wrap_content"
-              android:layout_height="fill_parent">
-    <org.startsmall.openalarm.BarWidget android:id="@+id/bar"
-                                        android:orientation="vertical"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="fill_parent"/>
-  </ScrollView>
+  <ListView android:id="@id/android:list"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@drawable/list_divider"/>
 </LinearLayout>

@@ -6,29 +6,30 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:background="@drawable/banner_background"
+                android:layout_height="wrap_content">
+    <TextView android:id="@+id/banner"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:layout_gravity="center"
+              android:gravity="center"
+              android:text="@string/app_name"
+              android:textSize="26sp"/>
 
-  <TextView android:id="@+id/banner"
-            android:background="@drawable/banner_background"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="@string/app_name"
-            android:textSize="26sp"/>
+    <ImageView android:id="@+id/filter"
+               android:layout_width="48dp"
+               android:layout_height="48dp"
+               android:layout_gravity="right|center_vertical"
+               android:src="@drawable/android:ic_menu_search"/>
+  </LinearLayout>
+
 
   <ListView android:id="@id/android:list"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:divider="@drawable/list_divider"/>
-
-  <HorizontalScrollView android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:fadingEdgeLength="36sp"
-                        android:background="@drawable/rounded_transparent_box">
-    <org.startsmall.openalarm.BarWidget android:id="@+id/bar"
-                                        android:orientation="horizontal"
-                                        android:layout_width="fill_parent"
-                                        android:layout_height="wrap_content"/>
-  </HorizontalScrollView>
 </LinearLayout>

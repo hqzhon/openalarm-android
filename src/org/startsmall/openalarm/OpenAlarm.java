@@ -35,6 +35,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
@@ -49,36 +51,43 @@ import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
 import java.util.*;
+import java.text.*;
 
-public class OpenAlarm extends Activity
-    implements ListView.OnKeyListener, BarWidget.OnChildSelectionChangedListener {
+public class OpenAlarm extends Activity implements ListView.OnKeyListener {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
+    private static final int MENU_ITEM_ID_GROUP_BY = 0;
+
     private static final int DIALOG_ID_ABOUT = 0;
+    private static final int DIALOG_ID_FILTER_BY = 1;
 
-    // Build tabs by querying alarm handlers
-    private static final String GROUP_DATA_KEY_LABEL = "label";
-    private static final String GROUP_DATA_KEY_HANDLER = "handler";
-    private static final String GROUP_DATA_KEY_ICON = "icon";
+    private static final int MSGID_FILTER_ALARMS = 0;
+    private static final int MSGID_SET_BANNER = 1;
 
-    private int mShowAdsCount = 0;
+    private static final int FILTER_BY_NONE = 0;
+    private static final int FILTER_BY_ACTION = 1;
+    private static final int FILTER_BY_REPEAT_DAYS = 2;
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private BarWidget mBar;
+    private ImageView mFilterView;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
+
+    private HashMap<String, HandlerInfoCache> mHandlerInfoCacheMap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -93,6 +102,8 @@ public class OpenAlarm extends Activity
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
+        initHandlerInfoCacheMap();
+
         updateLayout();
     }
 
@@ -100,6 +111,23 @@ public class OpenAlarm extends Activity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         updateLayout();
+    }
+
+    private void initHandlerInfoCacheMap() {
+        mHandlerInfoCacheMap = new HashMap<String, HandlerInfoCache>();
+
+        PackageManager pm = getPackageManager();
+        Iterator<ResolveInfo> handlerInfos = Alarms.queryAlarmHandlers(pm, true).iterator();
+        while (handlerInfos.hasNext()) {
+            ActivityInfo activityInfo = handlerInfos.next().activityInfo;
+            String key = activityInfo.name;
+
+            HandlerInfoCache cache = new HandlerInfoCache();
+            cache.label = activityInfo.loadLabel(pm).toString().substring(1);
+            cache.className = activityInfo.name;
+            cache.icon = activityInfo.loadIcon(pm);
+            mHandlerInfoCacheMap.put(key, cache);
+        }
     }
 
     private void updateLayout() {
@@ -110,22 +138,28 @@ public class OpenAlarm extends Activity
         mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
         mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
 
-        mBar = (BarWidget)findViewById(R.id.bar);
-        initBarWidget();
+        // mBar = (BarWidget)findViewById(R.id.bar);
+        // initBarWidget();
 
         // Initialize ListView for alarm.
         mAlarmListView = (ListView)findViewById(android.R.id.list);
         mAlarmListView.setOnKeyListener(this);
         CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
         if (alarmAdapter == null) {
-            View v = mBar.getChildAt(0);
-            if (v != null && v instanceof ImageView) {
-                ViewAttachment attachment = (ViewAttachment)v.getTag();
-                Cursor cursor = getAlarmCursor(attachment.handler);
-                startManagingCursor(cursor);
-                mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
-            }
+            Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                         AlarmColumns.QUERY_COLUMNS, null, null,
+                                         AlarmColumns.DEFAULT_SORT_ORDER);
+            startManagingCursor(cursor);
+            mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
         }
+
+        mFilterView = (ImageView)findViewById(R.id.filter);
+        mFilterView.setOnClickListener(
+            new View.OnClickListener() {
+                public void onClick(View v) {
+                    showDialog(DIALOG_ID_FILTER_BY);
+                }
+            });
     }
 
     @Override
@@ -223,72 +257,103 @@ public class OpenAlarm extends Activity
                      create();
             break;
 
+        case DIALOG_ID_FILTER_BY:
+            View content =
+                LayoutInflater.from(this).inflate(R.layout.filter, null);
+
+            final ListView listView = (ListView)content.findViewById(android.R.id.list);
+
+            ArrayAdapter<CharSequence> adapter =
+                ArrayAdapter.createFromResource(
+                    this, R.array.group_by, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            final Spinner spinner = (Spinner)content.findViewById(R.id.group);
+            spinner.setAdapter(adapter);
+            spinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        if (position == FILTER_BY_NONE) {
+                            listView.setAdapter(null);
+                        } else if (position == FILTER_BY_ACTION) {
+                            PackageManager pm = getPackageManager();
+                            Collection<HandlerInfoCache> handlerInfoCaches = mHandlerInfoCacheMap.values();
+                            if (handlerInfoCaches.size() > 0) {
+                                ArrayAdapter actionAdapter =
+                                    new ArrayAdapter(OpenAlarm.this,
+                                                     android.R.layout.simple_list_item_single_choice,
+                                                     handlerInfoCaches.toArray());
+                                listView.setAdapter(actionAdapter);
+                                listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                            }
+                        } else if (position == FILTER_BY_REPEAT_DAYS) {
+                            DateFormatSymbols dateFormatSymbols =
+                                ((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.MEDIUM)).getDateFormatSymbols();
+                            CharSequence[] weekdays = new CharSequence[7];
+                            System.arraycopy(dateFormatSymbols.getWeekdays(),
+                                             Calendar.SUNDAY,
+                                             weekdays,
+                                             0,
+                                             7);
+                            ArrayAdapter repeatDaysAdapter =
+                                    new ArrayAdapter(OpenAlarm.this,
+                                                     android.R.layout.simple_list_item_multiple_choice,
+                                                     weekdays);
+                            listView.setAdapter(repeatDaysAdapter);
+                            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+                        }
+                    }
+                    public void onNothingSelected(AdapterView<?> parent) {}
+                });
+
+            dialog = builder.
+                     setPositiveButton(
+                         android.R.string.ok,
+                         new DialogInterface.OnClickListener() {
+                             @Override
+                             public void onClick(DialogInterface dlg, int which) {
+                                 int filterBy = spinner.getSelectedItemPosition();
+                                 switch (filterBy) {
+                                 case FILTER_BY_NONE: {
+                                     // Reset banner to application name;
+
+                                     Message msg = mHandler.obtainMessage(MSGID_SET_BANNER,
+                                                                          0, 0,
+                                                                          getString(R.string.app_name));
+                                     mHandler.sendMessage(msg);
+
+                                     msg = mHandler.obtainMessage(MSGID_FILTER_ALARMS, FILTER_BY_NONE, 0);
+                                     mHandler.sendMessage(msg);
+                                     break;
+                                 }
+
+                                 case FILTER_BY_ACTION: {
+                                     int position = listView.getCheckedItemPosition();
+                                     if (position > -1) {
+                                         HandlerInfoCache cache = (HandlerInfoCache)listView.getItemAtPosition(position);
+                                         Message msg = mHandler.obtainMessage(MSGID_SET_BANNER,
+                                                                              0, 0, cache.label);
+                                         mHandler.sendMessage(msg);
+
+                                         msg = mHandler.obtainMessage(MSGID_FILTER_ALARMS,
+                                                                      FILTER_BY_ACTION,
+                                                                      0, cache);
+                                         mHandler.sendMessage(msg);
+                                     }
+                                     break;
+                                 }
+                                 }
+
+                                 dlg.dismiss();
+                             }
+                         }).
+                     setView(content).
+                     create();
+            break;
+
         default:
             throw new IllegalArgumentException("illegal dialog id");
         }
         return dialog;
-    }
-
-    static class ViewAttachment {
-        String label;
-        String handler;
-    }
-
-    private void initBarWidget() {
-        PackageManager pm = getPackageManager();
-        List<ResolveInfo> infoList = Alarms.queryAlarmHandlers(pm, true);
-        Iterator<ResolveInfo> infoIter = infoList.iterator();
-        while (infoIter.hasNext()) {
-            ActivityInfo activityInfo = infoIter.next().activityInfo;
-
-            View view = createBarChild(activityInfo.loadLabel(pm).toString().substring(1),
-                                       activityInfo.name,
-                                       activityInfo.loadIcon(pm));
-            mBar.addView(view);
-        }
-
-        // Null handler group
-        View view = createBarChild(getString(R.string.uncategorized),
-                                   "",
-                                   getResources().getDrawable(R.drawable.null_handler));
-        mBar.addView(view);
-        mBar.setOnChildSelectionChangedListener(this);
-    }
-
-    @Override
-    public void onChildSelectionChanged(int childIndex, boolean click) {
-        View v = mBar.getChildAt(childIndex);
-        CursorAdapter adapter = (CursorAdapter)mAlarmListView.getAdapter();
-
-        ViewAttachment attachment = (ViewAttachment)v.getTag();
-        Cursor cursor = getAlarmCursor(attachment.handler);
-        adapter.changeCursor(cursor);
-        mBannerTextView.setText(attachment.label);
-    }
-
-    private View createBarChild(String label, String handler, Drawable icon) {
-        ViewAttachment attachment = new ViewAttachment();
-        attachment.label = label;
-        attachment.handler = handler;
-
-        ImageView view = new ImageView(this);
-        view.setScaleType(ImageView.ScaleType.FIT_XY);
-        view.setImageDrawable(icon);
-        view.setTag(attachment);
-        view.setBackgroundResource(R.drawable.bar_button_background);
-
-        return view;
-    }
-
-    private Cursor getAlarmCursor(String handler) {
-        Cursor c =
-            getContentResolver().query(
-                Alarms.getAlarmUri(-1),
-                AlarmColumns.QUERY_COLUMNS,
-                AlarmColumns.HANDLER + "=?",
-                new String[]{handler},
-                AlarmColumns.DEFAULT_SORT_ORDER);
-        return c;
     }
 
     private void sendFeedback() {
@@ -412,6 +477,18 @@ public class OpenAlarm extends Activity
             enabledCheckBox.setChecked(alarm.getBooleanField(Alarm.FIELD_ENABLED));
             enabledCheckBox.setOnCheckedChangeListener(mOnCheckedChangeListener);
 
+            // Action
+            final TextView actionTextView = attachment.actionView;
+            String handler = alarm.getStringField(Alarm.FIELD_HANDLER);
+            if (!TextUtils.isEmpty(handler)) {
+                HandlerInfoCache handlerCache = mHandlerInfoCacheMap.get(handler);
+                actionTextView.setVisibility(View.VISIBLE);
+                actionTextView.setText(handlerCache.label);
+            } else {
+                actionTextView.setVisibility(View.GONE);
+                actionTextView.setText("");
+            }
+
             // RepeatDays
             final LinearLayout repeatDaysView = attachment.repeatDaysView;
             repeatDaysView.removeAllViews();
@@ -446,6 +523,7 @@ public class OpenAlarm extends Activity
             DataHolder attachment = new DataHolder();
             attachment.labelView = (TextView)view.findViewById(R.id.label);
             attachment.timeAmPmView = (TimeAmPmView)view.findViewById(R.id.time_am_pm);
+            attachment.actionView = (TextView)view.findViewById(R.id.action);
             attachment.enabledView = (CheckBox)view.findViewById(R.id.enabled);
             attachment.repeatDaysView = (LinearLayout)view.findViewById(R.id.repeat_days);
             view.setTag(attachment);
@@ -469,30 +547,70 @@ public class OpenAlarm extends Activity
     static class DataHolder {
         int alarmId;
         TextView labelView;
+        TextView actionView;
         TimeAmPmView timeAmPmView;
         CheckBox enabledView;
         LinearLayout repeatDaysView;
     }
 
-    private boolean startMediaService() {
-        ComponentName service =
-            new ComponentName("com.htc.music",
-                              "com.htc.music.MediaPlaybackService");
-        ComponentName started = startService(new Intent().setComponent(service));
-        if (started != null && started.equals(service)) {
-            Log.i(TAG, "===> Started com.htc.music.MediaPlaybackService...");
-            return true;
-        }
+    private Handler mHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                int arg1 = msg.arg1;
+                int arg2 = msg.arg2;
+                Object obj = msg.obj;
 
-        service =
-            new ComponentName("com.android.music",
-                              "com.android.music.MediaPlaybackService");
-        started = startService(new Intent().setComponent(service));
-        if (started != null && started.equals(service)) {
-            Log.i(TAG, "===> Started com.android.music.MediaPlaybackService...");
-            return true;
-        }
+                switch (msg.what) {
+                case MSGID_FILTER_ALARMS:
+                    // arg1 is the group, arg2
+                    Cursor cursor = null;
+                    if (arg1 == FILTER_BY_NONE) {
+                        cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                              AlarmColumns.QUERY_COLUMNS, null, null,
+                                              AlarmColumns.DEFAULT_SORT_ORDER);
+                    } else if (arg1 == FILTER_BY_ACTION) {
+                        HandlerInfoCache cache = (HandlerInfoCache)obj;
+                        cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                              AlarmColumns.QUERY_COLUMNS,
+                                              AlarmColumns.HANDLER + "=?",
+                                              new String[]{cache.className},
+                                              AlarmColumns.DEFAULT_SORT_ORDER);
+                    } else if (arg1 == FILTER_BY_REPEAT_DAYS) {
+                        // int dayCode = msg.arg2;
+                        // cursor = managedQuery(Alarm.getAlarmUri(-1),
+                        //                       AlarmColumns.QUERY_COLUMNS,
+                        //                       AlarmColumns.REPEAT_DAYS + " && " + dayCode + " = "
+                        //                       AlarmColumns.HANDLER + "=?",
+                        //                       new String[]{handler},
+                        //                       AlarmColumns.DEFAULT_SORT_ORDER);
+                    }
 
-        return false;
+                    if (cursor != null) {
+                        // Stop managing current cursor held by mAlarmListView.
+                        CursorAdapter adapter = (CursorAdapter)mAlarmListView.getAdapter();
+                        if (adapter != null) {
+                            Cursor oldCursor = adapter.getCursor();
+                            stopManagingCursor(oldCursor);
+
+                            startManagingCursor(cursor);
+                            adapter.changeCursor(cursor);
+                        }
+                    }
+                    break;
+                case MSGID_SET_BANNER:
+                    String text = (String)obj;
+                    mBannerTextView.setText(text);
+                    break;
+                }
+            }
+        };
+
+    static class HandlerInfoCache {
+        String label;
+        String className;
+        Drawable icon;
+
+        public String toString() {
+            return label;
+        }
     }
 }
