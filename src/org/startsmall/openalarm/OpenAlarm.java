@@ -513,6 +513,15 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                 repeatDaysView.addView(dayLabel, params);
             }
             repeatDaysView.setVisibility(View.VISIBLE);
+
+            // Check if this alarm is ok?
+            final TextView lightView = attachment.lightView;
+            if (alarm.isValid()) {
+                lightView.setVisibility(View.GONE);
+            } else {
+                lightView.setBackgroundResource(R.color.solid_red);
+                lightView.setVisibility(View.VISIBLE);
+            }
         }
 
         public View newView(Context context, Cursor c, ViewGroup parent) {
@@ -526,6 +535,7 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
             attachment.actionView = (TextView)view.findViewById(R.id.action);
             attachment.enabledView = (CheckBox)view.findViewById(R.id.enabled);
             attachment.repeatDaysView = (LinearLayout)view.findViewById(R.id.repeat_days);
+            attachment.lightView = (TextView)view.findViewById(R.id.light);
             view.setTag(attachment);
 
             view.setOnClickListener(mOnClickListener);
@@ -551,6 +561,7 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
         TimeAmPmView timeAmPmView;
         CheckBox enabledView;
         LinearLayout repeatDaysView;
+        TextView lightView;
     }
 
     private Handler mHandler = new Handler() {

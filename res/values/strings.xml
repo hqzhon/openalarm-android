@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">OpenAlarm</string>
+  <string name="version">20100309</string>
 
   <string name="on">On</string>
   <string name="off">Off</string>
