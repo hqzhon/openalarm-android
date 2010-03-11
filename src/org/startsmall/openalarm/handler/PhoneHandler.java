@@ -12,12 +12,10 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceCategory;
 import android.preference.Preference;
-import android.provider.Contacts;
 import android.telephony.TelephonyManager;
 import android.text.method.DialerKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
-// import java.util.Calendar;
 
 public class PhoneHandler extends AbsHandler {
     private static final String TAG = "PhoneHandler";
