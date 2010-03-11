@@ -52,12 +52,12 @@ import android.util.Log;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,7 +83,7 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private ImageView mFilterView;
+    private Button mFilterButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
 
@@ -153,8 +153,8 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
             mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
         }
 
-        mFilterView = (ImageView)findViewById(R.id.filter);
-        mFilterView.setOnClickListener(
+        mFilterButton = (Button)findViewById(R.id.filter);
+        mFilterButton.setOnClickListener(
             new View.OnClickListener() {
                 public void onClick(View v) {
                     showDialog(DIALOG_ID_FILTER_BY);
@@ -278,8 +278,8 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                             PackageManager pm = getPackageManager();
                             Collection<HandlerInfoCache> handlerInfoCaches = mHandlerInfoCacheMap.values();
                             if (handlerInfoCaches.size() > 0) {
-                                ArrayAdapter actionAdapter =
-                                    new ArrayAdapter(OpenAlarm.this,
+                                ArrayAdapter<Object> actionAdapter =
+                                    new ArrayAdapter<Object>(OpenAlarm.this,
                                                      android.R.layout.simple_list_item_single_choice,
                                                      handlerInfoCaches.toArray());
                                 listView.setAdapter(actionAdapter);
@@ -294,10 +294,10 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                                              weekdays,
                                              0,
                                              7);
-                            ArrayAdapter repeatDaysAdapter =
-                                    new ArrayAdapter(OpenAlarm.this,
-                                                     android.R.layout.simple_list_item_multiple_choice,
-                                                     weekdays);
+                            ArrayAdapter<Object> repeatDaysAdapter =
+                                new ArrayAdapter<Object>(OpenAlarm.this,
+                                                         android.R.layout.simple_list_item_multiple_choice,
+                                                         weekdays);
                             listView.setAdapter(repeatDaysAdapter);
                             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
                         }

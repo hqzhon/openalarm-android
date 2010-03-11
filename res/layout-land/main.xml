@@ -6,10 +6,10 @@
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
   <LinearLayout android:orientation="horizontal"
+                android:background="@drawable/banner_background"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content">
     <TextView android:id="@+id/banner"
-              android:background="@drawable/banner_background"
               android:layout_width="0dp"
               android:layout_height="wrap_content"
               android:layout_weight="1"
@@ -18,11 +18,13 @@
               android:text="@string/app_name"
               android:textSize="26sp"/>
 
-    <ImageView android:id="@+id/filter"
-               android:layout_width="36dp"
-               android:layout_height="36dp"
-               android:layout_gravity="right|center_vertical"
-               android:src="@drawable/android:ic_menu_search"/>
+    <Button android:id="@+id/filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|center_vertical"
+            android:text="Filter"
+            android:drawableLeft="@drawable/ic_btn_search"
+            android:drawablePadding="2dp" />
   </LinearLayout>
 
   <ListView android:id="@id/android:list"
