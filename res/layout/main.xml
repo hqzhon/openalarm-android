@@ -19,19 +19,26 @@
               android:text="@string/app_name"
               android:textSize="26sp"/>
 
-    <Button android:id="@+id/filter"
+    <Button android:id="@+id/search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right|center_vertical"
-            android:text="Filter"
+            android:text="Search"
             android:drawableLeft="@drawable/ic_btn_search"
             android:drawablePadding="2dp" />
   </LinearLayout>
-
 
   <ListView android:id="@id/android:list"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:divider="@drawable/list_divider"/>
+
+  <TextView style="?android:attr/textAppearanceLarge"
+            android:id="@id/android:empty"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/no_alarms_found"/>
 </LinearLayout>

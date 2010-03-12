@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 class Notification {
     private static final String TAG = "Notification";
@@ -25,7 +26,7 @@ class Notification {
      * Notify user the next scheduled alarm on the status bar
      *
      */
-    public void set(Context context) {
+    public Alarm set(Context context) {
         if (mNotificationManager == null) {
             mNotificationManager =
                 (NotificationManager)context.getSystemService(
@@ -41,42 +42,41 @@ class Notification {
         if (nextAlarm == null) {
             if (!getNextAlarm.hasEnabledAlarms) {
                 mNotificationManager.cancel(0);
+                setStatusBarIcon(context, false);
                 Settings.System.putString(context.getContentResolver(),
                                           Settings.System.NEXT_ALARM_FORMATTED, "");
             }
         } else {
             long nextSchedule = nextAlarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
-
             if (nextSchedule != mNextSchedule) {
-                // In case that the previous scheduled alarm is
-                // still the next alarm but it is re-scheduled.
+                // Intent intent = new Intent();
+                // intent.setClass(context, OpenAlarm.class);
+                // PendingIntent intentSender =
+                //     PendingIntent.getActivity(context, 0,
+                //                               intent,
+                //                               PendingIntent.FLAG_CANCEL_CURRENT);
 
-                Intent intent = new Intent();
-                intent.setClass(context, OpenAlarm.class);
-                PendingIntent intentSender =
-                    PendingIntent.getActivity(context, 0,
-                                              intent,
-                                              PendingIntent.FLAG_CANCEL_CURRENT);
+                // String tickerText =
+                //     context.getString(R.string.alarm_set_notification_ticker,
+                //                       nextAlarm.getStringField(Alarm.FIELD_LABEL));
+                // String contentText =
+                //     context.getString(R.string.alarm_set_notification_content,
+                //                       nextAlarm.formatSchedule(context));
 
-                String tickerText =
-                    context.getString(R.string.alarm_set_notification_ticker,
-                                      nextAlarm.getStringField(Alarm.FIELD_LABEL));
-                String contentText =
-                    context.getString(R.string.alarm_set_notification_content,
-                                      nextAlarm.formatSchedule(context));
-
-                android.app.Notification notification =
-                    new android.app.Notification(R.drawable.stat_notify_alarm,
-                                                 tickerText, System.currentTimeMillis());
-                notification.flags = android.app.Notification.FLAG_NO_CLEAR;
-                notification.setLatestEventInfo(context,
-                                                tickerText,
-                                                contentText,
-                                                intentSender);
+                // android.app.Notification notification =
+                //     new android.app.Notification(R.drawable.stat_notify_alarm,
+                //                                  tickerText, System.currentTimeMillis());
+                // notification.flags = android.app.Notification.FLAG_NO_CLEAR;
+                // notification.setLatestEventInfo(context,
+                //                                 tickerText,
+                //                                 contentText,
+                //                                 intentSender);
                 mNotificationManager.cancel(0);
-                mNotificationManager.notify(0, notification);
+                // mNotificationManager.notify(0, notification);
 
                 mNextSchedule = nextSchedule;
+
+                setStatusBarIcon(context, true);
 
                 // Put schedule of next alarm in system settings,
                 Settings.System.putString(context.getContentResolver(),
@@ -84,6 +84,8 @@ class Notification {
                                           nextAlarm.formatSchedule(context));
             }
         }
+
+        return nextAlarm;
     }
 
     private Notification() {}
@@ -115,5 +117,12 @@ class Notification {
                 }
             }
         }
+    }
+
+    private static void setStatusBarIcon(Context context, boolean enabled) {
+        String ACTION_ALARM_CHANGED = "android.intent.action.ALARM_CHANGED";
+        Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
+        alarmChanged.putExtra("alarmSet", enabled);
+        context.sendBroadcast(alarmChanged);
     }
 }

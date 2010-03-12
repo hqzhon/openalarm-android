@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.Vibrator;
+import android.media.AudioManager;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -127,6 +128,10 @@ public class FireAlarm extends Activity
             });
 
         // Prepare MediaPlayer for playing ringtone.
+        // AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        // int volumeIndex = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+        // Log.d(TAG, "======================> " + volumeIndex);
+        // am.setStreamVolume(AudioManager.STREAM_MUSIC, volumeIndex, 0);
         prepareMediaPlayer();
 
         startVibration();
@@ -434,7 +439,7 @@ public class FireAlarm extends Activity
                 }
             } else {
                 mMediaPlayer.setDataSource(this, Uri.parse(uriString));
-                mMediaPlayer.setVolume(NORMAL_VOLUME, NORMAL_VOLUME);
+                // mMediaPlayer.setVolume(NORMAL_VOLUME, NORMAL_VOLUME);
             }
         } catch (java.io.IOException e) {
             return;

@@ -6,7 +6,8 @@
   <string name="on">On</string>
   <string name="off">Off</string>
 
-  <string name="no_external_storage_found">External storage inserted?</string>
+  <string name="no_external_storage_found">Oops! no external storage inserted?</string>
+  <string name="no_alarms_found">Oops! no alarms found</string>
 
   <!-- About HTML file name -->
   <string name="about_this_application">About this application</string>
@@ -14,8 +15,8 @@
 
   <!-- Options menu item -->
   <string name="menu_item_add">New</string>
-  <!-- <string name="menu_item_preferences">Preferences</string> -->
-  <!-- <string name="menu_item_set_theme_title">Theme</string> -->
+  <string name="menu_item_reload">Reload</string>
+  <string name="menu_item_report_next_alarm">Next alarm</string>
   <string name="menu_item_send_feedback">Feedback</string>
   <string name="menu_item_about">About</string>
 
@@ -60,8 +61,12 @@
   <string name="alarm_set_notification_ticker">Next Alarm: %s</string>
   <string name="alarm_set_notification_content">Scheduled at %s</string>
 
-  <!-- Group -->
-  <string name="uncategorized">Uncategorized</string>
+  <!-- Search Criteria -->
+  <string name="search_criteria_title">Select your search criteria</string>
+  <string name="search_by">Search by</string>
+  <string name="search_by_operator">Operator</string>
+  <string name="search_by_operator_and">AND</string>
+  <string name="search_by_operator_or">OR</string>
 
   <!-- Handler -->
   <string name="ringtone_title">Ringtone</string>

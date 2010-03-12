@@ -59,9 +59,6 @@
   <string name="alarm_set_notification_ticker">"下個闹钟": %s</string>
   <string name="alarm_set_notification_content">"动作時間在"%s</string>
 
-  <!-- Group -->
-  <string name="uncategorized">未分类</string>
-
   <!-- Handler -->
   <string name="ringtone_title">音乐铃声</string>
   <string name="toggle_title">开或关</string>

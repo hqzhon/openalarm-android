@@ -1,7 +1,6 @@
 <resources>
-  <string-array name="group_by">
-    <item>None</item>
-    <item>Action</item>
-    <item>Repeat days</item>
+  <string-array name="search_by">
+    <item>@string/alarm_settings_action_title</item>
+    <item>@string/alarm_settings_repeat_days_title</item>
   </string-array>
 </resources>

@@ -160,7 +160,7 @@ public class Alarms {
             } else {
                 result = notSet;
             }
-            return result;
+            return result.trim();
         }
 
         public static List<String> toStringList(int code, String everyday, String notSet) {

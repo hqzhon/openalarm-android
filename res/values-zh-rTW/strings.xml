@@ -4,15 +4,24 @@
   <string name="on">開啟</string>
   <string name="off">關閉</string>
 
-  <string name="no_external_storage_found">有插入SD卡?</string>
+  <string name="no_external_storage_found">哎喲！你有插入SD卡嗎？</string>
+  <string name="no_alarms_found">哎呀! 沒有搜尋到鬧鐘</string>
 
   <string name="about_this_application">關於此程式</string>
   <string name="about_html">about_zh-rTW.html</string>
+
+  <!-- Options menu item -->
   <string name="menu_item_add">新增</string>
+  <string name="menu_item_reload">重新載入</string>
+  <string name="menu_item_report_next_alarm">下個鬧鐘</string>
   <string name="menu_item_send_feedback">傳送意見</string>
   <string name="menu_item_about">關於</string>
+
   <string name="feedback_mail_content">Hi Josh!\n\n\n====================\n"下面資訊僅用於除錯!!"\n====================\n%s</string>
+
+  <!-- Context menu item -->
   <string name="menu_item_delete_alarm">刪除</string>
+
   <string name="confirm_alarm_deletion_title">刪除確認</string>
   <string name="delete_alarm_message">您確定要刪除她嗎？</string>
   <string name="alarm_basic_settings_title">基本設定</string>
@@ -33,7 +42,14 @@
   <string name="alarm_repeat_days_unset_message">請指定哪幾天要動作</string>
   <string name="alarm_set_notification_ticker">"下個鬧鐘": %s</string>
   <string name="alarm_set_notification_content">"動作時間在"%s</string>
-  <string name="uncategorized">未歸類</string>
+
+  <!-- Pick filter -->
+  <string name="search_criteria_title">選擇查詢條件</string>
+  <string name="search_by">以...查詢</string>
+  <string name="search_by_operator">運算子</string>
+
+  <!-- Handler -->
+
   <string name="ringtone_title">音樂鈴聲</string>
   <string name="toggle_title">開或關</string>
   <string name="phone_number_title">電話號碼</string>

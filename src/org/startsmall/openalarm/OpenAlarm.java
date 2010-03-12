@@ -21,12 +21,8 @@ package org.startsmall.openalarm;
 
 import android.app.Dialog;
 import android.app.AlertDialog;
-import android.app.Activity;
-import android.content.ComponentName;
+import android.app.ListActivity;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,8 +31,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
@@ -50,8 +44,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -63,34 +55,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
 import java.util.*;
-import java.text.*;
 
-public class OpenAlarm extends Activity implements ListView.OnKeyListener {
+public class OpenAlarm extends ListActivity
+                       implements ListView.OnKeyListener, View.OnClickListener {
     private static final String TAG = "OpenAlarm";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
-    private static final int MENU_ITEM_ID_GROUP_BY = 0;
 
     private static final int DIALOG_ID_ABOUT = 0;
-    private static final int DIALOG_ID_FILTER_BY = 1;
+    private static final int DIALOG_ID_REPORT_NEXT_ALARM = 1;
 
-    private static final int MSGID_FILTER_ALARMS = 0;
-    private static final int MSGID_SET_BANNER = 1;
-
-    private static final int FILTER_BY_NONE = 0;
-    private static final int FILTER_BY_ACTION = 1;
-    private static final int FILTER_BY_REPEAT_DAYS = 2;
+    private static final int PICK_FILTER = 0;
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private Button mFilterButton;
+    private Button mSearchButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
 
-    private HashMap<String, HandlerInfoCache> mHandlerInfoCacheMap;
+    private HashMap<String, HandlerInfo> mHandlerInfoMap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "===> onCreate(): " + savedInstanceState);
+
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -102,7 +90,7 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
 
         Alarms.is24HourMode = Alarms.is24HourMode(this);
 
-        initHandlerInfoCacheMap();
+        mHandlerInfoMap = HandlerInfo.getMap(this);
 
         updateLayout();
     }
@@ -111,55 +99,6 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         updateLayout();
-    }
-
-    private void initHandlerInfoCacheMap() {
-        mHandlerInfoCacheMap = new HashMap<String, HandlerInfoCache>();
-
-        PackageManager pm = getPackageManager();
-        Iterator<ResolveInfo> handlerInfos = Alarms.queryAlarmHandlers(pm, true).iterator();
-        while (handlerInfos.hasNext()) {
-            ActivityInfo activityInfo = handlerInfos.next().activityInfo;
-            String key = activityInfo.name;
-
-            HandlerInfoCache cache = new HandlerInfoCache();
-            cache.label = activityInfo.loadLabel(pm).toString().substring(1);
-            cache.className = activityInfo.name;
-            cache.icon = activityInfo.loadIcon(pm);
-            mHandlerInfoCacheMap.put(key, cache);
-        }
-    }
-
-    private void updateLayout() {
-        setContentView(R.layout.main);
-
-        mBannerTextView = (TextView)findViewById(R.id.banner);
-
-        mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
-        mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
-
-        // mBar = (BarWidget)findViewById(R.id.bar);
-        // initBarWidget();
-
-        // Initialize ListView for alarm.
-        mAlarmListView = (ListView)findViewById(android.R.id.list);
-        mAlarmListView.setOnKeyListener(this);
-        CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
-        if (alarmAdapter == null) {
-            Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
-                                         AlarmColumns.QUERY_COLUMNS, null, null,
-                                         AlarmColumns.DEFAULT_SORT_ORDER);
-            startManagingCursor(cursor);
-            mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
-        }
-
-        mFilterButton = (Button)findViewById(R.id.filter);
-        mFilterButton.setOnClickListener(
-            new View.OnClickListener() {
-                public void onClick(View v) {
-                    showDialog(DIALOG_ID_FILTER_BY);
-                }
-            });
     }
 
     @Override
@@ -174,6 +113,20 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
         switch(item.getItemId()) {
         case R.id.menu_item_add:
             addNewAlarm();
+            break;
+
+            // Reload database
+        case R.id.menu_item_reload:
+            // Set banner to application name
+            mBannerTextView.setText(R.string.app_name);
+            Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                         AlarmColumns.QUERY_COLUMNS, null, null,
+                                         AlarmColumns.DEFAULT_SORT_ORDER);
+            changeCursorForListView(cursor);
+            break;
+
+        case R.id.menu_item_report_next_alarm:
+            showDialog(DIALOG_ID_REPORT_NEXT_ALARM);
             break;
 
         case R.id.menu_item_send_feedback:
@@ -257,96 +210,19 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                      create();
             break;
 
-        case DIALOG_ID_FILTER_BY:
-            View content =
-                LayoutInflater.from(this).inflate(R.layout.filter, null);
-
-            final ListView listView = (ListView)content.findViewById(android.R.id.list);
-
-            ArrayAdapter<CharSequence> adapter =
-                ArrayAdapter.createFromResource(
-                    this, R.array.group_by, android.R.layout.simple_spinner_item);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            final Spinner spinner = (Spinner)content.findViewById(R.id.group);
-            spinner.setAdapter(adapter);
-            spinner.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        if (position == FILTER_BY_NONE) {
-                            listView.setAdapter(null);
-                        } else if (position == FILTER_BY_ACTION) {
-                            PackageManager pm = getPackageManager();
-                            Collection<HandlerInfoCache> handlerInfoCaches = mHandlerInfoCacheMap.values();
-                            if (handlerInfoCaches.size() > 0) {
-                                ArrayAdapter<Object> actionAdapter =
-                                    new ArrayAdapter<Object>(OpenAlarm.this,
-                                                     android.R.layout.simple_list_item_single_choice,
-                                                     handlerInfoCaches.toArray());
-                                listView.setAdapter(actionAdapter);
-                                listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-                            }
-                        } else if (position == FILTER_BY_REPEAT_DAYS) {
-                            DateFormatSymbols dateFormatSymbols =
-                                ((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.MEDIUM)).getDateFormatSymbols();
-                            CharSequence[] weekdays = new CharSequence[7];
-                            System.arraycopy(dateFormatSymbols.getWeekdays(),
-                                             Calendar.SUNDAY,
-                                             weekdays,
-                                             0,
-                                             7);
-                            ArrayAdapter<Object> repeatDaysAdapter =
-                                new ArrayAdapter<Object>(OpenAlarm.this,
-                                                         android.R.layout.simple_list_item_multiple_choice,
-                                                         weekdays);
-                            listView.setAdapter(repeatDaysAdapter);
-                            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-                        }
-                    }
-                    public void onNothingSelected(AdapterView<?> parent) {}
-                });
-
+        case DIALOG_ID_REPORT_NEXT_ALARM:
             dialog = builder.
-                     setPositiveButton(
-                         android.R.string.ok,
-                         new DialogInterface.OnClickListener() {
-                             @Override
-                             public void onClick(DialogInterface dlg, int which) {
-                                 int filterBy = spinner.getSelectedItemPosition();
-                                 switch (filterBy) {
-                                 case FILTER_BY_NONE: {
-                                     // Reset banner to application name;
-
-                                     Message msg = mHandler.obtainMessage(MSGID_SET_BANNER,
-                                                                          0, 0,
-                                                                          getString(R.string.app_name));
-                                     mHandler.sendMessage(msg);
-
-                                     msg = mHandler.obtainMessage(MSGID_FILTER_ALARMS, FILTER_BY_NONE, 0);
-                                     mHandler.sendMessage(msg);
-                                     break;
-                                 }
-
-                                 case FILTER_BY_ACTION: {
-                                     int position = listView.getCheckedItemPosition();
-                                     if (position > -1) {
-                                         HandlerInfoCache cache = (HandlerInfoCache)listView.getItemAtPosition(position);
-                                         Message msg = mHandler.obtainMessage(MSGID_SET_BANNER,
-                                                                              0, 0, cache.label);
-                                         mHandler.sendMessage(msg);
-
-                                         msg = mHandler.obtainMessage(MSGID_FILTER_ALARMS,
-                                                                      FILTER_BY_ACTION,
-                                                                      0, cache);
-                                         mHandler.sendMessage(msg);
-                                     }
-                                     break;
-                                 }
-                                 }
-
-                                 dlg.dismiss();
-                             }
-                         }).
-                     setView(content).
+                     setPositiveButton(android.R.string.ok,
+                                       new DialogInterface.OnClickListener() {
+                                           @Override
+                                           public void onClick(DialogInterface dlg, int which) {
+                                               dlg.dismiss();
+                                           }
+                                       }).
+                     setMessage(" "). // two dummy lines to make
+                                      // builder insert necessary
+                                      // views into dialog.
+                     setTitle(" ").
                      create();
             break;
 
@@ -354,6 +230,113 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
             throw new IllegalArgumentException("illegal dialog id");
         }
         return dialog;
+    }
+
+    @Override
+    public void onPrepareDialog(int id, Dialog dialog) {
+        super.onPrepareDialog(id, dialog);
+
+        if (id == DIALOG_ID_REPORT_NEXT_ALARM) {
+            Alarm nextAlarm = Notification.getInstance().set(this);
+            String message = getString(R.string.no_alarms_found);
+            if (nextAlarm != null) {
+                message = getString(R.string.alarm_set_notification_content,
+                                    nextAlarm.formatSchedule(this));
+                dialog.setTitle(nextAlarm.getStringField(Alarm.FIELD_LABEL));
+            }
+            ((AlertDialog)dialog).setMessage(message);
+        }
+    }
+
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id == R.id.search) {
+            startActivityForResult(
+                new Intent().setClass(this, SearchCriteria.class),
+                PICK_FILTER);
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_FILTER) {
+            Cursor cursor = null;
+            if (resultCode == RESULT_FIRST_USER + SearchCriteria.SEARCH_BY_ACTION) {
+                // Set banner to filter label
+                String label = data.getStringExtra(HandlerInfo.EXTRA_KEY_LABEL);
+                mBannerTextView.setText(label);
+
+                String handler = data.getStringExtra(HandlerInfo.EXTRA_KEY_HANDLER);
+                cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                      AlarmColumns.QUERY_COLUMNS,
+                                      AlarmColumns.HANDLER + "=?",
+                                      new String[]{handler},
+                                      AlarmColumns.DEFAULT_SORT_ORDER);
+            } else if (resultCode == RESULT_FIRST_USER + SearchCriteria.SEARCH_BY_REPEAT_DAYS) {
+                int searchCode = data.getIntExtra(AlarmColumns.REPEAT_DAYS, -1);
+                int operatorId = data.getIntExtra(SearchCriteria.EXTRA_KEY_SEARCH_BY_REPEAT_DAYS_OPERATOR, -1);
+
+                if (searchCode > 0) {
+                    String filterString =
+                        Alarms.RepeatWeekdays.toString(searchCode,
+                                                       getString(R.string.repeat_on_everyday),
+                                                       getString(R.string.no_repeat_days));
+                    String where;
+                    if (operatorId == R.id.and) {
+                        where =  AlarmColumns.REPEAT_DAYS + " & " + searchCode + " = " + searchCode;
+                        filterString = filterString.replace(" ", " & ");
+                    } else if (operatorId == R.id.or) {
+                        where =  AlarmColumns.REPEAT_DAYS + " & " + searchCode + " != 0";
+                        filterString = filterString.replace(" ", " | ");
+                    } else {
+                        throw new IllegalArgumentException("no operator id for filter");
+                    }
+
+                    mBannerTextView.setText(filterString);
+
+                    cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                          AlarmColumns.QUERY_COLUMNS,
+                                          where,
+                                          null,
+                                          AlarmColumns.DEFAULT_SORT_ORDER);
+                }
+            }
+
+            changeCursorForListView(cursor);
+        }
+    }
+
+    private void changeCursorForListView(Cursor cursor) {
+        if (cursor != null) {
+            CursorAdapter adapter = (CursorAdapter)mAlarmListView.getAdapter();
+            if (adapter != null) {
+                Cursor oldCursor = adapter.getCursor();
+                stopManagingCursor(oldCursor);
+                adapter.changeCursor(cursor);
+            }
+        }
+    }
+
+    private void updateLayout() {
+        setContentView(R.layout.main);
+
+        mBannerTextView = (TextView)findViewById(R.id.banner);
+
+        mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
+        mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
+
+        // Initialize ListView for alarm.
+        mAlarmListView = getListView();
+        mAlarmListView.setOnKeyListener(this);
+        CursorAdapter alarmAdapter = (CursorAdapter)mAlarmListView.getAdapter();
+        if (alarmAdapter == null) {
+            Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                         AlarmColumns.QUERY_COLUMNS, null, null,
+                                         AlarmColumns.DEFAULT_SORT_ORDER);
+            mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
+        }
+
+        mSearchButton = (Button)findViewById(R.id.search);
+        mSearchButton.setOnClickListener(this);
     }
 
     private void sendFeedback() {
@@ -387,10 +370,12 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
         private View.OnClickListener mOnClickListener;
         private View.OnCreateContextMenuListener mOnCreateContextMenuListener;
         private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
+        private Context mContext;
 
         public AlarmAdapter(Context context, Cursor c) {
             super(context, c);
 
+            mContext = context;
             mOnClickListener =
                 new View.OnClickListener() {
                     // @Override
@@ -407,7 +392,7 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                                                     ContextMenu.ContextMenuInfo menuInfo) {
                         DataHolder attachment = (DataHolder)view.getTag();
                         final int alarmId = attachment.alarmId;
-                        String label = Alarm.getInstance(OpenAlarm.this, alarmId).getStringField(Alarm.FIELD_LABEL);
+                        String label = Alarm.getInstance(mContext, alarmId).getStringField(Alarm.FIELD_LABEL);
 
                         menu.setHeaderTitle(label);
                         menu.add(alarmId, MENU_ITEM_ID_DELETE, 0, R.string.menu_item_delete_alarm);
@@ -420,12 +405,11 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                         View parent = (View)buttonView.getParent();
                         DataHolder attachment = (DataHolder)parent.getTag();
                         final int alarmId = attachment.alarmId;
-                        Context context = (Context)OpenAlarm.this;
-                        Alarm alarm = Alarm.getInstance(context, alarmId);
+                        Alarm alarm = Alarm.getInstance(mContext, alarmId);
                         if (alarm.isValid()) {
                             // Alarm looks good. Enable it or disable it.
                             alarm.update(
-                                context,
+                                mContext,
                                 isChecked,
                                 alarm.getStringField(Alarm.FIELD_LABEL),
                                 alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY),
@@ -433,6 +417,17 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                                 alarm.getIntField(Alarm.FIELD_REPEAT_DAYS),
                                 alarm.getStringField(Alarm.FIELD_HANDLER),
                                 alarm.getStringField(Alarm.FIELD_EXTRA));
+
+                            if (isChecked) {
+                                // If alarm is valid and
+                                // enabling, make a toast to tell
+                                // use when it will be triggered.
+                                Toast.makeText(
+                                    mContext,
+                                    mContext.getString(R.string.alarm_set_notification_content,
+                                                       alarm.formatSchedule(mContext)),
+                                    Toast.LENGTH_LONG).show();
+                            }
                         } else {
                             // Alarm can't be set because its
                             // settings are't good enough. Bring
@@ -444,7 +439,7 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
                                 if (errCode == Alarm.ERROR_NO_REPEAT_DAYS) {
                                     errMsgResId = R.string.alarm_repeat_days_unset_message;
                                 }
-                                Toast.makeText(context, errMsgResId, Toast.LENGTH_LONG).show();
+                                Toast.makeText(mContext, errMsgResId, Toast.LENGTH_LONG).show();
                                 parent.performClick();
                                 buttonView.setChecked(false);
                             }
@@ -481,9 +476,9 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
             final TextView actionTextView = attachment.actionView;
             String handler = alarm.getStringField(Alarm.FIELD_HANDLER);
             if (!TextUtils.isEmpty(handler)) {
-                HandlerInfoCache handlerCache = mHandlerInfoCacheMap.get(handler);
+                HandlerInfo handlerInfo = mHandlerInfoMap.get(handler);
                 actionTextView.setVisibility(View.VISIBLE);
-                actionTextView.setText(handlerCache.label);
+                actionTextView.setText(handlerInfo.label);
             } else {
                 actionTextView.setVisibility(View.GONE);
                 actionTextView.setText("");
@@ -525,8 +520,6 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
         }
 
         public View newView(Context context, Cursor c, ViewGroup parent) {
-            // LayoutInflater inflater = getLayoutInflater();
-            // View view = inflater.inflate(R.layout.alarm_list_item, parent, false);
             View view = LayoutInflater.from(context).inflate(R.layout.alarm_list_item, parent, false);
 
             DataHolder attachment = new DataHolder();
@@ -549,8 +542,21 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
         }
 
         protected void onContentChanged() {
+            Log.d(TAG, "onContentChanged()");
             super.onContentChanged();
             Notification.getInstance().set(OpenAlarm.this);
+        }
+
+        public void notifyDataSetChanged() { // requery
+            super.notifyDataSetChanged();
+            Log.d(TAG, "notifyDataSetChanged()");
+            Notification.getInstance().set(OpenAlarm.this.getApplication());
+        }
+
+        public void notifyDataSetInvalidated() { // deactivate or close/onStop or onDestroy
+            super.notifyDataSetInvalidated();
+            Log.d(TAG, "notifyDataSetInvalidated()");
+            Notification.getInstance().set(OpenAlarm.this.getApplication());
         }
     }
 
@@ -562,66 +568,5 @@ public class OpenAlarm extends Activity implements ListView.OnKeyListener {
         CheckBox enabledView;
         LinearLayout repeatDaysView;
         TextView lightView;
-    }
-
-    private Handler mHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                int arg1 = msg.arg1;
-                int arg2 = msg.arg2;
-                Object obj = msg.obj;
-
-                switch (msg.what) {
-                case MSGID_FILTER_ALARMS:
-                    // arg1 is the group, arg2
-                    Cursor cursor = null;
-                    if (arg1 == FILTER_BY_NONE) {
-                        cursor = managedQuery(Alarms.getAlarmUri(-1),
-                                              AlarmColumns.QUERY_COLUMNS, null, null,
-                                              AlarmColumns.DEFAULT_SORT_ORDER);
-                    } else if (arg1 == FILTER_BY_ACTION) {
-                        HandlerInfoCache cache = (HandlerInfoCache)obj;
-                        cursor = managedQuery(Alarms.getAlarmUri(-1),
-                                              AlarmColumns.QUERY_COLUMNS,
-                                              AlarmColumns.HANDLER + "=?",
-                                              new String[]{cache.className},
-                                              AlarmColumns.DEFAULT_SORT_ORDER);
-                    } else if (arg1 == FILTER_BY_REPEAT_DAYS) {
-                        // int dayCode = msg.arg2;
-                        // cursor = managedQuery(Alarm.getAlarmUri(-1),
-                        //                       AlarmColumns.QUERY_COLUMNS,
-                        //                       AlarmColumns.REPEAT_DAYS + " && " + dayCode + " = "
-                        //                       AlarmColumns.HANDLER + "=?",
-                        //                       new String[]{handler},
-                        //                       AlarmColumns.DEFAULT_SORT_ORDER);
-                    }
-
-                    if (cursor != null) {
-                        // Stop managing current cursor held by mAlarmListView.
-                        CursorAdapter adapter = (CursorAdapter)mAlarmListView.getAdapter();
-                        if (adapter != null) {
-                            Cursor oldCursor = adapter.getCursor();
-                            stopManagingCursor(oldCursor);
-
-                            startManagingCursor(cursor);
-                            adapter.changeCursor(cursor);
-                        }
-                    }
-                    break;
-                case MSGID_SET_BANNER:
-                    String text = (String)obj;
-                    mBannerTextView.setText(text);
-                    break;
-                }
-            }
-        };
-
-    static class HandlerInfoCache {
-        String label;
-        String className;
-        Drawable icon;
-
-        public String toString() {
-            return label;
-        }
     }
 }

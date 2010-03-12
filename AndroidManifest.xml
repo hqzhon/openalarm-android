@@ -59,6 +59,10 @@
       </intent-filter>
     </activity>
 
+    <activity android:name=".SearchCriteria"
+              android:label="@string/search_criteria_title">
+    </activity>
+
     <activity android:name=".AlarmSettings"
               android:theme="@android:style/Theme.NoTitleBar"
               android:label="@string/app_name"

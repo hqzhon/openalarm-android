@@ -177,6 +177,7 @@ public class AlarmProvider extends ContentProvider {
         if (c == null) {
             Log.e(TAG, "===> AlarmProvider.query(): failed alarm query");
         } else {
+            Log.d(TAG, "====> " + c + " is watching " + uri + " for changes");
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
         return c;
@@ -192,12 +193,6 @@ public class AlarmProvider extends ContentProvider {
         if (values == null) {
             values = new ContentValues();
         }
-        // ContentValues values;
-        // if (initialValues == null) {
-        //     values = new ContentValues();
-        // } else {
-        //     values = new ContentValues(initialValues);
-        // }
 
         if (!values.containsKey(AlarmColumns.HOUR_OF_DAY)) {
             values.put(AlarmColumns.HOUR_OF_DAY, 9);
