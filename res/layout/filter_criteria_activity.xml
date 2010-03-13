@@ -11,7 +11,7 @@
               android:layout_height="wrap_content"
               android:layout_marginLeft="5dp"
               android:layout_gravity="center_vertical"
-              android:text="@string/search_by"/>
+              android:text="@string/filter_by"/>
 
     <Spinner android:id="@+id/filters"
              android:layout_marginLeft="5dp"
@@ -41,11 +41,11 @@
                 android:layout_height="wrap_content">
       <RadioButton android:layout_width="0dp"
                    android:layout_weight="1"
-                   android:text="@string/search_by_operator_and"
+                   android:text="@string/filter_by_operator_and"
                    android:id="@+id/and"/>
       <RadioButton android:layout_width="0dp"
                    android:layout_weight="1"
-                   android:text="@string/search_by_operator_or"
+                   android:text="@string/filter_by_operator_or"
                    android:id="@+id/or"/>
     </RadioGroup>
   </LinearLayout>

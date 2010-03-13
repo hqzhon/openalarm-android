@@ -16,8 +16,8 @@ import android.util.Log;
 
 import java.lang.reflect.Method;
 
-public class AlarmSettings extends PreferenceActivity {
-    private static final String TAG = "AlarmSettings";
+public class AlarmSettingsActivity extends PreferenceActivity {
+    private static final String TAG = "AlarmSettingsActivity";
     private int mAlarmId;
 
     // Dialog IDs
@@ -39,7 +39,7 @@ public class AlarmSettings extends PreferenceActivity {
         Intent i = getIntent();
         mAlarmId = i.getIntExtra(AlarmColumns._ID, -1);
 
-        addPreferencesFromResource(R.xml.alarm_settings);
+        addPreferencesFromResource(R.xml.alarm_settings_activity);
 
         PreferenceManager preferenceManager = getPreferenceManager();
         mTimePreference =

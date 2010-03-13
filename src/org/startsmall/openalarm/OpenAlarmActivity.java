@@ -56,9 +56,10 @@ import android.widget.Toast;
 import android.text.TextUtils;
 import java.util.*;
 
-public class OpenAlarm extends ListActivity
-                       implements ListView.OnKeyListener, View.OnClickListener {
-    private static final String TAG = "OpenAlarm";
+public class OpenAlarmActivity extends ListActivity
+                               implements ListView.OnKeyListener,
+                                          View.OnClickListener {
+    private static final String TAG = "OpenAlarmActivity";
 
     private static final int MENU_ITEM_ID_DELETE = 0;
 
@@ -69,7 +70,7 @@ public class OpenAlarm extends ListActivity
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private Button mSearchButton;
+    private Button mFilterButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
 
@@ -107,6 +108,20 @@ public class OpenAlarm extends ListActivity
         menuInflater.inflate(R.menu.menu, menu);
         return true;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        Log.d(TAG, "===> onDestroy()");
+    }
+
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        Log.d(TAG, "===> onSaveInstanceState()");
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -156,7 +171,7 @@ public class OpenAlarm extends ListActivity
                     android.R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            Context context = OpenAlarm.this;
+                            Context context = OpenAlarmActivity.this;
                             Alarm.getInstance(context, alarmId).delete(context);
                         }
                     })
@@ -250,9 +265,9 @@ public class OpenAlarm extends ListActivity
 
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.search) {
+        if (id == R.id.filter) {
             startActivityForResult(
-                new Intent().setClass(this, SearchCriteria.class),
+                new Intent().setClass(this, FilterCriteriaActivity.class),
                 PICK_FILTER);
         }
     }
@@ -260,7 +275,7 @@ public class OpenAlarm extends ListActivity
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_FILTER) {
             Cursor cursor = null;
-            if (resultCode == RESULT_FIRST_USER + SearchCriteria.SEARCH_BY_ACTION) {
+            if (resultCode == RESULT_FIRST_USER + FilterCriteriaActivity.FILTER_BY_ACTION) {
                 // Set banner to filter label
                 String label = data.getStringExtra(HandlerInfo.EXTRA_KEY_LABEL);
                 mBannerTextView.setText(label);
@@ -268,24 +283,22 @@ public class OpenAlarm extends ListActivity
                 String handler = data.getStringExtra(HandlerInfo.EXTRA_KEY_HANDLER);
                 cursor = managedQuery(Alarms.getAlarmUri(-1),
                                       AlarmColumns.QUERY_COLUMNS,
-                                      AlarmColumns.HANDLER + "=?",
-                                      new String[]{handler},
+                                      AlarmColumns.HANDLER + "=" + handler, null,
                                       AlarmColumns.DEFAULT_SORT_ORDER);
-            } else if (resultCode == RESULT_FIRST_USER + SearchCriteria.SEARCH_BY_REPEAT_DAYS) {
-                int searchCode = data.getIntExtra(AlarmColumns.REPEAT_DAYS, -1);
-                int operatorId = data.getIntExtra(SearchCriteria.EXTRA_KEY_SEARCH_BY_REPEAT_DAYS_OPERATOR, -1);
+            } else if (resultCode == RESULT_FIRST_USER + FilterCriteriaActivity.FILTER_BY_REPEAT_DAYS) {
+                int repeatDays = data.getIntExtra(AlarmColumns.REPEAT_DAYS, -1);
+                int operatorId = data.getIntExtra(FilterCriteriaActivity.EXTRA_KEY_FILTER_BY_REPEAT_DAYS_OPERATOR, -1);
 
-                if (searchCode > 0) {
-                    String filterString =
-                        Alarms.RepeatWeekdays.toString(searchCode,
+                String filterString =
+                        Alarms.RepeatWeekdays.toString(repeatDays,
                                                        getString(R.string.repeat_on_everyday),
                                                        getString(R.string.no_repeat_days));
                     String where;
                     if (operatorId == R.id.and) {
-                        where =  AlarmColumns.REPEAT_DAYS + " & " + searchCode + " = " + searchCode;
+                        where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " = " + repeatDays;
                         filterString = filterString.replace(" ", " & ");
                     } else if (operatorId == R.id.or) {
-                        where =  AlarmColumns.REPEAT_DAYS + " & " + searchCode + " != 0";
+                        where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " != 0";
                         filterString = filterString.replace(" ", " | ");
                     } else {
                         throw new IllegalArgumentException("no operator id for filter");
@@ -298,7 +311,6 @@ public class OpenAlarm extends ListActivity
                                           where,
                                           null,
                                           AlarmColumns.DEFAULT_SORT_ORDER);
-                }
             }
 
             changeCursorForListView(cursor);
@@ -317,7 +329,7 @@ public class OpenAlarm extends ListActivity
     }
 
     private void updateLayout() {
-        setContentView(R.layout.main);
+        setContentView(R.layout.openalarm_activity);
 
         mBannerTextView = (TextView)findViewById(R.id.banner);
 
@@ -335,8 +347,8 @@ public class OpenAlarm extends ListActivity
             mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
         }
 
-        mSearchButton = (Button)findViewById(R.id.search);
-        mSearchButton.setOnClickListener(this);
+        mFilterButton = (Button)findViewById(R.id.filter);
+        mFilterButton.setOnClickListener(this);
     }
 
     private void sendFeedback() {
@@ -361,7 +373,7 @@ public class OpenAlarm extends ListActivity
     }
 
     private void editAlarm(int alarmId) {
-        Intent intent = new Intent(this, AlarmSettings.class);
+        Intent intent = new Intent(this, AlarmSettingsActivity.class);
         intent.putExtra(AlarmColumns._ID, alarmId);
         startActivity(intent);
     }
@@ -510,12 +522,11 @@ public class OpenAlarm extends ListActivity
             repeatDaysView.setVisibility(View.VISIBLE);
 
             // Check if this alarm is ok?
-            final TextView lightView = attachment.lightView;
+            final TextView indicatorView = attachment.indicatorView;
             if (alarm.isValid()) {
-                lightView.setVisibility(View.GONE);
+                indicatorView.setVisibility(View.GONE);
             } else {
-                lightView.setBackgroundResource(R.color.solid_red);
-                lightView.setVisibility(View.VISIBLE);
+                indicatorView.setVisibility(View.VISIBLE);
             }
         }
 
@@ -528,7 +539,7 @@ public class OpenAlarm extends ListActivity
             attachment.actionView = (TextView)view.findViewById(R.id.action);
             attachment.enabledView = (CheckBox)view.findViewById(R.id.enabled);
             attachment.repeatDaysView = (LinearLayout)view.findViewById(R.id.repeat_days);
-            attachment.lightView = (TextView)view.findViewById(R.id.light);
+            attachment.indicatorView = (TextView)view.findViewById(R.id.indicator);
             view.setTag(attachment);
 
             view.setOnClickListener(mOnClickListener);
@@ -544,19 +555,19 @@ public class OpenAlarm extends ListActivity
         protected void onContentChanged() {
             Log.d(TAG, "onContentChanged()");
             super.onContentChanged();
-            Notification.getInstance().set(OpenAlarm.this);
+            Notification.getInstance().set(mContext);
         }
 
         public void notifyDataSetChanged() { // requery
             super.notifyDataSetChanged();
             Log.d(TAG, "notifyDataSetChanged()");
-            Notification.getInstance().set(OpenAlarm.this.getApplication());
+            Notification.getInstance().set(mContext);
         }
 
         public void notifyDataSetInvalidated() { // deactivate or close/onStop or onDestroy
             super.notifyDataSetInvalidated();
             Log.d(TAG, "notifyDataSetInvalidated()");
-            Notification.getInstance().set(OpenAlarm.this.getApplication());
+            Notification.getInstance().set(mContext);
         }
     }
 
@@ -567,6 +578,6 @@ public class OpenAlarm extends ListActivity
         TimeAmPmView timeAmPmView;
         CheckBox enabledView;
         LinearLayout repeatDaysView;
-        TextView lightView;
+        TextView indicatorView;
     }
 }

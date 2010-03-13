@@ -17,15 +17,15 @@ import android.widget.Spinner;
 import java.util.*;
 import java.text.*;
 
-public class SearchCriteria extends ListActivity
-    implements AdapterView.OnItemSelectedListener,
-               View.OnClickListener {
-    private static final String TAG = "SearchCriteria";
+public class FilterCriteriaActivity extends ListActivity
+                                   implements AdapterView.OnItemSelectedListener,
+                                              View.OnClickListener {
+    private static final String TAG = "FilterCriteriaActivity";
 
-    public static final int SEARCH_BY_ACTION = 0;
-    public static final int SEARCH_BY_REPEAT_DAYS = 1;
+    public static final int FILTER_BY_ACTION = 0;
+    public static final int FILTER_BY_REPEAT_DAYS = 1;
 
-    public static final String EXTRA_KEY_SEARCH_BY_REPEAT_DAYS_OPERATOR = "operator";
+    public static final String EXTRA_KEY_FILTER_BY_REPEAT_DAYS_OPERATOR = "operator";
 
     private Spinner mSpinner;
     private Button mOkButton;
@@ -38,7 +38,7 @@ public class SearchCriteria extends ListActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.search_criteria);
+        setContentView(R.layout.filter_criteria_activity);
 
         mHandlerInfoMap =  HandlerInfo.getMap(this);
 
@@ -53,7 +53,7 @@ public class SearchCriteria extends ListActivity
 
         ArrayAdapter<CharSequence> adapter =
             ArrayAdapter.createFromResource(
-                this, R.array.search_by, android.R.layout.simple_spinner_item);
+                this, R.array.filter_by, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinner.setAdapter(adapter);
         mSpinner.setOnItemSelectedListener(this);
@@ -73,18 +73,18 @@ public class SearchCriteria extends ListActivity
         ListView listView = getListView();
         int searchBy = mSpinner.getSelectedItemPosition();
         switch (searchBy) {
-        case SEARCH_BY_ACTION: {
+        case FILTER_BY_ACTION: {
             int position = listView.getCheckedItemPosition();
             if (position > -1) {
                 HandlerInfo handlerInfo = (HandlerInfo)listView.getItemAtPosition(position);
-                setResult(RESULT_FIRST_USER + SEARCH_BY_ACTION,
+                setResult(RESULT_FIRST_USER + FILTER_BY_ACTION,
                           handlerInfo.getIntent());
                 finish();
             }
             break;
         }
 
-        case SEARCH_BY_REPEAT_DAYS:
+        case FILTER_BY_REPEAT_DAYS:
             int filterCode = 0;
             for (int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
                 if (listView.isItemChecked(i - 1)) {
@@ -95,9 +95,9 @@ public class SearchCriteria extends ListActivity
             if (filterCode > 0) {
                 Intent data = new Intent();
                 data.putExtra(AlarmColumns.REPEAT_DAYS, filterCode);
-                data.putExtra(EXTRA_KEY_SEARCH_BY_REPEAT_DAYS_OPERATOR,
+                data.putExtra(EXTRA_KEY_FILTER_BY_REPEAT_DAYS_OPERATOR,
                               mOperators.getCheckedRadioButtonId());
-                setResult(RESULT_FIRST_USER + SEARCH_BY_REPEAT_DAYS, data);
+                setResult(RESULT_FIRST_USER + FILTER_BY_REPEAT_DAYS, data);
                 finish();
             }
             break;
@@ -107,7 +107,7 @@ public class SearchCriteria extends ListActivity
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         ListView listView = getListView();
 
-        if (position == SEARCH_BY_ACTION) {
+        if (position == FILTER_BY_ACTION) {
             Collection<HandlerInfo> handlerInfos = mHandlerInfoMap.values();
             if (handlerInfos.size() > 0) {
                 ArrayAdapter<Object> actionAdapter =
@@ -118,7 +118,7 @@ public class SearchCriteria extends ListActivity
                 listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             }
             showOperatorView(false);
-        } else if (position == SEARCH_BY_REPEAT_DAYS) {
+        } else if (position == FILTER_BY_REPEAT_DAYS) {
             DateFormatSymbols dateFormatSymbols =
                 ((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.MEDIUM)).getDateFormatSymbols();
             CharSequence[] weekdays = new CharSequence[7];

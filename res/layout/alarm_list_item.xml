@@ -55,9 +55,10 @@
      android:layout_height="fill_parent"
      android:layout_gravity="center_vertical"/>
 
-  <TextView android:id="@+id/light"
-            android:background="@color/red"
+  <TextView android:id="@+id/indicator"
+            android:background="@drawable/rounded_red_background"
             android:layout_width="5dp"
             android:layout_height="fill_parent"
+            android:layout_marginLeft="2dp"
             android:visibility="gone" />
 </LinearLayout>

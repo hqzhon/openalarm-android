@@ -1,5 +1,5 @@
 <resources>
-  <string-array name="search_by">
+  <string-array name="filter_by">
     <item>@string/alarm_settings_action_title</item>
     <item>@string/alarm_settings_repeat_days_title</item>
   </string-array>

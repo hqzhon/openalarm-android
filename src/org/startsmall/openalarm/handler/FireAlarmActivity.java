@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.Vibrator;
-import android.media.AudioManager;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -38,9 +37,9 @@ import java.io.FileDescriptor;
 import java.util.Calendar;
 import java.util.Random;
 
-public class FireAlarm extends Activity
-                       implements View.OnClickListener {
-    private static final String TAG = "FireAlarm";
+public class FireAlarmActivity extends Activity
+                               implements View.OnClickListener {
+    private static final String TAG = "FireAlarmActivity";
 
     private static final int MSGID_STOP_PLAYBACK = 1;
 
@@ -69,6 +68,9 @@ public class FireAlarm extends Activity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        Log.d(TAG, "=======================> onCreate(" + savedInstanceState + ")");
+
         super.onCreate(savedInstanceState);
 
         mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
@@ -95,7 +97,7 @@ public class FireAlarm extends Activity
 
         acquireWakeLock();
 
-        setContentView(R.layout.fire_alarm);
+        setContentView(R.layout.fire_alarm_activity);
 
         Intent intent = getIntent();
         setTimeFromIntent(intent);
@@ -128,10 +130,6 @@ public class FireAlarm extends Activity
             });
 
         // Prepare MediaPlayer for playing ringtone.
-        // AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        // int volumeIndex = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-        // Log.d(TAG, "======================> " + volumeIndex);
-        // am.setStreamVolume(AudioManager.STREAM_MUSIC, volumeIndex, 0);
         prepareMediaPlayer();
 
         startVibration();
@@ -141,6 +139,7 @@ public class FireAlarm extends Activity
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "=======================> onDestroy()");
         super.onDestroy();
         shutdown();
     }
@@ -154,6 +153,7 @@ public class FireAlarm extends Activity
     // FireAlarm comes to the foreground
     @Override
     public void onResume() {
+        Log.d(TAG, "=======================> onResume()");
         super.onResume();
 
         // FireAlarm goes back to interact to user. But, Keyguard
@@ -166,11 +166,24 @@ public class FireAlarm extends Activity
 
     @Override
     public void onPause() {
+        Log.d(TAG, "=======================> onPause()");
         super.onPause();
 
         // Returns to keyguarded mode if the phone was in this
         // mode.
         enableKeyguard();
+    }
+
+    @Override
+    public void onStop() {
+        Log.d(TAG, "=======================> onStop()");
+        super.onStop();
+    }
+
+    @Override
+    public void onRestart() {
+        Log.d(TAG, "=======================> onRestart()");
+        super.onStop();
     }
 
     @Override
@@ -469,7 +482,7 @@ public class FireAlarm extends Activity
             nm.cancelAll();
 
             Intent intent = new Intent(getIntent());
-            intent.setClass(this, FireAlarm.class);
+            intent.setClass(this, FireAlarmActivity.class);
             PendingIntent intentSender =
                 PendingIntent.getActivity(this, 0,
                                           intent,

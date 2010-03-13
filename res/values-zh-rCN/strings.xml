@@ -1,107 +1,60 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <resources>
-  <string name="app_name">OpenAlarm</string>
-
-  <string name="on">开启</string>
-  <string name="off">关闭</string>
-
-  <string name="no_external_storage_found">有插入SD卡?</string>
-
-  <!-- About HTML file name -->
-  <string name="about_this_application">关于此程序</string>
-  <string name="about_html">about_zh-rCN.html</string>
-
-  <!-- Options menu item -->
-  <string name="menu_item_add">添加</string>
-  <!-- <string name="menu_item_preferences">Preferences</string> -->
-  <!-- <string name="menu_item_set_theme_title">Theme</string> -->
-  <string name="menu_item_send_feedback">传送意见</string>
-  <string name="menu_item_about">关于</string>
-
-  <string name="feedback_mail_content">Hi Josh!\n\n\n====================\n"下面资讯仅用于除错!!"\n====================\n%s</string>
-
-  <!-- Context menu item -->
-  <string name="menu_item_delete_alarm">删除</string>
-
-  <!-- Delete alarm message -->
-  <string name="confirm_alarm_deletion_title">删除确认</string>
-  <string name="delete_alarm_message">你确定要删除她吗？</string>
-
-  <!-- Alarm settings -->
-  <string name="alarm_basic_settings_title">基本设置</string>
-  <string name="alarm_extra_settings_title">动作设置</string>
-
-  <string name="alarm_settings_label_title">名称</string>
-  <!-- <string name="alarm_settings_label_key">label</string> -->
-  <string name="alarm_settings_label_dialog_title">输入名称</string>
-
-  <string name="alarm_settings_time_title">时间</string>
-  <!-- <string name="alarm_settings_time_key">time</string> -->
-
-  <string name="alarm_settings_action_title">动作</string>
-  <string name="alarm_settings_action_summary">选择动作</string>
-  <!-- <string name="alarm_settings_action_key">action</string> -->
-  <string name="alarm_settings_action_dialog_title">使用那一個动作</string>
-
-  <string name="alarm_settings_repeat_days_title">重复</string>
-  <string name="alarm_settings_repeat_days_summary">每天</string>
-  <!-- <string name="alarm_settings_repeat_days_key">repeat_days</string> -->
-  <string name="alarm_settings_repeat_days_dialog_title">哪几天啊？</string>
-  <string name="repeat_on_everyday">每天</string>
-  <string name="no_repeat_days">未定</string>
-
-  <!-- <string name="alarm_settings_extra_category_key">extra_settings</string> -->
-
-  <!-- Alarm notifications -->
-  <string name="alarm_set_toast_text">"闹钟"%s"会在"%s"动作"</string>
-  <string name="alarm_handler_unset_message">请指定要我做什么</string>
-  <string name="alarm_repeat_days_unset_message">请指定哪几天动作</string>
-  <string name="alarm_set_notification_ticker">"下個闹钟": %s</string>
-  <string name="alarm_set_notification_content">"动作時間在"%s</string>
-
-  <!-- Handler -->
-  <string name="ringtone_title">音乐铃声</string>
-  <string name="toggle_title">开或关</string>
-  <string name="phone_number_title">电话号码</string>
-  <string name="phone_number_dialog_title">输入电话号码</string>
-
-  <!-- Alarm handler -->
-  <string name="alarm_handler">A闹钟</string>
-  <string name="alarm_handler_snooze_duration_title">贪睡间隔</string>
-  <string name="alarm_handler_snooze_duration_dialog_title">贪睡几分钟</string>
-  <string name="alarm_handler_vibrate_title">振动</string>
-  <string name="alarm_handler_math_lock_title">算术锁</string>
-
-  <!-- FireAlarm -->
-  <string name="fire_alarm_snooze_text">再眯一下</string>
-  <string name="fire_alarm_dismiss_text">起来了</string>
-  <string name="fire_alarm_set_notification_ticker">%s: "再眯一下还是起来"?</string>
-
-  <!-- MediaPlayer -->
-  <!-- <string name="media_player_error_dialog_title">Unable to play ringtone</string> -->
-  <!-- <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string> -->
-
-  <!-- Phone handler -->
-  <string name="phone_handler">C"定时拨号"</string>
-  <string name="phone_handler_speakerphone_title">扩音模式</string>
-
-  <!-- Toggle handler -->
-  <string name="toggle_handler">T"开关"</string>
-  <string name="toggle_handler_operation_title">切换</string>
-  <!-- <string name="toggle_handler_operation_wifi">Wi-fi</string> -->
-  <string name="toggle_handler_operation_airplane_mode">飞行模式</string>
-  <string name="toggle_handler_operation_apn">移动网络</string>
-
-  <!-- Text handler -->
-  <string name="text_handler">S"定时短信"</string>
-  <string name="text_handler_subject_title">主旨</string>
-  <string name="text_handler_body_title">內容</string>
-  <string name="text_handler_subject_dialog_title">输入</string>
-  <string name="text_handler_body_dialog_title">输入內容</string>
-
-  <!-- Text handler -->
-  <string name="music_handler">M"音乐播放"</string>
-  <string name="music_handler_playlist_title">播放列表</string>
-  <string name="music_handler_warning_no_playlists">手机裡沒有播放列表</string>
-
+    <string name="app_name">OpenAlarm</string>
+    <string name="on">开启</string>
+    <string name="off">关闭</string>
+    <string name="no_external_storage_found">有插入SD卡?</string>
+    <string name="about_this_application">关于此程序</string>
+    <string name="about_html">about_zh-rCN.html</string>
+    <string name="menu_item_add">添加</string>
+    <string name="menu_item_send_feedback">传送意见</string>
+    <string name="menu_item_about">关于</string>
+    <string name="feedback_mail_content">Hi Josh!\n\n\n====================\n"下面资讯仅用于除错!!"\n====================\n%s</string>
+    <string name="menu_item_delete_alarm">删除</string>
+    <string name="confirm_alarm_deletion_title">删除确认</string>
+    <string name="delete_alarm_message">你确定要删除她吗？</string>
+    <string name="alarm_basic_settings_title">基本设置</string>
+    <string name="alarm_extra_settings_title">动作设置</string>
+    <string name="alarm_settings_label_title">名称</string>
+    <string name="alarm_settings_label_dialog_title">输入名称</string>
+    <string name="alarm_settings_time_title">时间</string>
+    <string name="alarm_settings_action_title">动作</string>
+    <string name="alarm_settings_action_summary">选择动作</string>
+    <string name="alarm_settings_action_dialog_title">使用那一個动作</string>
+    <string name="alarm_settings_repeat_days_title">重复</string>
+    <string name="alarm_settings_repeat_days_summary">每天</string>
+    <string name="alarm_settings_repeat_days_dialog_title">哪几天啊？</string>
+    <string name="repeat_on_everyday">每天</string>
+    <string name="no_repeat_days">未定</string>
+    <string name="alarm_set_toast_text">"闹钟"%s"会在"%s"动作"</string>
+    <string name="alarm_handler_unset_message">请指定要我做什么</string>
+    <string name="alarm_repeat_days_unset_message">请指定哪几天动作</string>
+    <string name="alarm_set_notification_ticker">"下個闹钟": %s</string>
+    <string name="alarm_set_notification_content">"动作時間在"%s</string>
+    <string name="ringtone_title">音乐铃声</string>
+    <string name="toggle_title">开或关</string>
+    <string name="phone_number_title">电话号码</string>
+    <string name="phone_number_dialog_title">输入电话号码</string>
+    <string name="alarm_handler">A闹钟</string>
+    <string name="alarm_handler_snooze_duration_title">贪睡间隔</string>
+    <string name="alarm_handler_snooze_duration_dialog_title">贪睡几分钟</string>
+    <string name="alarm_handler_vibrate_title">振动</string>
+    <string name="alarm_handler_math_lock_title">算术锁</string>
+    <string name="fire_alarm_snooze_text">再眯一下</string>
+    <string name="fire_alarm_dismiss_text">起来了</string>
+    <string name="fire_alarm_set_notification_ticker">%s: "再眯一下还是起来"?</string>
+    <string name="phone_handler">C"定时拨号"</string>
+    <string name="phone_handler_speakerphone_title">扩音模式</string>
+    <string name="toggle_handler">T"开关"</string>
+    <string name="toggle_handler_operation_title">切换</string>
+    <string name="toggle_handler_operation_airplane_mode">飞行模式</string>
+    <string name="toggle_handler_operation_apn">移动网络</string>
+    <string name="text_handler">S"定时短信"</string>
+    <string name="text_handler_subject_title">主旨</string>
+    <string name="text_handler_body_title">內容</string>
+    <string name="text_handler_subject_dialog_title">输入</string>
+    <string name="text_handler_body_dialog_title">输入內容</string>
+    <string name="music_handler">M"音乐播放"</string>
+    <string name="music_handler_playlist_title">播放列表</string>
+    <string name="music_handler_warning_no_playlists">手机裡沒有播放列表</string>
 </resources>

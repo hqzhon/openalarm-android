@@ -1,118 +1,77 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <resources>
-  <string name="app_name">OpenAlarm</string>
-  <string name="version">20100309</string>
-
-  <string name="on">On</string>
-  <string name="off">Off</string>
-
-  <string name="no_external_storage_found">Oops! no external storage inserted?</string>
-  <string name="no_alarms_found">Oops! no alarms found</string>
-
-  <!-- About HTML file name -->
-  <string name="about_this_application">About this application</string>
-  <string name="about_html">about.html</string>
-
-  <!-- Options menu item -->
-  <string name="menu_item_add">New</string>
-  <string name="menu_item_reload">Reload</string>
-  <string name="menu_item_report_next_alarm">Next alarm</string>
-  <string name="menu_item_send_feedback">Feedback</string>
-  <string name="menu_item_about">About</string>
-
-  <string name="feedback_mail_content">Hi Josh!\n\n\n====================\nFollowing lines are ONLY used in debugging. No malicious use.\n====================\n%s</string>
-
-  <!-- Context menu item -->
-  <string name="menu_item_delete_alarm">Delete</string>
-
-  <!-- Delete alarm message -->
-  <string name="confirm_alarm_deletion_title">Confirm deletion</string>
-  <string name="delete_alarm_message">Do you want to delete this alarm?</string>
-
-  <!-- Alarm settings -->
-  <string name="alarm_basic_settings_title">Basic Settings</string>
-  <string name="alarm_extra_settings_title">Extra Settings</string>
-
-  <string name="alarm_settings_label_title">Label</string>
-  <string name="alarm_settings_label_key">label</string>
-  <string name="alarm_settings_label_dialog_title">Enter label</string>
-
-  <string name="alarm_settings_time_title">Time</string>
-  <string name="alarm_settings_time_key">time</string>
-
-  <string name="alarm_settings_action_title">Action</string>
-  <string name="alarm_settings_action_summary">Choose action</string>
-  <string name="alarm_settings_action_key">action</string>
-  <string name="alarm_settings_action_dialog_title">Complete action using</string>
-
-  <string name="alarm_settings_repeat_days_title">Repeat on</string>
-  <string name="alarm_settings_repeat_days_summary">On everyday</string>
-  <string name="alarm_settings_repeat_days_key">repeat_days</string>
-  <string name="alarm_settings_repeat_days_dialog_title">Repeat on</string>
-  <string name="repeat_on_everyday">Everyday</string>
-  <string name="no_repeat_days">Never</string>
-
-  <string name="alarm_settings_extra_category_key">extra_settings</string>
-
-  <!-- Alarm notifications -->
-  <string name="alarm_set_toast_text">Alarm %s will action at %s</string>
-  <string name="alarm_handler_unset_message">What do you want me to do? Please specify action!</string>
-  <string name="alarm_repeat_days_unset_message">When should I action? Please specify repeat days!</string>
-  <string name="alarm_set_notification_ticker">Next Alarm: %s</string>
-  <string name="alarm_set_notification_content">Scheduled at %s</string>
-
-  <!-- Search Criteria -->
-  <string name="search_criteria_title">Select your search criteria</string>
-  <string name="search_by">Search by</string>
-  <string name="search_by_operator">Operator</string>
-  <string name="search_by_operator_and">AND</string>
-  <string name="search_by_operator_or">OR</string>
-
-  <!-- Handler -->
-  <string name="ringtone_title">Ringtone</string>
-  <string name="toggle_title">Toggle</string>
-  <string name="phone_number_title">Phone number</string>
-  <string name="phone_number_dialog_title">Enter phone number</string>
-
-  <!-- Alarm handler -->
-  <string name="alarm_handler">AAlarm</string>
-  <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
-  <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
-  <string name="alarm_handler_vibrate_title">Vibrate</string>
-  <string name="alarm_handler_math_lock_title">Math lock</string>
-
-  <!-- FireAlarm -->
-  <string name="fire_alarm_snooze_text">Snooze</string>
-  <string name="fire_alarm_dismiss_text">Dismiss</string>
-  <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>
-
-  <!-- MediaPlayer -->
-  <string name="media_player_error_dialog_title">Unable to play ringtone</string>
-  <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
-
-  <!-- Phone handler -->
-  <string name="phone_handler">CPhone call</string>
-  <string name="phone_handler_speakerphone_title">Speakerphone mode</string>
-
-  <!-- Toggle handler -->
-  <string name="toggle_handler">TToggle switch</string>
-  <string name="toggle_handler_operation_title">Which to toggle</string>
-  <string name="toggle_handler_operation_wifi">Wi-Fi</string>
-  <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>
-  <string name="toggle_handler_operation_apn">Mobile network</string>
-
-  <!-- Text handler -->
-  <string name="text_handler">SText</string>
-  <string name="text_handler_subject_title">Subject</string>
-  <string name="text_handler_body_title">Body</string>
-  <string name="text_handler_subject_dialog_title">Enter text subject</string>
-  <string name="text_handler_body_dialog_title">Enter text body</string>
-
-  <!-- Music handler -->
-  <string name="music_handler">MMusic</string>
-  <string name="music_handler_playlist_title">Playlist</string>
-  <string name="music_handler_looping_title">Looping</string>
-  <string name="music_handler_minutes_title">Minutes</string>
-  <string name="music_handler_warning_no_playlists">No playlists in your device. Create some for me</string>
-
+    <string name="app_name">OpenAlarm</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="no_external_storage_found">Oops! no external storage inserted?</string>
+    <string name="no_alarms_found">Oops! no alarms found</string>
+    <string name="about_this_application">About this application</string>
+    <string name="about_html">about.html</string>
+    <string name="menu_item_add">New</string>
+    <string name="menu_item_reload">Reload</string>
+    <string name="menu_item_report_next_alarm">Next alarm</string>
+    <string name="menu_item_send_feedback">Feedback</string>
+    <string name="menu_item_about">About</string>
+    <string name="feedback_mail_content">Hi Josh!\n\n\n====================\nFollowing lines are ONLY used in debugging. No malicious use.\n====================\n%s</string>
+    <string name="menu_item_delete_alarm">Delete</string>
+    <string name="confirm_alarm_deletion_title">Confirm deletion</string>
+    <string name="delete_alarm_message">Do you want to delete this alarm?</string>
+    <string name="alarm_basic_settings_title">Basic Settings</string>
+    <string name="alarm_extra_settings_title">Extra Settings</string>
+    <string name="alarm_settings_label_title">Label</string>
+    <string name="alarm_settings_label_key">label</string>
+    <string name="alarm_settings_label_dialog_title">Enter label</string>
+    <string name="alarm_settings_time_title">Time</string>
+    <string name="alarm_settings_time_key">time</string>
+    <string name="alarm_settings_action_title">Action</string>
+    <string name="alarm_settings_action_summary">Choose action</string>
+    <string name="alarm_settings_action_key">action</string>
+    <string name="alarm_settings_action_dialog_title">Complete action using</string>
+    <string name="alarm_settings_repeat_days_title">Repeat on</string>
+    <string name="alarm_settings_repeat_days_summary">On everyday</string>
+    <string name="alarm_settings_repeat_days_key">repeat_days</string>
+    <string name="alarm_settings_repeat_days_dialog_title">Repeat on</string>
+    <string name="repeat_on_everyday">Everyday</string>
+    <string name="no_repeat_days">Never</string>
+    <string name="alarm_settings_extra_category_key">extra_settings</string>
+    <string name="alarm_set_toast_text">Alarm %s will action at %s</string>
+    <string name="alarm_handler_unset_message">What do you want me to do? Please specify action!</string>
+    <string name="alarm_repeat_days_unset_message">When should I action? Please specify repeat days!</string>
+    <string name="alarm_set_notification_ticker">Next Alarm: %s</string>
+    <string name="alarm_set_notification_content">Scheduled at %s</string>
+    <string name="filter_criteria_title">Select your filter criteria</string>
+    <string name="filter">Filter</string>
+    <string name="filter_by">Filter by</string>
+    <string name="filter_by_operator">Operator</string>
+    <string name="filter_by_operator_and">AND</string>
+    <string name="filter_by_operator_or">OR</string>
+    <string name="ringtone_title">Ringtone</string>
+    <string name="toggle_title">Toggle</string>
+    <string name="phone_number_title">Phone number</string>
+    <string name="phone_number_dialog_title">Enter phone number</string>
+    <string name="alarm_handler">AAlarm</string>
+    <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
+    <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
+    <string name="alarm_handler_vibrate_title">Vibrate</string>
+    <string name="alarm_handler_math_lock_title">Math lock</string>
+    <string name="fire_alarm_snooze_text">Snooze</string>
+    <string name="fire_alarm_dismiss_text">Dismiss</string>
+    <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>
+    <string name="media_player_error_dialog_title">Unable to play ringtone</string>
+    <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
+    <string name="phone_handler">CPhone call</string>
+    <string name="phone_handler_speakerphone_title">Speakerphone mode</string>
+    <string name="toggle_handler">TToggle switch</string>
+    <string name="toggle_handler_operation_title">Which to toggle</string>
+    <string name="toggle_handler_operation_wifi">Wi-Fi</string>
+    <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>
+    <string name="toggle_handler_operation_apn">Mobile network</string>
+    <string name="text_handler">SText</string>
+    <string name="text_handler_subject_title">Subject</string>
+    <string name="text_handler_body_title">Body</string>
+    <string name="text_handler_subject_dialog_title">Enter text subject</string>
+    <string name="text_handler_body_dialog_title">Enter text body</string>
+    <string name="music_handler">MMusic</string>
+    <string name="music_handler_playlist_title">Playlist</string>
+    <string name="music_handler_warning_no_playlists">No playlists in your device. Create some for me</string>
 </resources>
