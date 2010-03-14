@@ -78,8 +78,6 @@ public class OpenAlarmActivity extends ListActivity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "===> onCreate(): " + savedInstanceState);
-
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -108,20 +106,6 @@ public class OpenAlarmActivity extends ListActivity
         menuInflater.inflate(R.menu.menu, menu);
         return true;
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        Log.d(TAG, "===> onDestroy()");
-    }
-
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-
-        Log.d(TAG, "===> onSaveInstanceState()");
-    }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -252,13 +236,19 @@ public class OpenAlarmActivity extends ListActivity
         super.onPrepareDialog(id, dialog);
 
         if (id == DIALOG_ID_REPORT_NEXT_ALARM) {
+            // Reset title and message
             Alarm nextAlarm = Notification.getInstance().set(this);
+            String title = "";
             String message = getString(R.string.no_alarms_found);
             if (nextAlarm != null) {
                 message = getString(R.string.alarm_set_notification_content,
                                     nextAlarm.formatSchedule(this));
-                dialog.setTitle(nextAlarm.getStringField(Alarm.FIELD_LABEL));
+                title = nextAlarm.getStringField(Alarm.FIELD_LABEL);
+                if (nextAlarm.isSnoozed(this)) {
+                    title = title + " (" + getString(R.string.snoozed) + ")";
+                }
             }
+            dialog.setTitle(title);
             ((AlertDialog)dialog).setMessage(message);
         }
     }
@@ -553,20 +543,17 @@ public class OpenAlarmActivity extends ListActivity
         }
 
         protected void onContentChanged() {
-            Log.d(TAG, "onContentChanged()");
             super.onContentChanged();
             Notification.getInstance().set(mContext);
         }
 
         public void notifyDataSetChanged() { // requery
             super.notifyDataSetChanged();
-            Log.d(TAG, "notifyDataSetChanged()");
             Notification.getInstance().set(mContext);
         }
 
         public void notifyDataSetInvalidated() { // deactivate or close/onStop or onDestroy
             super.notifyDataSetInvalidated();
-            Log.d(TAG, "notifyDataSetInvalidated()");
             Notification.getInstance().set(mContext);
         }
     }

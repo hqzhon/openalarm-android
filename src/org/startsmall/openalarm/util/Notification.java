@@ -124,8 +124,5 @@ class Notification {
         Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
         alarmChanged.putExtra("alarmSet", enabled);
         context.sendBroadcast(alarmChanged);
-
-        Log.d(TAG, "=========> setStatusBarIcon(" + enabled + ")");
-
     }
 }

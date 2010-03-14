@@ -65,7 +65,6 @@ public class AlarmProvider extends ContentProvider {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            // Log.d(TAG, "===> onCreate(" + DATABASE_CREATE_CMD + ")");
             db.execSQL(DATABASE_CREATE_CMD);
             insertDefaultAlarms(db);
         }
@@ -90,9 +89,9 @@ public class AlarmProvider extends ContentProvider {
                          AlarmColumns.ENABLED + ", " +
                          AlarmColumns.HANDLER + ", " +
                          AlarmColumns.EXTRA + ") VALUES ";
-            db.execSQL(cmd + "('Go to work', 7, 00, 0, 1, 0, '', '');");
-            db.execSQL(cmd + "('Pick up kids', 8, 30, 0, 5, 0, '', '');");
-            db.execSQL(cmd + "('See her mom', 9, 00, 0, 9, 0, '', '');");
+            db.execSQL(cmd + "('apn on', 7, 00, 0, 1, 0, '', '');");
+            db.execSQL(cmd + "('apn off', 1, 30, 0, 5, 0, '', '');");
+            db.execSQL(cmd + "('go to work', 9, 00, 0, 9, 0, '', '');");
         }
 
         private boolean upgradeHandlers(SQLiteDatabase db,
@@ -177,7 +176,6 @@ public class AlarmProvider extends ContentProvider {
         if (c == null) {
             Log.e(TAG, "===> AlarmProvider.query(): failed alarm query");
         } else {
-            Log.d(TAG, "====> " + c + " is watching " + uri + " for changes");
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
         return c;

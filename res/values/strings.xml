@@ -4,7 +4,7 @@
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="no_external_storage_found">Oops! no external storage inserted?</string>
-    <string name="no_alarms_found">Oops! no alarms found</string>
+    <string name="no_alarms_found">Oops! no matched alarms found</string>
     <string name="about_this_application">About this application</string>
     <string name="about_html">about.html</string>
     <string name="menu_item_add">New</string>
@@ -26,7 +26,7 @@
     <string name="alarm_settings_action_title">Action</string>
     <string name="alarm_settings_action_summary">Choose action</string>
     <string name="alarm_settings_action_key">action</string>
-    <string name="alarm_settings_action_dialog_title">Complete action using</string>
+    <string name="alarm_settings_action_dialog_title">Use action</string>
     <string name="alarm_settings_repeat_days_title">Repeat on</string>
     <string name="alarm_settings_repeat_days_summary">On everyday</string>
     <string name="alarm_settings_repeat_days_key">repeat_days</string>
@@ -35,8 +35,8 @@
     <string name="no_repeat_days">Never</string>
     <string name="alarm_settings_extra_category_key">extra_settings</string>
     <string name="alarm_set_toast_text">Alarm %s will action at %s</string>
-    <string name="alarm_handler_unset_message">What do you want me to do? Please specify action!</string>
-    <string name="alarm_repeat_days_unset_message">When should I action? Please specify repeat days!</string>
+    <string name="alarm_handler_unset_message">Please specify action!!!</string>
+    <string name="alarm_repeat_days_unset_message">Please specify repeat days!!!</string>
     <string name="alarm_set_notification_ticker">Next Alarm: %s</string>
     <string name="alarm_set_notification_content">Scheduled at %s</string>
     <string name="filter_criteria_title">Select your filter criteria</string>
@@ -51,12 +51,14 @@
     <string name="phone_number_dialog_title">Enter phone number</string>
     <string name="alarm_handler">AAlarm</string>
     <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
-    <string name="alarm_handler_snooze_duration_dialog_title">Enter snooze duration in minutes</string>
+    <string name="alarm_handler_snooze_duration_dialog_title">Snooze duration (minutes)</string>
     <string name="alarm_handler_vibrate_title">Vibrate</string>
     <string name="alarm_handler_math_lock_title">Math lock</string>
-    <string name="fire_alarm_snooze_text">Snooze</string>
-    <string name="fire_alarm_dismiss_text">Dismiss</string>
+    <string name="snooze">Snooze</string>
+    <string name="dismiss">Dismiss</string>
     <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>
+    <string name="alarm_snoozed_toast">Snoozed in %d minutes</string>
+    <string name="snoozed">Snoozed</string>
     <string name="media_player_error_dialog_title">Unable to play ringtone</string>
     <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
     <string name="phone_handler">CPhone call</string>

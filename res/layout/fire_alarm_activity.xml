@@ -9,8 +9,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
     <ImageView android:id="@+id/icon"
-               android:layout_width="96px"
-               android:layout_height="96px"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
                android:scaleType="fitXY"
                android:src="@drawable/open_alarm_logo"/>
 
@@ -99,7 +99,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/fire_alarm_snooze_text"/>
+            android:text="@string/snooze"/>
 
     <Button style="?android:attr/textAppearanceLargeInverse"
             android:id="@+id/dismiss"
@@ -107,7 +107,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/fire_alarm_dismiss_text"/>
+            android:text="@string/dismiss"/>
   </LinearLayout>
 </LinearLayout>
 

@@ -31,6 +31,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.FileDescriptor;
@@ -68,9 +69,6 @@ public class FireAlarmActivity extends Activity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
-        Log.d(TAG, "=======================> onCreate(" + savedInstanceState + ")");
-
         super.onCreate(savedInstanceState);
 
         mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
@@ -134,14 +132,7 @@ public class FireAlarmActivity extends Activity
 
         startVibration();
 
-        setNotification(true);
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "=======================> onDestroy()");
-        super.onDestroy();
-        shutdown();
+        // setNotification(true);
     }
 
     @Override
@@ -153,7 +144,6 @@ public class FireAlarmActivity extends Activity
     // FireAlarm comes to the foreground
     @Override
     public void onResume() {
-        Log.d(TAG, "=======================> onResume()");
         super.onResume();
 
         // FireAlarm goes back to interact to user. But, Keyguard
@@ -166,7 +156,6 @@ public class FireAlarmActivity extends Activity
 
     @Override
     public void onPause() {
-        Log.d(TAG, "=======================> onPause()");
         super.onPause();
 
         // Returns to keyguarded mode if the phone was in this
@@ -176,14 +165,14 @@ public class FireAlarmActivity extends Activity
 
     @Override
     public void onStop() {
-        Log.d(TAG, "=======================> onStop()");
         super.onStop();
-    }
-
-    @Override
-    public void onRestart() {
-        Log.d(TAG, "=======================> onRestart()");
-        super.onStop();
+        // If this onStop() is called because of finish(), we
+        // don't need to snooze alarm because it was already done
+        // or it was dismissed.
+        if (!isFinishing()) {
+            snoozeAlarm();
+            finish();
+        }
     }
 
     @Override
@@ -355,12 +344,18 @@ public class FireAlarmActivity extends Activity
         Alarm alarm = Alarm.getInstance(this, alarmId);
         alarm.snooze(this, snoozeDuration);
 
-        setNotification(false);
+        Toast.makeText(this,
+                       getString(R.string.alarm_snoozed_toast, snoozeDuration),
+                       Toast.LENGTH_LONG).show();
     }
 
     private void dismissAlarm() {
         final int alarmId = getIntent().getIntExtra(AlarmColumns._ID, -1);
         Alarms.dismissAlarm(this, alarmId);
+
+        // If this alarm was snoozed before, clear it.
+        Alarm alarm = Alarm.getInstance(this, alarmId);
+        alarm.unsnooze(this);
     }
 
     private void startVibration() {
@@ -452,7 +447,7 @@ public class FireAlarmActivity extends Activity
                 }
             } else {
                 mMediaPlayer.setDataSource(this, Uri.parse(uriString));
-                // mMediaPlayer.setVolume(NORMAL_VOLUME, NORMAL_VOLUME);
+                mMediaPlayer.setVolume(NORMAL_VOLUME, NORMAL_VOLUME);
             }
         } catch (java.io.IOException e) {
             return;
@@ -474,6 +469,7 @@ public class FireAlarmActivity extends Activity
         }
     }
 
+    /*
     private void setNotification(boolean enable) {
         if (enable) {
             NotificationManager nm =
@@ -513,6 +509,7 @@ public class FireAlarmActivity extends Activity
             Notification.getInstance().set(this);
         }
     }
+    */
 
     private static class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
         @Override
