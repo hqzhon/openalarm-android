@@ -4,6 +4,8 @@
     <string name="on">开启</string>
     <string name="off">关闭</string>
     <string name="no_external_storage_found">有插入SD卡?</string>
+    <string name="no_alarms_found">哎呀!没有发现匹配的闹钟</string>
+    <string name="no_alarms_enabled">没有已启用的闹钟</string>
     <string name="about_this_application">关于此程序</string>
     <string name="about_html">about_zh-rCN.html</string>
     <string name="menu_item_add">添加</string>
@@ -64,5 +66,4 @@
     <string name="snooze">再眯一下</string>
     <string name="dismiss">起来了</string>
     <string name="alarm_snoozed_toast">"打盹"%d"分钟"</string>
-    <string name="no_alarms_found">哎呀!没有发现匹配的闹钟</string>
 </resources>

@@ -5,6 +5,7 @@
     <string name="off">關閉</string>
     <string name="no_external_storage_found">有插入SD卡？</string>
     <string name="no_alarms_found">哎呀! 沒有發現符合條件的鬧鐘</string>
+    <string name="no_alarms_enabled">沒有任何已啟用鬧鐘</string>
     <string name="about_this_application">關於此程式</string>
     <string name="about_html">about_zh-rTW.html</string>
     <string name="menu_item_add">新增</string>

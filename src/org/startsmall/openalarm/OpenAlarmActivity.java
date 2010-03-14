@@ -239,7 +239,7 @@ public class OpenAlarmActivity extends ListActivity
             // Reset title and message
             Alarm nextAlarm = Notification.getInstance().set(this);
             String title = "";
-            String message = getString(R.string.no_alarms_found);
+            String message = getString(R.string.no_alarms_enabled);
             if (nextAlarm != null) {
                 message = getString(R.string.alarm_set_notification_content,
                                     nextAlarm.formatSchedule(this));

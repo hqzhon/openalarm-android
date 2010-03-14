@@ -11,10 +11,6 @@
         android:title="@string/menu_item_report_next_alarm"
         android:icon="@drawable/android:ic_menu_set_as"/>
 
-  <item android:id="@+id/menu_item_sort"
-        android:title="Sort by"
-        android:icon="@drawable/android:ic_menu_sort_by_size"/>
-
   <item android:id="@+id/menu_item_send_feedback"
         android:title="@string/menu_item_send_feedback"
         android:icon="@drawable/android:ic_menu_send" />

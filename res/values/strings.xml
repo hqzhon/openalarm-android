@@ -5,6 +5,7 @@
     <string name="off">Off</string>
     <string name="no_external_storage_found">Oops! no external storage inserted?</string>
     <string name="no_alarms_found">Oops! no matched alarms found</string>
+    <string name="no_alarms_enabled">No alarms enabled</string>
     <string name="about_this_application">About this application</string>
     <string name="about_html">about.html</string>
     <string name="menu_item_add">New</string>
