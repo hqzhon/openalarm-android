@@ -49,7 +49,7 @@
     <string name="alarm_handler_deep_sleeper_mode_password_dialog_title">设置密码</string>
 
     <string name="fire_alarm_set_notification_ticker">%s: "再眯一下还是起来"?</string>
-    <string name="phone_handler">C"定时拨号"</string>
+    <string name="phone_handler">P"定时拨号"</string>
     <string name="phone_handler_speakerphone_title">扩音模式</string>
     <string name="toggle_handler">T"开关"</string>
     <string name="toggle_handler_operation_title">切换</string>

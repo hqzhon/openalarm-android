@@ -40,7 +40,7 @@ public class FilterCriteriaActivity extends ListActivity
 
         setContentView(R.layout.filter_criteria_activity);
 
-        mHandlerInfoMap =  HandlerInfo.getMap(this);
+        mHandlerInfoMap = HandlerInfo.getMap(this);
 
         initLayout();
     }
@@ -110,10 +110,12 @@ public class FilterCriteriaActivity extends ListActivity
         if (position == FILTER_BY_ACTION) {
             Collection<HandlerInfo> handlerInfos = mHandlerInfoMap.values();
             if (handlerInfos.size() > 0) {
+                Object[] handlerInfoArray = handlerInfos.toArray();
+                Arrays.sort(handlerInfoArray);
                 ArrayAdapter<Object> actionAdapter =
                     new ArrayAdapter<Object>(this,
                                              android.R.layout.simple_list_item_single_choice,
-                                             handlerInfos.toArray());
+                                             handlerInfoArray);
                 listView.setAdapter(actionAdapter);
                 listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             }
