@@ -3,4 +3,11 @@
     <item>@string/alarm_settings_action_title</item>
     <item>@string/alarm_settings_repeat_days_title</item>
   </string-array>
+
+  <string-array name="alarm_handler_deep_sleeper_mode">
+    <item>@string/alarm_handler_deep_sleeper_mode_none_title</item>
+    <item>@string/alarm_handler_deep_sleeper_mode_math_title</item>
+    <item>@string/alarm_handler_deep_sleeper_mode_password_title</item>
+  </string-array>
+
 </resources>

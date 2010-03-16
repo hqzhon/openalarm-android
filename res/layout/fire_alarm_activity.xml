@@ -37,60 +37,10 @@
     </LinearLayout>
   </LinearLayout>
 
-  <TableLayout android:id="@+id/math_panel"
-               android:layout_width="fill_parent"
-               android:layout_height="wrap_content"
-               android:layout_marginTop="10dp"
-               android:stretchColumns="*"
-               android:visibility="gone">
-    <TextView android:id="@+id/equation"
-              android:singleLine="true"
-              android:ellipsize="marquee"
-              android:gravity="center"
-              android:textAppearance="@style/TextAppearanceExtraLarge"/>
-
-    <TableRow>
-      <TextView style="?android:attr/textAppearanceMedium"
-                android:background="@drawable/main_background"
-                android:padding="3dp"
-                android:gravity="center"
-                android:layout_marginTop="2dp"
-                android:layout_marginLeft="2dp"
-                android:layout_marginRight="1dp"
-                android:layout_marginBottom="1dp" />
-      <TextView style="?android:attr/textAppearanceMedium"
-                android:background="@drawable/main_background"
-                android:padding="3dp"
-                android:gravity="center"
-                android:layout_marginTop="2dp"
-                android:layout_marginLeft="1dp"
-                android:layout_marginRight="2dp"
-                android:layout_marginBottom="1dp" />
-    </TableRow>
-    <TableRow>
-      <TextView style="?android:attr/textAppearanceMedium"
-                android:background="@drawable/main_background"
-                android:padding="3dp"
-                android:gravity="center"
-                android:layout_marginTop="1dp"
-                android:layout_marginLeft="2dp"
-                android:layout_marginRight="1dp"
-                android:layout_marginBottom="2dp" />
-      <TextView style="?android:attr/textAppearanceMedium"
-                android:background="@drawable/main_background"
-                android:padding="3dp"
-                android:gravity="center"
-                android:layout_marginTop="1dp"
-                android:layout_marginLeft="1dp"
-                android:layout_marginRight="2dp"
-                android:layout_marginBottom="2dp"/>
-    </TableRow>
-  </TableLayout>
-
+  <!-- Snooze/Dismiss button panel -->
   <LinearLayout android:id="@+id/button_panel"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:orientation="horizontal"
                 android:visibility="gone">
     <Button style="?android:attr/textAppearanceLargeInverse"
@@ -109,5 +59,19 @@
             android:layout_weight="1"
             android:text="@string/dismiss"/>
   </LinearLayout>
+
+  <!-- Math panel -->
+  <org.startsmall.openalarm.MathPanel android:id="@+id/math_panel"
+                                      android:layout_width="fill_parent"
+                                      android:layout_height="wrap_content"
+                                      android:orientation="vertical"
+                                      android:visibility="gone"/>
+
+  <!-- Password panel -->
+  <org.startsmall.openalarm.DigitsPanel android:id="@+id/password_panel"
+                                        android:layout_width="fill_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+                                        android:visibility="gone"/>
 </LinearLayout>
 

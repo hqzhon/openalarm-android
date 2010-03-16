@@ -54,7 +54,12 @@
     <string name="alarm_handler_snooze_duration_title">Snooze duration</string>
     <string name="alarm_handler_snooze_duration_dialog_title">Snooze duration (minutes)</string>
     <string name="alarm_handler_vibrate_title">Vibrate</string>
-    <string name="alarm_handler_math_lock_title">Math lock</string>
+    <string name="alarm_handler_deep_sleeper_mode_title">Deep sleeper mode</string>
+    <string name="alarm_handler_deep_sleeper_mode_dialog_title">Select deep sleeper mode</string>
+    <string name="alarm_handler_deep_sleeper_mode_none_title">Not need it</string>
+    <string name="alarm_handler_deep_sleeper_mode_math_title">Simple math</string>
+    <string name="alarm_handler_deep_sleeper_mode_password_title">Password</string>
+    <string name="alarm_handler_deep_sleeper_mode_password_dialog_title">Set Password</string>
     <string name="snooze">Snooze</string>
     <string name="dismiss">Dismiss</string>
     <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>

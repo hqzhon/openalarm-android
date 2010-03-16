@@ -28,18 +28,16 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import java.io.IOException;
 import java.io.FileDescriptor;
 import java.util.Calendar;
-import java.util.Random;
 
-public class FireAlarmActivity extends Activity
-                               implements View.OnClickListener {
+public class FireAlarmActivity extends Activity {
     private static final String TAG = "FireAlarmActivity";
 
     private static final int MSGID_STOP_PLAYBACK = 1;
@@ -62,10 +60,9 @@ public class FireAlarmActivity extends Activity
     private KeyguardManager.KeyguardLock mKeyguardLock;
     private long[] mVibratePattern;
 
-    private TableLayout mMathPanel;
+    private MathPanel mMathPanel;
     private LinearLayout mButtonPanel;
-    private TextView mEquationTextView;
-    private TextView[] mAnswerTextView = new TextView[4];
+    private DigitsPanel mPasswordPanel;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -101,7 +98,23 @@ public class FireAlarmActivity extends Activity
         setTimeFromIntent(intent);
         setLabelFromIntent(intent);
 
-        prepareMathLock();
+        // prepareMathLock();
+        mButtonPanel = (LinearLayout)findViewById(R.id.button_panel);
+        mMathPanel = (MathPanel)findViewById(R.id.math_panel);
+        mMathPanel.setOnRightAnswerClickListener(
+            new View.OnClickListener() {
+                public void onClick(View v) {
+                    setPanelVisible(AlarmHandler.LOCK_MODE_NONE);
+                }
+            });
+        mPasswordPanel = (DigitsPanel)findViewById(R.id.password_panel);
+        mPasswordPanel.setOnRightPasswordSetListener(
+            new DigitsPanel.OnRightPasswordSetListener() {
+                public void onSet() {
+                    setPanelVisible(AlarmHandler.LOCK_MODE_NONE);
+                }
+            });
+        prepareLockPanel();
 
         // Snooze this alarm makes the alarm postponded and saved
         // as a SharedPreferences.
@@ -200,7 +213,8 @@ public class FireAlarmActivity extends Activity
             // Refresh UI of the existing instance.
             setTimeFromIntent(newIntent);
             setLabelFromIntent(newIntent);
-            prepareMathLock();
+            // prepareMathLock();
+            prepareLockPanel();
 
             // The ringtone uri might be different and timeout of
             // playback needs to be recounted.
@@ -245,77 +259,31 @@ public class FireAlarmActivity extends Activity
         timeAmPmView.setTime(hourOfDay, minutes);
     }
 
-    private void prepareMathLock() {
-        mMathPanel = (TableLayout)findViewById(R.id.math_panel);
-        TextView tv;
-        final int childCount = mMathPanel.getChildCount();
-        for (int i = 1; i < childCount; i++) {
-            TableRow row = (TableRow)mMathPanel.getChildAt(i);
-            for (int j = 0; j < 2; j++) {
-                tv = (TextView)row.getChildAt(j);
-                tv.setOnClickListener(this);
-                mAnswerTextView[(i - 1 )*2 + j] = tv;
-            }
-        }
-        tv = mAnswerTextView[3];
-        mAnswerTextView[3] = mAnswerTextView[2];
-        mAnswerTextView[2] = tv;
-
-        mButtonPanel = (LinearLayout)findViewById(R.id.button_panel);
-
+    private void prepareLockPanel() {
         Intent intent = getIntent();
-        boolean isMathLockOn = intent.getBooleanExtra(AlarmHandler.EXTRA_KEY_MATH_LOCK_ON, false);
-        if (isMathLockOn) {
-            mEquationTextView = (TextView)mMathPanel.findViewById(R.id.equation);
 
-            mMathPanel.setVisibility(View.VISIBLE);
-            mButtonPanel.setVisibility(View.GONE);
+        final String password = intent.getStringExtra(AlarmHandler.EXTRA_KEY_LOCK_MODE_PASSWORD);
+        mPasswordPanel.setPassword(password);
 
-            // Generate a simple equation of the addition of two integers.
-            requestNewEquation();
-       } else {
-            mMathPanel.setVisibility(View.GONE);
+        int lockMode = intent.getIntExtra(AlarmHandler.EXTRA_KEY_LOCK_MODE,
+                                          AlarmHandler.LOCK_MODE_NONE);
+
+        setPanelVisible(lockMode);
+    }
+
+    private void setPanelVisible(int index) {
+        if (index == AlarmHandler.LOCK_MODE_NONE) {
             mButtonPanel.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void requestNewEquation() {
-        final Random rand = new Random();
-        int i1 = rand.nextInt(400);
-        int i2 = rand.nextInt(600);
-        final int answer = i1 + i2;
-        final int answerTextViewId = rand.nextInt(3);
-
-        mEquationTextView.setText(i1 + " + " + i2 + " = ?");
-        TextView tv;
-        for (int i = 0; i < 4; i++) {
-            tv = mAnswerTextView[i];
-            tv.setTag((Integer)answer);
-            if (i == answerTextViewId) {
-                tv.setText(Integer.toString(answer));
-            } else {
-                tv.setText(Integer.toString(rand.nextInt(300) + i * rand.nextInt(300)));
-            }
-        }
-    }
-
-    public void onClick(View view) {
-        TextView tv = (TextView)view;
-        boolean wrongAnswerEntered = true;
-        int answer = (Integer)tv.getTag();
-        int userAnswer = -1;
-        try {
-            userAnswer = Integer.parseInt(tv.getText().toString());
-            if (userAnswer == answer) {
-                mMathPanel.setVisibility(View.GONE);
-                mButtonPanel.setVisibility(View.VISIBLE);
-                wrongAnswerEntered = false;
-            }
-        } catch (NumberFormatException e) {
-        }
-
-        if (wrongAnswerEntered) {
-            requestNewEquation();
+            mMathPanel.setVisibility(View.GONE);
+            mPasswordPanel.setVisibility(View.GONE);
+        } else if (index == AlarmHandler.LOCK_MODE_MATH) {
+            mButtonPanel.setVisibility(View.GONE);
+            mMathPanel.setVisibility(View.VISIBLE);
+            mPasswordPanel.setVisibility(View.GONE);
+        } else {
+            mButtonPanel.setVisibility(View.GONE);
+            mMathPanel.setVisibility(View.GONE);
+            mPasswordPanel.setVisibility(View.VISIBLE);
         }
     }
 

@@ -41,7 +41,13 @@
     <string name="alarm_handler_snooze_duration_title">打盹间隔</string>
     <string name="alarm_handler_snooze_duration_dialog_title">打盹间隔(分钟)</string>
     <string name="alarm_handler_vibrate_title">振动</string>
-    <string name="alarm_handler_math_lock_title">算术锁</string>
+    <string name="alarm_handler_deep_sleeper_mode_title">熟睡者模式</string>
+    <string name="alarm_handler_deep_sleeper_mode_dialog_title">选择熟睡者模式</string>
+    <string name="alarm_handler_deep_sleeper_mode_none_title">不需要</string>
+    <string name="alarm_handler_deep_sleeper_mode_math_title">简单数学</string>
+    <string name="alarm_handler_deep_sleeper_mode_password_title">密码</string>
+    <string name="alarm_handler_deep_sleeper_mode_password_dialog_title">设置密码</string>
+
     <string name="fire_alarm_set_notification_ticker">%s: "再眯一下还是起来"?</string>
     <string name="phone_handler">C"定时拨号"</string>
     <string name="phone_handler_speakerphone_title">扩音模式</string>

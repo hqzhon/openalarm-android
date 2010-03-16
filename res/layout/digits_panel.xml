@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <TextView android:id="@+id/entered"
+            android:textSize="24dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"/>
+
+  <LinearLayout android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="2dp"
+                android:orientation="horizontal">
+    <Button android:id="@+id/digit7"
+            android:text="7"
+            style="@style/digit_button_style"/>
+    <Button android:id="@+id/digit8"
+            android:text="8"
+            style="@style/digit_button_style"/>
+    <Button android:id="@+id/digit9"
+            android:text="9"
+            style="@style/digit_button_style"/>
+  </LinearLayout>
+
+  <LinearLayout android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:padding="2dp"
+                android:orientation="horizontal">
+    <Button android:id="@+id/digit4"
+            android:text="4"
+            style="@style/digit_button_style"/>
+    <Button android:id="@+id/digit5"
+            android:text="5"
+            style="@style/digit_button_style"/>
+    <Button android:id="@+id/digit6"
+            android:text="6"
+            style="@style/digit_button_style" />
+  </LinearLayout>
+
+  <LinearLayout android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:padding="2dp"
+                android:orientation="horizontal">
+    <Button android:id="@+id/digit1"
+            android:text="1"
+            style="@style/digit_button_style"/>
+    <Button android:id="@+id/digit2"
+            android:text="2"
+            style="@style/digit_button_style"/>
+    <Button android:id="@+id/digit3"
+            android:text="3"
+            style="@style/digit_button_style"/>
+  </LinearLayout>
+
+  <LinearLayout android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+    <Button android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/set"
+            android:text="@string/android:ok"/>
+    <Button android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/clear"
+            android:text="Clear"/>
+  </LinearLayout>
+</merge>

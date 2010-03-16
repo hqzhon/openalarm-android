@@ -1,6 +1,5 @@
 package org.startsmall.openalarm;
 
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +11,6 @@ class Notification {
     private static final String TAG = "Notification";
     private static Notification sInstance;
 
-    private NotificationManager mNotificationManager;
     private long mNextSchedule = Long.MAX_VALUE;
 
     public static Notification getInstance() {
@@ -26,12 +24,8 @@ class Notification {
      * Notify user the next scheduled alarm on the status bar
      *
      */
-    public Alarm set(Context context) {
-        if (mNotificationManager == null) {
-            mNotificationManager =
-                (NotificationManager)context.getSystemService(
-                    Context.NOTIFICATION_SERVICE);
-        }
+    public Alarm set(Context cxt) {
+        Context context = cxt.getApplicationContext();
 
         // Iterate all enabled alarms and find out which one is
         // the next.
@@ -41,14 +35,16 @@ class Notification {
 
         if (nextAlarm == null) {
             if (!getNextAlarm.hasEnabledAlarms) {
-                mNotificationManager.cancel(0);
                 setStatusBarIcon(context, false);
                 Settings.System.putString(context.getContentResolver(),
                                           Settings.System.NEXT_ALARM_FORMATTED, "");
+                Log.d(TAG, "===> no enabled alarm....");
             }
         } else {
-            long nextSchedule = nextAlarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
-            if (nextSchedule != mNextSchedule) {
+            setStatusBarIcon(context, true);
+
+            // long nextSchedule = nextAlarm.getLongField(Alarm.FIELD_TIME_IN_MILLIS);
+            // if (nextSchedule != mNextSchedule) {
                 // Intent intent = new Intent();
                 // intent.setClass(context, OpenAlarm.class);
                 // PendingIntent intentSender =
@@ -71,18 +67,17 @@ class Notification {
                 //                                 tickerText,
                 //                                 contentText,
                 //                                 intentSender);
-                mNotificationManager.cancel(0);
+                // mNotificationManager.cancel(0);
                 // mNotificationManager.notify(0, notification);
 
-                mNextSchedule = nextSchedule;
+            //     mNextSchedule = nextSchedule;
+            // }
 
-                setStatusBarIcon(context, true);
-
-                // Put schedule of next alarm in system settings,
-                Settings.System.putString(context.getContentResolver(),
-                                          Settings.System.NEXT_ALARM_FORMATTED,
-                                          nextAlarm.formatSchedule(context));
-            }
+            // Put schedule of next alarm in system settings,
+            Settings.System.putString(context.getContentResolver(),
+                                      Settings.System.NEXT_ALARM_FORMATTED,
+                                      nextAlarm.formatSchedule(context));
+            Log.d(TAG, "===> set next status bar icon");
         }
 
         return nextAlarm;
@@ -124,5 +119,8 @@ class Notification {
         Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
         alarmChanged.putExtra("alarmSet", enabled);
         context.sendBroadcast(alarmChanged);
+
+        Log.d(TAG, "===> setStatusBarIcon(" + enabled + ")");
+
     }
 }

@@ -47,7 +47,12 @@
     <string name="alarm_handler_snooze_duration_title">貪睡間隔</string>
     <string name="alarm_handler_snooze_duration_dialog_title">貪睡間隔(分鐘)</string>
     <string name="alarm_handler_vibrate_title">振動</string>
-    <string name="alarm_handler_math_lock_title">算術鎖</string>
+    <string name="alarm_handler_deep_sleeper_mode_title">熟睡者模式</string>
+    <string name="alarm_handler_deep_sleeper_mode_dialog_title">選擇熟睡者模式</string>
+    <string name="alarm_handler_deep_sleeper_mode_none_title">不需要</string>
+    <string name="alarm_handler_deep_sleeper_mode_math_title">簡單算術題</string>
+    <string name="alarm_handler_deep_sleeper_mode_password_title">密碼</string>
+    <string name="alarm_handler_deep_sleeper_mode_password_dialog_title">設定密碼</string>
     <string name="fire_alarm_set_notification_ticker">%s: "再瞇一下還是起來"?</string>
     <string name="phone_handler">C"定時撥號"</string>
     <string name="phone_handler_speakerphone_title">擴音模式</string>

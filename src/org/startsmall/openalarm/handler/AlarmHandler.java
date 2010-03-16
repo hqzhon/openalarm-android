@@ -7,13 +7,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.method.DigitsKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
-
-// import java.util.Calendar;
 
 public class AlarmHandler extends AbsHandler {
     private static final String TAG = "AlarmHandler";
@@ -21,7 +20,11 @@ public class AlarmHandler extends AbsHandler {
     static final String EXTRA_KEY_VIBRATE = "vibrate";
     static final String EXTRA_KEY_RINGTONE = "ringtone";
     static final String EXTRA_KEY_SNOOZE_DURATION = "snooze_duration";
-    static final String EXTRA_KEY_MATH_LOCK_ON = "math_lock_on";
+    static final String EXTRA_KEY_LOCK_MODE = "lock_mode";
+    static final String EXTRA_KEY_LOCK_MODE_PASSWORD = "lock_mode_password";
+    static final int LOCK_MODE_NONE = 1;
+    static final int LOCK_MODE_MATH = 2;
+    static final int LOCK_MODE_PASSWORD = 3;
 
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
 
@@ -88,14 +91,43 @@ public class AlarmHandler extends AbsHandler {
             });
         category.addPreference(snoozeDurationPref);
 
-        // Math mode: Do a math in order to snooze or dimiss alarm
-        CheckBoxPreference mathModePref = new CheckBoxPreference(context);
-        mathModePref.setKey(EXTRA_KEY_MATH_LOCK_ON);
-        mathModePref.setPersistent(true);
-        mathModePref.setTitle(R.string.alarm_handler_math_lock_title);
-        mathModePref.setSummaryOn(R.string.on);
-        mathModePref.setSummaryOff(R.string.off);
-        category.addPreference(mathModePref);
+        final EditTextPreference passwordPref = new EditTextPreference(context);
+        passwordPref.setKey(EXTRA_KEY_LOCK_MODE_PASSWORD);
+        passwordPref.setPersistent(true);
+        passwordPref.setTitle(R.string.alarm_handler_deep_sleeper_mode_password_title);
+        passwordPref.setDialogTitle(R.string.alarm_handler_deep_sleeper_mode_password_dialog_title);
+        passwordPref.getEditText().setKeyListener(DigitsKeyListener.getInstance("123456789"));
+        passwordPref.setOnPreferenceChangeListener(
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference p, Object newValue) {
+                    p.setSummary((String)newValue);
+                    return true;
+                }
+            });
+
+        ListPreference lockModePref = new ListPreference(context);
+        lockModePref.setKey(EXTRA_KEY_LOCK_MODE);
+        lockModePref.setPersistent(true);
+        lockModePref.setTitle(R.string.alarm_handler_deep_sleeper_mode_title);
+        lockModePref.setDialogTitle(R.string.alarm_handler_deep_sleeper_mode_dialog_title);
+        category.addPreference(lockModePref);
+        lockModePref.setEntries(R.array.alarm_handler_deep_sleeper_mode);
+        lockModePref.setEntryValues(new CharSequence[]{"1", "2", "3"});
+        lockModePref.setOnPreferenceChangeListener(
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference p, Object newValue) {
+                    int index = Integer.parseInt((String)newValue) - 1;
+                    passwordPref.setEnabled(index == 2 ? true : false);
+                    ListPreference lockPref = (ListPreference)p;
+                    lockPref.setValueIndex(index);
+                    lockPref.setSummary(lockPref.getEntry());
+                    return true;
+                }
+            });
+
+        category.addPreference(passwordPref);
 
         if (TextUtils.isEmpty(extra)) {
             vibratePref.setChecked(false);
@@ -103,7 +135,8 @@ public class AlarmHandler extends AbsHandler {
             ringtonePref.setSummary("");
             snoozeDurationPref.setText("");
             snoozeDurationPref.setSummary("");
-            mathModePref.setChecked(false);
+            lockModePref.setValueIndex(0);
+            passwordPref.setText("");
         } else {
             Bundle result = getBundleFromExtra(extra);
 
@@ -123,9 +156,19 @@ public class AlarmHandler extends AbsHandler {
                 snoozeDurationPref.setText(String.valueOf(snoozeDuration));
             }
 
-            boolean isMathModeOn = result.getBoolean(EXTRA_KEY_MATH_LOCK_ON, false);
-            mathModePref.setChecked(isMathModeOn);
+            int lockMode = result.getInt(EXTRA_KEY_LOCK_MODE, 1);
+            lockModePref.setValueIndex(lockMode - 1);
+            passwordPref.setEnabled(lockMode == 3 ? true : false);
+
+            String password = result.getString(EXTRA_KEY_LOCK_MODE_PASSWORD);
+            if (password == null) {
+                password = "";
+            }
+            passwordPref.setText(password);
         }
+
+        lockModePref.setSummary(lockModePref.getEntry());
+        passwordPref.setSummary(passwordPref.getText());
     }
 
     @Override
@@ -141,8 +184,11 @@ public class AlarmHandler extends AbsHandler {
         final int ringtoneDuration = bundle.getInt(EXTRA_KEY_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
         intent.putExtra(EXTRA_KEY_SNOOZE_DURATION, ringtoneDuration);
 
-        final boolean isMathModeOn = bundle.getBoolean(EXTRA_KEY_MATH_LOCK_ON, false);
-        intent.putExtra(EXTRA_KEY_MATH_LOCK_ON, isMathModeOn);
+        final int lockMode = bundle.getInt(EXTRA_KEY_LOCK_MODE, 1);
+        intent.putExtra(EXTRA_KEY_LOCK_MODE, lockMode);
+
+        final String password = bundle.getString(EXTRA_KEY_LOCK_MODE_PASSWORD);
+        intent.putExtra(EXTRA_KEY_LOCK_MODE_PASSWORD, password);
     }
 
     @Override
@@ -172,10 +218,13 @@ public class AlarmHandler extends AbsHandler {
                         result.putInt(EXTRA_KEY_SNOOZE_DURATION,
                                       Integer.parseInt(elems[1]));
                     }
-                } else if (elems[0].equals(EXTRA_KEY_MATH_LOCK_ON)) {
+                } else if (elems[0].equals(EXTRA_KEY_LOCK_MODE)) {
                     if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                        result.putBoolean(EXTRA_KEY_MATH_LOCK_ON,
-                                          Boolean.parseBoolean(elems[1]));
+                        result.putInt(EXTRA_KEY_LOCK_MODE, Integer.parseInt(elems[1]));
+                    }
+                } else if (elems[0].equals(EXTRA_KEY_LOCK_MODE_PASSWORD)) {
+                    if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                        result.putString(EXTRA_KEY_LOCK_MODE_PASSWORD, elems[1]);
                     }
                 }
             }
