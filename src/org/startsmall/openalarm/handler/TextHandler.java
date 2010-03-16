@@ -11,8 +11,8 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceCategory;
 import android.preference.Preference;
-// import android.telephony.gsm.SmsManager;
-import android.telephony.SmsManager;
+import android.telephony.gsm.SmsManager; // This will cause a compiling warning for using deprecated API.
+// import android.telephony.SmsManager;
 import android.text.method.DialerKeyListener;
 import android.text.TextUtils;
 import android.util.Log;
