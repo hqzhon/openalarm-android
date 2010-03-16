@@ -430,7 +430,8 @@ class Alarm {
                 // Note that we don't need to update
                 // TIME_IN_MILLIS field, it is an auxilary field
                 // used in for ScheduleAlarmReceiver.
-                // values.put(AlarmColumns.TIME_IN_MILLIS, mTimeInMillis);
+                // values.put(AlarmColumns.TIME_IN_MILLIS,
+                // mTimeInMillis);
                 set(context);
             } else {
                 // This alarm was enabled, but this update turns
@@ -443,6 +444,11 @@ class Alarm {
                 mEnabled = false;
                 values.put(AlarmColumns.ENABLED, mEnabled);
             }
+
+            // If this alarm is snoozed and you update its
+            // time/day or make it invalid, its snoozed state
+            // should be cleared.
+            unsnooze(context);
         }
 
         // Update the alarm database.
@@ -457,9 +463,9 @@ class Alarm {
 
     /**
      * Update the schedule of this alarm from outside. This is
-     * ONLY used in ScheduleAlarmReceiver to force bindView() to
-     * update every alarm view in the ListAdapter. Normally, we
-     * should use long version of update() to manipulate alarm.
+     * ONLY used in BootService to force bindView() to update
+     * every alarm view in the ListAdapter. Normally, we should
+     * use long version of update() to manipulate alarm.
      *
      */
     public void update(final Context context, final long timeInMillis) {
