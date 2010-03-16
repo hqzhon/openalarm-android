@@ -158,7 +158,6 @@ public class AlarmHandler extends AbsHandler {
 
             int lockMode = result.getInt(EXTRA_KEY_LOCK_MODE, 1);
             lockModePref.setValueIndex(lockMode - 1);
-            passwordPref.setEnabled(lockMode == 3 ? true : false);
 
             String password = result.getString(EXTRA_KEY_LOCK_MODE_PASSWORD);
             if (password == null) {
@@ -168,6 +167,7 @@ public class AlarmHandler extends AbsHandler {
         }
 
         lockModePref.setSummary(lockModePref.getEntry());
+        passwordPref.setEnabled(lockModePref.getValue().equals("3") ? true : false);
         passwordPref.setSummary(passwordPref.getText());
     }
 

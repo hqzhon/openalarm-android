@@ -273,7 +273,7 @@ public class OpenAlarmActivity extends ListActivity
                 String handler = data.getStringExtra(HandlerInfo.EXTRA_KEY_HANDLER);
                 cursor = managedQuery(Alarms.getAlarmUri(-1),
                                       AlarmColumns.QUERY_COLUMNS,
-                                      AlarmColumns.HANDLER + "=" + handler, null,
+                                      AlarmColumns.HANDLER + "=?", new String[]{handler},
                                       AlarmColumns.DEFAULT_SORT_ORDER);
             } else if (resultCode == RESULT_FIRST_USER + FilterCriteriaActivity.FILTER_BY_REPEAT_DAYS) {
                 int repeatDays = data.getIntExtra(AlarmColumns.REPEAT_DAYS, -1);
