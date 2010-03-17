@@ -67,6 +67,7 @@
     <string name="filter_by_operator">算子</string>
     <string name="filter_by">以...过滤</string>
     <string name="filter">过滤</string>
+    <string name="back">恢复</string>
     <string name="menu_item_report_next_alarm">下个闹钟</string>
     <string name="menu_item_reload">重新加载</string>
     <string name="snooze">再眯一下</string>

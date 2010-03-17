@@ -3,10 +3,6 @@
         android:title="@string/menu_item_add"
         android:icon="@drawable/android:ic_menu_add"/>
 
-  <item android:id="@+id/menu_item_reload"
-        android:title="@string/menu_item_reload"
-        android:icon="@drawable/ic_menu_refresh"/>
-
   <item android:id="@+id/menu_item_report_next_alarm"
         android:title="@string/menu_item_report_next_alarm"
         android:icon="@drawable/android:ic_menu_set_as"/>

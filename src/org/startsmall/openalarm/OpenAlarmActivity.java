@@ -71,6 +71,7 @@ public class OpenAlarmActivity extends ListActivity
     private ListView mAlarmListView;
     private TextView mBannerTextView;
     private Button mFilterButton;
+    private Button mBackButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
 
@@ -112,16 +113,6 @@ public class OpenAlarmActivity extends ListActivity
         switch(item.getItemId()) {
         case R.id.menu_item_add:
             addNewAlarm();
-            break;
-
-            // Reload database
-        case R.id.menu_item_reload:
-            // Set banner to application name
-            mBannerTextView.setText(R.string.app_name);
-            Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
-                                         AlarmColumns.QUERY_COLUMNS, null, null,
-                                         AlarmColumns.DEFAULT_SORT_ORDER);
-            changeCursorForListView(cursor);
             break;
 
         case R.id.menu_item_report_next_alarm:
@@ -259,6 +250,17 @@ public class OpenAlarmActivity extends ListActivity
             startActivityForResult(
                 new Intent().setClass(this, FilterCriteriaActivity.class),
                 PICK_FILTER);
+        } else if (id == R.id.back) {
+            // Set banner to application name
+            mBannerTextView.setText(R.string.app_name);
+            Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                         AlarmColumns.QUERY_COLUMNS, null, null,
+                                         AlarmColumns.DEFAULT_SORT_ORDER);
+            if (cursor != null) {
+                changeCursorForListView(cursor);
+            }
+            mBackButton.setVisibility(View.GONE);
+            mFilterButton.setEnabled(true);
         }
     }
 
@@ -304,6 +306,12 @@ public class OpenAlarmActivity extends ListActivity
             }
 
             changeCursorForListView(cursor);
+
+            // Show back button for user to go back
+            if (cursor != null) {
+                mFilterButton.setEnabled(false);
+                mBackButton.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -339,6 +347,9 @@ public class OpenAlarmActivity extends ListActivity
 
         mFilterButton = (Button)findViewById(R.id.filter);
         mFilterButton.setOnClickListener(this);
+
+        mBackButton = (Button)findViewById(R.id.back);
+        mBackButton.setOnClickListener(this);
     }
 
     private void sendFeedback() {

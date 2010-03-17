@@ -21,9 +21,8 @@
 
 <resources>
     <style name="RepeatDaysTextAppearance" parent="android:TextAppearance.Small.Inverse">
-      <item name="android:background">@drawable/label_background</item>
       <item name="android:textColor">#fff</item>
-      <item name="android:textSize">12sp</item>
+      <item name="android:textSize">13sp</item>
     </style>
 
     <style name="TextAppearanceExtraLarge" parent="android:TextAppearance.Large">

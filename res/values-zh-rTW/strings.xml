@@ -36,6 +36,7 @@
     <string name="alarm_set_notification_ticker">"下個鬧鐘": %s</string>
     <string name="alarm_set_notification_content">"動作時間在"%s</string>
     <string name="filter">篩選</string>
+    <string name="back">復原</string>
     <string name="filter_criteria_title">設定篩選條件</string>
     <string name="filter_by">以...篩選</string>
     <string name="filter_by_operator">運算子</string>
