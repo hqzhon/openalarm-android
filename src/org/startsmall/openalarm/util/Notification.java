@@ -77,7 +77,6 @@ class Notification {
             Settings.System.putString(context.getContentResolver(),
                                       Settings.System.NEXT_ALARM_FORMATTED,
                                       nextAlarm.formatSchedule(context));
-            Log.d(TAG, "===> set next status bar icon");
         }
 
         return nextAlarm;
@@ -119,8 +118,5 @@ class Notification {
         Intent alarmChanged = new Intent(ACTION_ALARM_CHANGED);
         alarmChanged.putExtra("alarmSet", enabled);
         context.sendBroadcast(alarmChanged);
-
-        Log.d(TAG, "===> setStatusBarIcon(" + enabled + ")");
-
     }
 }
