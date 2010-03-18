@@ -361,14 +361,14 @@ class Alarm {
      * settings will cause alarm to be rescheduled.
      *
      */
-    public void update(final Context context,
-                       final boolean enabled,
-                       final String label,
-                       final int hourOfDay,
-                       final int minutes,
-                       final int repeatDays,
-                       final String handler,
-                       final String extra) {
+    public boolean update(final Context context,
+                          final boolean enabled,
+                          final String label,
+                          final int hourOfDay,
+                          final int minutes,
+                          final int repeatDays,
+                          final String handler,
+                          final String extra) {
         boolean scheduleRequired = false;
         ContentValues values = new ContentValues();
         if (enabled != mEnabled) {
@@ -421,7 +421,7 @@ class Alarm {
 
         // If there is no change on settings, do nothing.
         if (values.size() == 0) {
-            return;
+            return scheduleRequired && enabled;
         }
 
         // If alarm needs to be scheduled.
@@ -459,6 +459,8 @@ class Alarm {
             }
             Log.i(TAG, "===> alarm " + mId + " is updated");
         }
+
+        return scheduleRequired && enabled;
     }
 
     /**

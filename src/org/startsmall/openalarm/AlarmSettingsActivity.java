@@ -13,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.lang.reflect.Method;
 
@@ -162,9 +163,17 @@ public class AlarmSettingsActivity extends PreferenceActivity {
 
         // Update new values of the alarm.
         boolean enabled = alarm.getBooleanField(Alarm.FIELD_ENABLED);
-        alarm.update(this,
-                     enabled,
-                     newLabel, newHourOfDay, newMinutes, newRepeatDays, newHandler, newExtra);
+        if (alarm.update(this,
+                         enabled,
+                         newLabel, newHourOfDay, newMinutes, newRepeatDays,
+                         newHandler, newExtra)) {
+            // Alarm has been rescheduled,
+            Toast.makeText(
+                this,
+                getString(R.string.alarm_set_notification_content,
+                          alarm.formatSchedule(this)),
+                Toast.LENGTH_LONG).show();
+        };
     }
 
     /**
