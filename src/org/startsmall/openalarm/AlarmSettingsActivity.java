@@ -180,7 +180,9 @@ public class AlarmSettingsActivity extends PreferenceActivity {
         Alarm alarm = Alarm.getInstance(this, mAlarmId);
 
         // Populate alarm settings into Preferences.
-        mLabelPreference.setPreferenceValue(alarm.getStringField(Alarm.FIELD_LABEL));
+        String label = alarm.getStringField(Alarm.FIELD_LABEL);
+        setTitle(getString(R.string.alarm_basic_settings_title, label));
+        mLabelPreference.setPreferenceValue(label);
         mActionPreference.setPreferenceValue(alarm.getStringField(Alarm.FIELD_HANDLER));
         mTimePreference.setPreferenceValue(
             alarm.getIntField(Alarm.FIELD_HOUR_OF_DAY) * 100 +

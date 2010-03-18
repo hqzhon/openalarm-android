@@ -15,7 +15,7 @@
     <string name="menu_item_delete_alarm">删除</string>
     <string name="confirm_alarm_deletion_title">删除确认</string>
     <string name="delete_alarm_message">你确定要删除她吗？</string>
-    <string name="alarm_basic_settings_title">基本设置</string>
+    <string name="alarm_basic_settings_title">%s"的设置"</string>
     <string name="alarm_extra_settings_title">动作设置</string>
     <string name="alarm_settings_label_title">名称</string>
     <string name="alarm_settings_label_dialog_title">输入名称</string>

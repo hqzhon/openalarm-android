@@ -1,30 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen
-   xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <PreferenceCategory android:title="@string/alarm_basic_settings_title">
-    <org.startsmall.openalarm.AlarmLabelPreference
-       android:key="@string/alarm_settings_label_key"
-       android:title="@string/alarm_settings_label_title"
-       android:defaultValue="Alarm" />
+  <org.startsmall.openalarm.AlarmLabelPreference
+     android:key="@string/alarm_settings_label_key"
+     android:title="@string/alarm_settings_label_title"
+     android:defaultValue="Alarm" />
 
-    <org.startsmall.openalarm.AlarmActionPreference
-       android:key="@string/alarm_settings_action_key"
-       android:title="@string/alarm_settings_action_title"
-       android:defaultValue=""
-       />
+  <org.startsmall.openalarm.AlarmActionPreference
+     android:key="@string/alarm_settings_action_key"
+     android:title="@string/alarm_settings_action_title"
+     android:defaultValue=""
+     />
 
-    <org.startsmall.openalarm.AlarmTimePreference
-       android:key="@string/alarm_settings_time_key"
-       android:title="@string/alarm_settings_time_title"
-       android:defaultValue="0830" />
+  <org.startsmall.openalarm.AlarmTimePreference
+     android:key="@string/alarm_settings_time_key"
+     android:title="@string/alarm_settings_time_title"
+     android:defaultValue="0830" />
 
-    <org.startsmall.openalarm.AlarmRepeatOnPreference
-       android:key="@string/alarm_settings_repeat_days_key"
-       android:title="@string/alarm_settings_repeat_days_title"
-       android:summary="no days"
-       android:defaultValue="5"/>
-  </PreferenceCategory>
+  <org.startsmall.openalarm.AlarmRepeatOnPreference
+     android:key="@string/alarm_settings_repeat_days_key"
+     android:title="@string/alarm_settings_repeat_days_title"
+     android:summary="no days"
+     android:defaultValue="5"/>
 
   <PreferenceCategory
      android:title="@string/alarm_extra_settings_title"
