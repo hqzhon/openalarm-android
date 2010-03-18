@@ -70,8 +70,10 @@ public class OpenAlarmActivity extends ListActivity
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private Button mFilterButton;
-    private Button mBackButton;
+    // private Button mFilterButton;
+    // private Button mBackButton;
+    private TextView mFilterButton;
+    private TextView mBackButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
 
@@ -260,7 +262,7 @@ public class OpenAlarmActivity extends ListActivity
                 changeCursorForListView(cursor);
             }
             mBackButton.setVisibility(View.GONE);
-            mFilterButton.setEnabled(true);
+            mFilterButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -309,7 +311,7 @@ public class OpenAlarmActivity extends ListActivity
 
             // Show back button for user to go back
             if (cursor != null) {
-                mFilterButton.setEnabled(false);
+                mFilterButton.setVisibility(View.GONE);
                 mBackButton.setVisibility(View.VISIBLE);
             }
         }
@@ -345,10 +347,16 @@ public class OpenAlarmActivity extends ListActivity
             mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
         }
 
-        mFilterButton = (Button)findViewById(R.id.filter);
+        // mFilterButton = (Button)findViewById(R.id.filter);
+        // mFilterButton.setOnClickListener(this);
+
+        // mBackButton = (Button)findViewById(R.id.back);
+        // mBackButton.setOnClickListener(this);
+
+        mFilterButton = (TextView)findViewById(R.id.filter);
         mFilterButton.setOnClickListener(this);
 
-        mBackButton = (Button)findViewById(R.id.back);
+        mBackButton = (TextView)findViewById(R.id.back);
         mBackButton.setOnClickListener(this);
     }
 

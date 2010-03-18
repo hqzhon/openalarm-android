@@ -43,6 +43,7 @@
     <string name="filter_criteria_title">Select your filter criteria</string>
     <string name="filter">Filter</string>
     <string name="back">Back</string>
+    <string name="clear">Clear</string>
     <string name="filter_by">Filter by</string>
     <string name="filter_by_operator">Operator</string>
     <string name="filter_by_operator_and">AND</string>

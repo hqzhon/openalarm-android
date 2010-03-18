@@ -54,6 +54,7 @@
 
     <style name="digit_button_style" parent="button_style">
       <item name="android:background">@drawable/blue_button</item>
+      <item name="android:textColor">#fff</item>
     </style>
 </resources>
 

@@ -92,7 +92,7 @@ public class FireAlarmActivity extends Activity {
 
         acquireWakeLock();
 
-        setContentView(R.layout.fire_alarm_activity);
+        setContentView(R.layout.firealarm_activity);
 
         Intent intent = getIntent();
         setTimeFromIntent(intent);
