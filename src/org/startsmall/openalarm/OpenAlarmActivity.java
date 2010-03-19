@@ -253,17 +253,32 @@ public class OpenAlarmActivity extends ListActivity
                 new Intent().setClass(this, FilterCriteriaActivity.class),
                 PICK_FILTER);
         } else if (id == R.id.back) {
-            // Set banner to application name
-            mBannerTextView.setText(R.string.app_name);
-            Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
-                                         AlarmColumns.QUERY_COLUMNS, null, null,
-                                         AlarmColumns.DEFAULT_SORT_ORDER);
-            if (cursor != null) {
-                changeCursorForListView(cursor);
-            }
-            mBackButton.setVisibility(View.GONE);
-            mFilterButton.setVisibility(View.VISIBLE);
+            reloadAlarms();
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            if (mFilterButton.getVisibility() == View.GONE) { // current cursor is filtered.
+                reloadAlarms();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void reloadAlarms() {
+        // Set banner to application name
+        mBannerTextView.setText(R.string.app_name);
+        Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                     AlarmColumns.QUERY_COLUMNS, null, null,
+                                     AlarmColumns.DEFAULT_SORT_ORDER);
+        if (cursor != null) {
+            changeCursorForListView(cursor);
+        }
+        mBackButton.setVisibility(View.GONE);
+        mFilterButton.setVisibility(View.VISIBLE);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
