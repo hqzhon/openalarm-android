@@ -249,9 +249,7 @@ public class OpenAlarmActivity extends ListActivity
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.filter) {
-            startActivityForResult(
-                new Intent().setClass(this, FilterCriteriaActivity.class),
-                PICK_FILTER);
+            editFilterCriteria();
         } else if (id == R.id.back) {
             reloadAlarms();
         }
@@ -264,8 +262,18 @@ public class OpenAlarmActivity extends ListActivity
                 reloadAlarms();
                 return true;
             }
+        } else if (keyCode == KeyEvent.KEYCODE_SEARCH && event.getRepeatCount() == 0) {
+            editFilterCriteria();
+            return true;
         }
+
         return super.onKeyDown(keyCode, event);
+    }
+
+    private void editFilterCriteria() {
+        startActivityForResult(
+            new Intent().setClass(this, FilterCriteriaActivity.class),
+            PICK_FILTER);
     }
 
     private void reloadAlarms() {
