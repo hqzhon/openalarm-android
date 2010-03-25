@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -64,6 +65,7 @@ public class AlarmSettingsActivity extends PreferenceActivity {
         mExtraSettingsCategory =
             (PreferenceCategory)preferenceManager.findPreference(
                 getString(R.string.alarm_settings_extra_category_key));
+        setVolumeControlStream(AudioManager.STREAM_ALARM);
     }
 
     /**

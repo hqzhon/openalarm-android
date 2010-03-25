@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
@@ -50,7 +51,6 @@ import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
@@ -70,8 +70,6 @@ public class OpenAlarmActivity extends ListActivity
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    // private Button mFilterButton;
-    // private Button mBackButton;
     private TextView mFilterButton;
     private TextView mBackButton;
     private Animation mSlideInLeft;
@@ -95,6 +93,8 @@ public class OpenAlarmActivity extends ListActivity
         mHandlerInfoMap = HandlerInfo.getMap(this);
 
         updateLayout();
+
+        setVolumeControlStream(AudioManager.STREAM_ALARM);
     }
 
     @Override

@@ -129,8 +129,9 @@ public class FireAlarmActivity extends Activity {
 
         // Prepare ringtone.
         openRingtone();
-
         startVibration();
+
+        setVolumeControlStream(AudioManager.STREAM_ALARM);
     }
 
     @Override

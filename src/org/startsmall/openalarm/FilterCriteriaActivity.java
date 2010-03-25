@@ -3,6 +3,7 @@ package org.startsmall.openalarm;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.view.View;
 import android.util.SparseBooleanArray;
@@ -43,6 +44,9 @@ public class FilterCriteriaActivity extends ListActivity
         mHandlerInfoMap = HandlerInfo.getMap(this);
 
         initLayout();
+
+        setVolumeControlStream(AudioManager.STREAM_ALARM);
+
     }
 
     private void initLayout() {
