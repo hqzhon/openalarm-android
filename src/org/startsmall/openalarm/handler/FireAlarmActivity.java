@@ -2,24 +2,18 @@ package org.startsmall.openalarm;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
-import android.media.MediaPlayer;
 import android.net.Uri;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.Vibrator;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
 import android.telephony.TelephonyManager;
-import android.text.format.DateUtils;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.animation.AnimationUtils;
@@ -28,14 +22,9 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewFlipper;
-
 import java.io.IOException;
-import java.io.FileDescriptor;
-import java.util.Calendar;
 
 public class FireAlarmActivity extends Activity {
     private static final String TAG = "FireAlarmActivity";
@@ -43,14 +32,12 @@ public class FireAlarmActivity extends Activity {
     private static final int MSGID_STOP_PLAYBACK = 1;
 
     private static final int DEFAULT_SNOOZE_DURATION = 2; // 2 minutes
-    private static final float IN_CALL_VOLUME = 0.125f;
-    private static final float NORMAL_VOLUME = 0.9f;
     private static final int PLAYBACK_TIMEOUT = 60000; // 1 minute
 
     private static final int AUTO_SNOOZE_COUNT_MAX = 3;
     private static int sAutoSnoozeCount = 0;
 
-    private MediaPlayer mMediaPlayer;
+    private Ringtone mRingtone;
     private Handler mHandler;
     private Vibrator mVibrator;
     private PowerManager mPowerManager;
@@ -118,7 +105,7 @@ public class FireAlarmActivity extends Activity {
 
         // Snooze this alarm makes the alarm postponded and saved
         // as a SharedPreferences.
-        Button snoozeButton = (Button)findViewById(R.id.snooze);
+        Button snoozeButton = (Button)mButtonPanel.findViewById(R.id.snooze);
         snoozeButton.setOnClickListener(
             new View.OnClickListener() {
                 @Override
@@ -130,7 +117,7 @@ public class FireAlarmActivity extends Activity {
 
         // Dismiss the alarm causes the ringtone playback of this
         // alarm stopped and reschudiling of this alarm happens.
-        Button dismissButton = (Button)findViewById(R.id.dismiss);
+        Button dismissButton = (Button)mButtonPanel.findViewById(R.id.dismiss);
         dismissButton.setOnClickListener(
             new View.OnClickListener() {
                 @Override
@@ -140,12 +127,10 @@ public class FireAlarmActivity extends Activity {
                 }
             });
 
-        // Prepare MediaPlayer for playing ringtone.
-        prepareMediaPlayer();
+        // Prepare ringtone.
+        openRingtone();
 
         startVibration();
-
-        // setNotification(true);
     }
 
     @Override
@@ -219,7 +204,7 @@ public class FireAlarmActivity extends Activity {
             // The ringtone uri might be different and timeout of
             // playback needs to be recounted.
             mHandler.removeMessages(MSGID_STOP_PLAYBACK);
-            prepareMediaPlayer();
+            openRingtone();
             startVibration();
         }
     }
@@ -227,11 +212,8 @@ public class FireAlarmActivity extends Activity {
     private void shutdown() {
         releaseWakeLock();
 
-        // Stop and release MediaPlayer object.
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
+        if (mRingtone != null) {
+            mRingtone.stop();
         }
 
         // When this activity is intended to finish, remove all
@@ -373,117 +355,106 @@ public class FireAlarmActivity extends Activity {
         mKeyguardLock.disableKeyguard();
     }
 
-    private void prepareMediaPlayer() {
-        if (mMediaPlayer == null) {
-            mMediaPlayer = new MediaPlayer();
-        } else {
-            // Stop and reset MediaPlayer here is required
-            // because onNewIntent() might override the old
-            // settings. Use new settings for MediaPlayer.
-            mMediaPlayer.stop();
-            mMediaPlayer.reset();
+    private void openRingtone() {
+        if (mRingtone != null) {
+            mRingtone.stop();
+            mRingtone = null;
         }
 
         // Whether we should use fallback ringtone?
         Intent intent = getIntent();
-        String uriString = "";
-        boolean useFallbackRingtone = false;
-        if (intent.hasExtra(AlarmHandler.EXTRA_KEY_RINGTONE)) {
-            uriString = intent.getStringExtra(AlarmHandler.EXTRA_KEY_RINGTONE);
-            if (TextUtils.isEmpty(uriString) ||
-                mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
-                useFallbackRingtone = true;
-            }
+        String uriString = intent.getStringExtra(AlarmHandler.EXTRA_KEY_RINGTONE);
+        Uri ringtoneUri;
+        if (TextUtils.isEmpty(uriString)) {
+            ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         } else {
-            useFallbackRingtone = true;
+            ringtoneUri = Uri.parse(uriString);
         }
 
-        try {
-            if (useFallbackRingtone) {
-                // This raw media must be supported by Android
-                // and no errors thrown from it.
-                AssetFileDescriptor afd =
-                    getResources().openRawResourceFd(R.raw.in_call_ringtone);
-                mMediaPlayer.setDataSource(afd.getFileDescriptor(),
-                                           afd.getStartOffset(),
-                                           afd.getLength());
-                afd.close();
+        // But, if we're in call, fallback ringtone should be used.
+        mRingtone = new Ringtone(this);
+        if (mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
+            ringtoneUri =
+                Uri.parse("android.resource://org.startsmall.openalarm/" +
+                          R.raw.in_call_ringtone);
+            mRingtone.setInCallMode();
+        }
 
-                if (mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
-                    Log.i(TAG, "===> We're in a call. Lower volume and use fallback ringtone!");
-                    mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+        mRingtone.open(ringtoneUri);
+        // Prepare MediaPlayer into Prepared state and play ringtone now.
+        if (mRingtone != null &&
+            mHandler.sendEmptyMessageDelayed(MSGID_STOP_PLAYBACK, PLAYBACK_TIMEOUT)) {
+            mRingtone.play();
+        }
+    }
+
+    private static class Ringtone {
+        private static final float IN_CALL_VOLUME = 0.125f;
+        private AudioManager mAudioManager;
+        private MediaPlayer mAudio;
+        private Uri mUri;
+        private Context mContext;
+        private boolean mInCallMode;
+
+        public Ringtone(Context context) {
+            mContext = context;
+            mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+        }
+
+        public void open(Uri ringtoneUri) {
+            mUri = ringtoneUri;
+            try {
+                openMediaPlayer();
+            } catch (Exception ex) {
+                Log.e(TAG, "Failed to open ringtone " + ringtoneUri);
+            }
+        }
+
+        public void play() {
+            if (mAudio == null) {
+                try {
+                    openMediaPlayer();
+                } catch (Exception ex) {
+                    Log.e(TAG, "play() caught ", ex);
+                    mAudio = null;
                 }
-            } else {
-                mMediaPlayer.setDataSource(this, Uri.parse(uriString));
-                mMediaPlayer.setVolume(NORMAL_VOLUME, NORMAL_VOLUME);
             }
-        } catch (java.io.IOException e) {
-            return;
+
+            if (mAudio != null) {
+                // do not ringtones if stream volume is 0
+                // (typically because ringer mode is silent).
+                if (mAudioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+                    mAudio.start();
+                }
+            }
         }
 
-        mMediaPlayer.setLooping(true);
-
-        // Prepare MediaPlayer into Prepared state and
-        // MediaPlayer is ready to play.
-        try {
-            mMediaPlayer.prepare();
-        } catch (java.io.IOException e) {
-            return;
+        public void stop() {
+            if (mAudio != null) {
+                mAudio.reset();
+                mAudio.release();
+                mAudio = null;
+            }
         }
 
-        if (mHandler.sendEmptyMessageDelayed(MSGID_STOP_PLAYBACK,
-                                             PLAYBACK_TIMEOUT)) {
-            mMediaPlayer.start();
+        public void setInCallMode() {
+            mInCallMode = true;
         }
-    }
 
-    /*
-    private void setNotification(boolean enable) {
-        if (enable) {
-            NotificationManager nm =
-                (NotificationManager)getSystemService(
-                    Context.NOTIFICATION_SERVICE);
-            nm.cancelAll();
-
-            Intent intent = new Intent(getIntent());
-            intent.setClass(this, FireAlarmActivity.class);
-            PendingIntent intentSender =
-                PendingIntent.getActivity(this, 0,
-                                          intent,
-                                          PendingIntent.FLAG_CANCEL_CURRENT);
-
-            final long when = intent.getLongExtra(AlarmColumns.TIME_IN_MILLIS, -1);
-            Calendar calendar = Alarms.getCalendarInstance();
-            calendar.setTimeInMillis(when);
-            final String timeString = DateUtils.formatDateTime(
-                this, when,
-                DateUtils.FORMAT_SHOW_TIME|DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_CAP_AMPM|
-                DateUtils.FORMAT_SHOW_WEEKDAY|DateUtils.FORMAT_SHOW_YEAR);
-
-            String label = getIntent().getStringExtra(AlarmColumns.LABEL);
-            String tickerText = getString(R.string.fire_alarm_set_notification_ticker, label);
-            String contentText = getString(R.string.alarm_set_notification_content, timeString);
-
-            android.app.Notification notification =
-                new android.app.Notification(R.drawable.stat_notify_warning_alarm,
-                                             tickerText, System.currentTimeMillis());
-            notification.flags = android.app.Notification.FLAG_NO_CLEAR;
-            notification.setLatestEventInfo(this,
-                                            tickerText,
-                                            contentText,
-                                            intentSender);
-            nm.notify(0, notification);
-        } else {
-            Notification.getInstance().set(this);
-        }
-    }
-    */
-
-    private static class OnPlaybackErrorListener implements MediaPlayer.OnErrorListener {
-        @Override
-        public boolean onError(MediaPlayer mp, int what, int extra) {
-            Log.e(TAG, "===> onError(): " + what + "====> " + extra);
-            return true;
+        private void openMediaPlayer() throws IOException {
+            mAudio = new MediaPlayer();
+            if (mUri != null) {
+                mAudio.setDataSource(mContext, mUri);
+            } else {
+                throw new IOException("No data source set.");
+            }
+            mAudio.setAudioStreamType(AudioManager.STREAM_ALARM);
+            mAudio.setLooping(true);
+            if (mInCallMode) {
+                // This line must be called after setAudioStreamType().
+                mAudio.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+            }
+            mAudio.prepare();
         }
     }
 }

@@ -73,7 +73,8 @@
               android:launchMode="singleInstance"
               android:excludeFromRecents="true"
               android:exported="false"
-              android:configChanges="orientation|keyboardHidden|keyboard|navigation">
+              android:configChanges="orientation|keyboardHidden|keyboard|navigation"
+              android:screenOrientation="portrait">
     </activity>
 
     <receiver android:name=".AlarmHandler"

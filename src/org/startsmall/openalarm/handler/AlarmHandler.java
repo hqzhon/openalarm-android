@@ -63,12 +63,12 @@ public class AlarmHandler extends AbsHandler {
 
         // Ringtone;
         RingtonePreference ringtonePref = new RingtonePreference(context);
-        ringtonePref.setShowDefault(false);
-        ringtonePref.setShowSilent(false);
+        ringtonePref.setShowDefault(true);
+        ringtonePref.setShowSilent(true);
         ringtonePref.setTitle(R.string.ringtone_title);
         ringtonePref.setKey(EXTRA_KEY_RINGTONE);
         ringtonePref.setPersistent(true);
-        ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALL);
+        ringtonePref.setRingtoneType(RingtoneManager.TYPE_ALARM);
         category.addPreference(ringtonePref);
 
         // Snooze duration
