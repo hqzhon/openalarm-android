@@ -23,6 +23,7 @@ import android.app.Dialog;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -370,12 +371,6 @@ public class OpenAlarmActivity extends ListActivity
             mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
         }
 
-        // mFilterButton = (Button)findViewById(R.id.filter);
-        // mFilterButton.setOnClickListener(this);
-
-        // mBackButton = (Button)findViewById(R.id.back);
-        // mBackButton.setOnClickListener(this);
-
         mFilterButton = (TextView)findViewById(R.id.filter);
         mFilterButton.setOnClickListener(this);
 
@@ -388,12 +383,17 @@ public class OpenAlarmActivity extends ListActivity
         i.setData(Uri.parse("mailto:yenliangl@gmail.com"));
         i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
 
-        String deviceInfo =
-            String.format("Build.DISPLAY=%s\nBuild.FINGERPRINT=%s\nBuild.HOST=%s\nBuild.ID=%s\nBuild.MODEL=%s\nBuild.PRODUCT=%s\nBuild.TYPE=%s\nBuild.USER=%s\n",
-                          Build.DISPLAY, Build.FINGERPRINT, Build.HOST, Build.ID, Build.MODEL, Build.PRODUCT, Build.TYPE, Build.USER);
+        StringBuilder sb = new StringBuilder();
+        try {
+            sb.append("App version: " + getPackageManager().getPackageInfo("org.startsmall.openalarm", 0).versionName + "\n");
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+        sb.append("Device model: " + Build.MODEL + "\n");
+        sb.append("Firmware fingerprint: " + Build.FINGERPRINT + "\n");
+        sb.append("Android version: " + Build.VERSION.RELEASE + "\n\n");
 
         i.putExtra(Intent.EXTRA_TEXT,
-                   getString(R.string.feedback_mail_content, deviceInfo));
+                   getString(R.string.feedback_mail_content, sb.toString()));
         startActivity(
             Intent.createChooser(
                 i, getString(R.string.menu_item_send_feedback)));
