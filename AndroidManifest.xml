@@ -19,8 +19,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.startsmall.openalarm"
-          android:versionName="20100320"
-          android:versionCode="20100320">
+          android:versionName="20100329"
+          android:versionCode="20100329">
   <uses-sdk android:minSdkVersion="3"
             android:targetSdkVersion="4"/>
   <supports-screens android:anyDensity="true"
