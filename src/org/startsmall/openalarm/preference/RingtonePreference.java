@@ -34,7 +34,9 @@ class RingtonePreference extends android.preference.RingtonePreference {
         super.onSaveRingtone(ringtoneUri);
         if (ringtoneUri != null) {
             Ringtone ringtone = RingtoneManager.getRingtone(getContext(), ringtoneUri);
-            setSummary(ringtone.getTitle(getContext()));
+            if (ringtone != null) {
+                setSummary(ringtone.getTitle(getContext()));
+            }
         }
     }
 
