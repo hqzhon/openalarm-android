@@ -2,6 +2,8 @@ package org.startsmall.openalarm;
 
 import android.content.Intent;
 import android.content.Context;
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
@@ -12,6 +14,7 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceCategory;
 import android.preference.Preference;
+import android.provider.Contacts;
 import android.telephony.TelephonyManager;
 import android.text.method.DialerKeyListener;
 import android.text.TextUtils;
@@ -19,7 +22,7 @@ import android.util.Log;
 
 public class PhoneHandler extends AbsHandler {
     private static final String TAG = "PhoneHandler";
-    static final String EXTRA_KEY_PHONE_NUMBER = "phone_number";
+    static final String EXTRA_KEY_PERSON_URI = "person_uri";
     static final String EXTRA_KEY_SPEAKERPHONE_MODE = "speakerphone_on";
     static final String EXTRA_KEY_VOICE_URI = "voice_uri";
 
@@ -30,32 +33,27 @@ public class PhoneHandler extends AbsHandler {
         final String extra = intent.getStringExtra("extra");
         putBundleIntoIntent(intent, getBundleFromExtra(extra));
 
-        if (intent.hasExtra(EXTRA_KEY_PHONE_NUMBER)) {
+        String personUriString = intent.getStringExtra(EXTRA_KEY_PERSON_URI);
+        if (!TextUtils.isEmpty(personUriString)) {
+            boolean speakerphoneOn = intent.getBooleanExtra(EXTRA_KEY_SPEAKERPHONE_MODE, false);
+            if (speakerphoneOn) {
+                String voiceUriString = intent.getStringExtra(EXTRA_KEY_VOICE_URI);
+                if (!TextUtils.isEmpty(voiceUriString)) {
+                    MediaPlayer mp = prepareMediaPlayer(context, Uri.parse(voiceUriString));
+                    if (mp != null) {
+                        AudioManager am =
+                            (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+                        am.setSpeakerphoneOn(speakerphoneOn);
 
-            if (intent.hasExtra(EXTRA_KEY_SPEAKERPHONE_MODE)) {
-                boolean speakerphoneOn = intent.getBooleanExtra(EXTRA_KEY_SPEAKERPHONE_MODE, false);
-                if (speakerphoneOn) {
-                    if (intent.hasExtra(EXTRA_KEY_VOICE_URI)) {
-                        String voiceUriString = intent.getStringExtra(EXTRA_KEY_VOICE_URI);
-                        MediaPlayer mp = prepareMediaPlayer(context, Uri.parse(voiceUriString));
-                        if (mp != null) {
-                            AudioManager am =
-                                (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-                            am.setSpeakerphoneOn(speakerphoneOn);
-
-                            TelephonyManager tm =
-                                (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-                            tm.listen(new PhoneStateListener(am, tm, mp), PhoneStateListener.LISTEN_CALL_STATE);
-                        }
+                        TelephonyManager tm =
+                            (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+                        tm.listen(new PhoneStateListener(am, tm, mp), PhoneStateListener.LISTEN_CALL_STATE);
                     }
                 }
             }
 
-            // Make a phone call to specified person.
-            String phoneNumber = intent.getStringExtra(EXTRA_KEY_PHONE_NUMBER);
-            if (!TextUtils.isEmpty(phoneNumber)) {
-                callPhone(context, phoneNumber);
-            }
+            // Make a call to the person.
+            makeCall(context, personUriString);
         }
 
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
@@ -66,24 +64,20 @@ public class PhoneHandler extends AbsHandler {
     public void addMyPreferences(final Context context,
                                  final PreferenceCategory category,
                                  final String extra) {
-        // Phone number to call
-        EditTextPreference phonePref = new EditTextPreference(context);
-        phonePref.setKey(EXTRA_KEY_PHONE_NUMBER);
-        phonePref.setPersistent(true);
-        phonePref.setTitle(R.string.phone_number_title);
-        phonePref.getEditText().setKeyListener(DialerKeyListener.getInstance());
-        phonePref.setDialogTitle(R.string.phone_number_dialog_title);
-        phonePref.setOnPreferenceChangeListener(
-            new Preference.OnPreferenceChangeListener() {
+        // Pick up a person to call
+        PeoplePreference personPref = new PeoplePreference(context);
+        personPref.setKey(EXTRA_KEY_PERSON_URI);
+        personPref.setPersistent(true);
+        personPref.setTitle(R.string.phone_number_title);
+        personPref.setOnPersonSelectedListener(
+            new PeoplePreference.OnPersonSelectedListener() {
                 @Override
-                public boolean onPreferenceChange(Preference p,
-                                                  Object newValue) {
-                    p.setSummary((String)newValue);
-                    return true;
+                public void onPersonSelected(Preference p, Uri personUri) {
+                    String displayName = getDisplayNameFromUri(context, personUri);
+                    p.setSummary(displayName);
                 }
             });
-
-        category.addPreference(phonePref);
+        category.addPreference(personPref);
 
         // Speakerphone mode
         CheckBoxPreference speakerPhonePref = new CheckBoxPreference(context);
@@ -107,18 +101,21 @@ public class PhoneHandler extends AbsHandler {
 
         // Get settings from extra.
         if (TextUtils.isEmpty(extra)) {
-            phonePref.setText("");
-            phonePref.setSummary("");
+            personPref.setSummary("");
+            personPref.setPersonUri(null);
             speakerPhonePref.setChecked(false);
             voicePref.setRingtoneUri(null);
             voicePref.setSummary("");
         } else {
             Bundle result = getBundleFromExtra(extra);
 
-            String phoneNumber = result.getString(EXTRA_KEY_PHONE_NUMBER);
-            if(!TextUtils.isEmpty(phoneNumber)) {
-                phonePref.setText(phoneNumber);
-                phonePref.setSummary(phoneNumber);
+            // Fill values in
+            String personUriString = result.getString(EXTRA_KEY_PERSON_URI);
+            if(!TextUtils.isEmpty(personUriString)) {
+                Uri personUri = Uri.parse(personUriString);
+                personPref.setPersonUri(personUri);
+                String name = getDisplayNameFromUri(context, personUri);
+                personPref.setSummary(name);
             }
 
             boolean isSpeakerphoneOn = result.getBoolean(EXTRA_KEY_SPEAKERPHONE_MODE);
@@ -136,9 +133,9 @@ public class PhoneHandler extends AbsHandler {
 
     @Override
     protected void putBundleIntoIntent(Intent intent, Bundle bundle) {
-        final String phoneNumber = bundle.getString(EXTRA_KEY_PHONE_NUMBER);
-        if (!TextUtils.isEmpty(phoneNumber)) {
-            intent.putExtra(EXTRA_KEY_PHONE_NUMBER, phoneNumber);
+        final String personUriString = bundle.getString(EXTRA_KEY_PERSON_URI);
+        if (!TextUtils.isEmpty(personUriString)) {
+            intent.putExtra(EXTRA_KEY_PERSON_URI, personUriString);
         }
 
         final boolean isSpeakerphoneOn = bundle.getBoolean(EXTRA_KEY_SPEAKERPHONE_MODE);
@@ -162,9 +159,9 @@ public class PhoneHandler extends AbsHandler {
                 }
 
                 String[] elems = value.split("=");
-                if (elems[0].equals(EXTRA_KEY_PHONE_NUMBER)) {
+                if (elems[0].equals(EXTRA_KEY_PERSON_URI)) {
                     if(elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
-                        result.putString(EXTRA_KEY_PHONE_NUMBER, elems[1]);
+                        result.putString(EXTRA_KEY_PERSON_URI, elems[1]);
                     }
                 } else if (elems[0].equals(EXTRA_KEY_SPEAKERPHONE_MODE)) {
                     boolean isSpeakerphoneOn = false;
@@ -182,12 +179,49 @@ public class PhoneHandler extends AbsHandler {
         return result;
     }
 
-    private void callPhone(Context context, String phoneNumber) {
-        Intent intent = new Intent(Intent.ACTION_CALL,
-                                   Uri.parse("tel:" + phoneNumber));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|
-                        Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-        context.startActivity(intent);
+    // Get default phone number of the person if it exists. If it
+    // doesn't exist, get first number instead.
+    private void makeCall(Context context, String personUriString) {
+        // Get primary phone number from uri
+        int primaryNumberId = -1;
+        ContentResolver cr = context.getContentResolver();
+        Cursor cursor =
+            cr.query(Uri.parse(personUriString),
+                     new String[]{Contacts.People.PRIMARY_PHONE_ID},
+                     null, null, Contacts.Phones.DEFAULT_SORT_ORDER);
+        if (cursor != null && cursor.moveToFirst()) {
+            primaryNumberId = cursor.getInt(0);
+        }
+        cursor.close();
+
+        Intent intent = null;
+        if (primaryNumberId > 0) {
+            // Synthesize phone number uri directly is far
+            // efficient than querying phone number from phones
+            // database.
+            Uri phoneNumberUri =
+                Uri.parse(Contacts.Phones.CONTENT_URI + "/" + primaryNumberId);
+            intent = new Intent(Intent.ACTION_CALL, phoneNumberUri);
+        } else {                // No primary number.. call the first number I can find.
+            cursor = cr.query(
+                Uri.parse(personUriString + "/" + Contacts.People.Phones.CONTENT_DIRECTORY),
+                new String[]{Contacts.People.NUMBER},
+                null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                String telNo = cursor.getString(0);
+                cursor.close();
+
+                if (!TextUtils.isEmpty(telNo)) {
+                    intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + telNo));
+                }
+            }
+        }
+
+        if (intent != null) {
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|
+                            Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+            context.startActivity(intent);
+        }
     }
 
     private class PhoneStateListener extends android.telephony.PhoneStateListener {
@@ -257,5 +291,19 @@ public class PhoneHandler extends AbsHandler {
         }
 
         return mp;
+    }
+
+    private static String getDisplayNameFromUri(Context context, Uri personUri) {
+        String name = null;
+        Cursor cursor =
+            context.getContentResolver().query(
+                personUri,
+                new String[]{Contacts.Phones.DISPLAY_NAME},
+                null, null, Contacts.Phones.DEFAULT_SORT_ORDER);
+        if (cursor != null && cursor.moveToFirst()) {
+            name = cursor.getString(0);
+        }
+        cursor.close();
+        return name;
     }
 }
