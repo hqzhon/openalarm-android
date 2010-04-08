@@ -362,23 +362,31 @@ public class FireAlarmActivity extends Activity {
             mRingtone = null;
         }
 
-        // Whether we should use fallback ringtone?
-        Intent intent = getIntent();
-        String uriString = intent.getStringExtra(AlarmHandler.EXTRA_KEY_RINGTONE);
-        Uri ringtoneUri;
-        if (TextUtils.isEmpty(uriString)) {
-            ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        } else {
-            ringtoneUri = Uri.parse(uriString);
-        }
-
-        // But, if we're in call, fallback ringtone should be used.
+        Uri ringtoneUri = null;
+        Uri fallbackRingtoneUri = Uri.parse("android.resource://org.startsmall.openalarm/" +
+                                            R.raw.in_call_ringtone);
         mRingtone = new Ringtone(this);
         if (mTelephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE) {
-            ringtoneUri =
-                Uri.parse("android.resource://org.startsmall.openalarm/" +
-                          R.raw.in_call_ringtone);
+            // We're in call, we should use fallback ringtone
+            // instead in order not to interfere the phone call
+            // too much.
+            ringtoneUri = fallbackRingtoneUri;
             mRingtone.setInCallMode();
+        } else {
+            Intent intent = getIntent();
+            String uriString = intent.getStringExtra(AlarmHandler.EXTRA_KEY_RINGTONE);
+
+            if (TextUtils.isEmpty(uriString)) {
+                // No ringtone set in preference, try to use default ringtone.
+                ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+                if (ringtoneUri == null) {
+                    // No default ringtone set either. use fallback ringtone instead.
+                    Log.w(TAG, "===> No default ringtone either, use fallback ringtone instead");
+                    ringtoneUri = fallbackRingtoneUri;
+                }
+            } else {
+                ringtoneUri = Uri.parse(uriString);
+            }
         }
 
         mRingtone.open(ringtoneUri);
