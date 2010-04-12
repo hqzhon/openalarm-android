@@ -8,8 +8,6 @@
     <string name="no_alarms_enabled">No alarms enabled</string>
     <string name="about_this_application">About this application</string>
     <string name="about_html">about.html</string>
-    <string name="menu_item_add">New</string>
-    <string name="menu_item_reload">Reload</string>
     <string name="menu_item_report_next_alarm">Next alarm</string>
     <string name="menu_item_send_feedback">Feedback</string>
     <string name="menu_item_about">About</string>

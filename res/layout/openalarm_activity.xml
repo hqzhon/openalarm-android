@@ -10,18 +10,33 @@
                 android:background="@drawable/banner_background"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content">
-    <TextView android:id="@+id/back"
-              android:background="@drawable/black_button"
-              android:gravity="center"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_gravity="center_vertical"
-              android:layout_marginTop="2dp"
-              android:layout_marginBottom="2dp"
-              android:layout_marginLeft="3dp"
-              android:text="@string/back"
-              android:textSize="14sp"
-              android:visibility="invisible"/>
+    <FrameLayout android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_vertical"
+                 android:layout_marginTop="3dp"
+                 android:layout_marginBottom="3dp"
+                 android:layout_marginLeft="3dp">
+
+      <ImageView android:id="@+id/back"
+                 android:src="@drawable/ic_btn_back"
+                 android:adjustViewBounds="true"
+                 android:background="@drawable/black_button"
+                 android:scaleType="center"
+                 android:padding="5dp"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_vertical"/>
+
+      <ImageView android:id="@+id/filter"
+                 android:src="@drawable/ic_btn_search"
+                 android:adjustViewBounds="true"
+                 android:scaleType="center"
+                 android:padding="5dp"
+                 android:background="@drawable/black_button"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_vertical"/>
+    </FrameLayout>
 
     <TextView android:id="@+id/banner"
               android:layout_width="0dp"
@@ -30,22 +45,24 @@
               android:layout_gravity="center"
               android:gravity="center"
               android:text="@string/app_name"
-              android:textSize="24sp"/>
+              android:textSize="26sp"/>
 
-    <TextView android:id="@+id/filter"
-              android:background="@drawable/black_button"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_gravity="center_vertical"
-              android:gravity="center"
-              android:layout_marginTop="2dp"
-              android:layout_marginBottom="2dp"
-              android:layout_marginRight="3dp"
-              android:textSize="14sp"
-              android:text="@string/filter"/>
+    <ImageView android:id="@+id/add"
+               android:src="@drawable/ic_btn_add"
+               android:adjustViewBounds="true"
+               android:scaleType="center"
+               android:padding="5dp"
+               android:background="@drawable/black_button"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_gravity="center_vertical"
+               android:layout_marginTop="3dp"
+               android:layout_marginBottom="3dp"
+               android:layout_marginRight="3dp"/>
+
   </LinearLayout>
 
-            <!-- android:divider="@drawable/list_divider" -->
+  <!-- android:divider="@drawable/list_divider" -->
   <ListView android:id="@id/android:list"
             android:layout_width="fill_parent"
             android:layout_height="0dp"

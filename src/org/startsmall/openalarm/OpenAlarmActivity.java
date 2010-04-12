@@ -50,6 +50,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -71,8 +72,9 @@ public class OpenAlarmActivity extends ListActivity
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private TextView mFilterButton;
-    private TextView mBackButton;
+    private ImageView mFilterButton;
+    private ImageView mBackButton;
+    private ImageView mAddButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
 
@@ -114,10 +116,6 @@ public class OpenAlarmActivity extends ListActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-        case R.id.menu_item_add:
-            addNewAlarm();
-            break;
-
         case R.id.menu_item_report_next_alarm:
             showDialog(DIALOG_ID_REPORT_NEXT_ALARM);
             break;
@@ -253,6 +251,8 @@ public class OpenAlarmActivity extends ListActivity
             editFilterCriteria();
         } else if (id == R.id.back) {
             reloadAlarms();
+        } else if (id == R.id.add) {
+            addNewAlarm();
         }
     }
 
@@ -288,6 +288,7 @@ public class OpenAlarmActivity extends ListActivity
         }
         mBackButton.setVisibility(View.INVISIBLE);
         mFilterButton.setVisibility(View.VISIBLE);
+        mAddButton.setVisibility(View.VISIBLE);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -335,8 +336,9 @@ public class OpenAlarmActivity extends ListActivity
 
             // Show back button for user to go back
             if (cursor != null) {
-                mFilterButton.setVisibility(View.INVISIBLE);
                 mBackButton.setVisibility(View.VISIBLE);
+                mFilterButton.setVisibility(View.INVISIBLE);
+                mAddButton.setVisibility(View.INVISIBLE);
             }
         }
     }
@@ -371,11 +373,14 @@ public class OpenAlarmActivity extends ListActivity
             mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
         }
 
-        mFilterButton = (TextView)findViewById(R.id.filter);
+        mFilterButton = (ImageView)findViewById(R.id.filter);
         mFilterButton.setOnClickListener(this);
 
-        mBackButton = (TextView)findViewById(R.id.back);
+        mBackButton = (ImageView)findViewById(R.id.back);
         mBackButton.setOnClickListener(this);
+
+        mAddButton = (ImageView)findViewById(R.id.add);
+        mAddButton.setOnClickListener(this);
     }
 
     private void sendFeedback() {

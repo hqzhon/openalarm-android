@@ -5,17 +5,17 @@
 	<item
 		android:state_focused="true"
 		android:state_enabled="true"
-		android:drawable="@drawable/black_button_focus"
+		android:drawable="@drawable/common_b_button_selected"
 		>
 	</item>
 	<item
 		android:state_enabled="true"
 		android:state_pressed="true"
-		android:drawable="@drawable/black_button_focus"
+		android:drawable="@drawable/common_b_button_press"
 		>
 	</item>
 	<item
-		android:drawable="@drawable/black_button_rest"
+		android:drawable="@drawable/common_b_button_rest"
 		>
 	</item>
 </selector>

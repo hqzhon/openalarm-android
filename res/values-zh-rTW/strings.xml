@@ -8,8 +8,6 @@
     <string name="no_alarms_enabled">沒有任何已啟用鬧鐘</string>
     <string name="about_this_application">關於此程式</string>
     <string name="about_html">about_zh-rTW.html</string>
-    <string name="menu_item_add">新增</string>
-    <string name="menu_item_reload">重新載入</string>
     <string name="menu_item_report_next_alarm">下個鬧鐘</string>
     <string name="menu_item_send_feedback">傳送意見</string>
     <string name="menu_item_about">關於</string>
