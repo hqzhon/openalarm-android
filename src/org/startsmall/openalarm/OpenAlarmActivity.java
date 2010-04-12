@@ -22,6 +22,7 @@ package org.startsmall.openalarm;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -33,6 +34,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
+import android.provider.Browser;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.ContextMenu;
@@ -78,6 +80,7 @@ public class OpenAlarmActivity extends ListActivity
     private ImageView mAddButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
+    private WebView mHelpView;
 
     private HashMap<String, HandlerInfo> mHandlerInfoMap;
 
@@ -186,14 +189,33 @@ public class OpenAlarmActivity extends ListActivity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         switch (id) {
         case DIALOG_ID_ABOUT:
-            WebView helpWebView = new WebView(this);
-            helpWebView.loadUrl("file:///android_asset/" +
-                                getString(R.string.about_html));
-            helpWebView.setWebViewClient(
+            if (mHelpView == null) {
+                mHelpView = new WebView(this);
+            }
+            mHelpView.setWebViewClient(
                 new WebViewClient() {
                     @Override
                     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                        sendFeedback();
+                        if (Uri.parse(url).getScheme().equals("mailto")) {
+                            sendFeedback();
+                        } else {
+                            // Code copied from android.webkit.CallbackProxy.
+                            Intent intent = new Intent(Intent.ACTION_VIEW,
+                                                       Uri.parse(url));
+                            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                            // If another application is running a WebView and launches the
+                            // Browser through this Intent, we want to reuse the same window if
+                            // possible.
+                            intent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
+                            try {
+                                startActivity(intent);
+                            } catch (ActivityNotFoundException ex) {
+                                // If no application can handle the URL, assume that the
+                                // browser can handle it.
+                            }
+                        }
+
+                        // Leave this WebView and let host application to handle url.
                         return true;
                     }
                 });
@@ -207,7 +229,7 @@ public class OpenAlarmActivity extends ListActivity
                                                dlg.dismiss();
                                            }
                                        }).
-                     setView(helpWebView).
+                     setView(mHelpView).
                      create();
             break;
 
@@ -252,6 +274,8 @@ public class OpenAlarmActivity extends ListActivity
             }
             dialog.setTitle(title);
             ((AlertDialog)dialog).setMessage(message);
+        } else if (id == DIALOG_ID_ABOUT) {
+            mHelpView.loadUrl("file:///android_asset/" + getString(R.string.about_html));
         }
     }
 
