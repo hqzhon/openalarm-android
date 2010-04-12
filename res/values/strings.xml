@@ -72,6 +72,7 @@
     <string name="media_player_error_dialog_message">Ringtone might be corrupted. (Error Code: %d)</string>
     <string name="phone_handler">PPhone call</string>
     <string name="phone_handler_speakerphone_title">Speakerphone mode</string>
+    <string name="phone_handler_no_number">no phone number!!!</string>
     <string name="toggle_handler">TToggle switch</string>
     <string name="toggle_handler_operation_title">Which to toggle</string>
     <string name="toggle_handler_operation_wifi">Wi-Fi</string>

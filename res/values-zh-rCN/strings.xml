@@ -51,6 +51,7 @@
     <string name="fire_alarm_set_notification_ticker">%s: "再眯一下还是起来"?</string>
     <string name="phone_handler">P"定时拨号"</string>
     <string name="phone_handler_speakerphone_title">扩音模式</string>
+    <string name="phone_handler_no_number">無电话号码!!!</string>
     <string name="toggle_handler">T"开关"</string>
     <string name="toggle_handler_operation_title">切换</string>
     <string name="toggle_handler_operation_airplane_mode">飞行模式</string>

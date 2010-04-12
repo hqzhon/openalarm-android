@@ -73,8 +73,15 @@ public class PhoneHandler extends AbsHandler {
             new PeoplePreference.OnPersonSelectedListener() {
                 @Override
                 public void onPersonSelected(Preference p, Uri personUri) {
-                    String displayName = getDisplayNameFromUri(context, personUri);
-                    p.setSummary(displayName);
+                    PersonalInfo info = getPersonalInfo(context, personUri);
+                    if (info != null) {
+                        String summary =
+                            info.name + " (" +
+                            (TextUtils.isEmpty(info.number) ? context.getString(R.string.phone_handler_no_number) :
+                                                              info.number) +
+                            ")";
+                        p.setSummary(summary);
+                    }
                 }
             });
         category.addPreference(personPref);
@@ -114,8 +121,16 @@ public class PhoneHandler extends AbsHandler {
             if(!TextUtils.isEmpty(personUriString)) {
                 Uri personUri = Uri.parse(personUriString);
                 personPref.setPersonUri(personUri);
-                String name = getDisplayNameFromUri(context, personUri);
-                personPref.setSummary(name);
+
+                PersonalInfo info = getPersonalInfo(context, personUri);
+                if (info != null) {
+                    String summary =
+                        info.name + " (" +
+                        (TextUtils.isEmpty(info.number) ? context.getString(R.string.phone_handler_no_number) :
+                                                          info.number) +
+                        ")";
+                    personPref.setSummary(summary);
+                }
             }
 
             boolean isSpeakerphoneOn = result.getBoolean(EXTRA_KEY_SPEAKERPHONE_MODE);
@@ -182,42 +197,9 @@ public class PhoneHandler extends AbsHandler {
     // Get default phone number of the person if it exists. If it
     // doesn't exist, get first number instead.
     private void makeCall(Context context, String personUriString) {
-        // Get primary phone number from uri
-        int primaryNumberId = -1;
-        ContentResolver cr = context.getContentResolver();
-        Cursor cursor =
-            cr.query(Uri.parse(personUriString),
-                     new String[]{Contacts.People.PRIMARY_PHONE_ID},
-                     null, null, Contacts.Phones.DEFAULT_SORT_ORDER);
-        if (cursor != null && cursor.moveToFirst()) {
-            primaryNumberId = cursor.getInt(0);
-        }
-        cursor.close();
-
-        Intent intent = null;
-        if (primaryNumberId > 0) {
-            // Synthesize phone number uri directly is far
-            // efficient than querying phone number from phones
-            // database.
-            Uri phoneNumberUri =
-                Uri.parse(Contacts.Phones.CONTENT_URI + "/" + primaryNumberId);
-            intent = new Intent(Intent.ACTION_CALL, phoneNumberUri);
-        } else {                // No primary number.. call the first number I can find.
-            cursor = cr.query(
-                Uri.parse(personUriString + "/" + Contacts.People.Phones.CONTENT_DIRECTORY),
-                new String[]{Contacts.People.NUMBER},
-                null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                String telNo = cursor.getString(0);
-                cursor.close();
-
-                if (!TextUtils.isEmpty(telNo)) {
-                    intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + telNo));
-                }
-            }
-        }
-
-        if (intent != null) {
+        PersonalInfo info = getPersonalInfo(context, Uri.parse(personUriString));
+        if (info != null && !TextUtils.isEmpty(info.number)) {
+            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + info.number));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|
                             Intent.FLAG_ACTIVITY_NO_USER_ACTION);
             context.startActivity(intent);
@@ -293,17 +275,62 @@ public class PhoneHandler extends AbsHandler {
         return mp;
     }
 
-    private static String getDisplayNameFromUri(Context context, Uri personUri) {
+    private PersonalInfo getPersonalInfo(Context context, final Uri personUri) {
+        boolean validUri = false;
         String name = null;
-        Cursor cursor =
-            context.getContentResolver().query(
-                personUri,
-                new String[]{Contacts.Phones.DISPLAY_NAME},
-                null, null, Contacts.Phones.DEFAULT_SORT_ORDER);
-        if (cursor != null && cursor.moveToFirst()) {
+        int primaryNumberId = -1;
+        ContentResolver cr = context.getContentResolver();
+        Cursor cursor = cr.query(personUri,
+                                 new String[]{Contacts.Phones.DISPLAY_NAME, Contacts.People.PRIMARY_PHONE_ID},
+                                 null, null, Contacts.Phones.DEFAULT_SORT_ORDER);
+        if (cursor == null) {
+            return null;
+        }
+
+        if (cursor.moveToFirst()) {
             name = cursor.getString(0);
+            primaryNumberId = cursor.getInt(1);
         }
         cursor.close();
-        return name;
+
+        Uri phoneNumberUri = null;
+        // If there is no primary number for this person, loop
+        // his/her numbers and pick up first one.
+        if (primaryNumberId > 0) {
+            // Synthesize phone number uri directly is far
+            // efficient than querying phone number from phones
+            // database.
+            phoneNumberUri = Uri.parse(Contacts.Phones.CONTENT_URI + "/" + primaryNumberId);
+        } else {                // No primary number.. call the first number I can find.
+            phoneNumberUri = Uri.parse(personUri.toString() + "/" + Contacts.People.Phones.CONTENT_DIRECTORY);
+        }
+
+        String phoneNumber = null;
+        cursor = cr.query(phoneNumberUri,
+                          new String[]{Contacts.People.NUMBER},
+                          null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            String telNo = cursor.getString(0);
+            cursor.close();
+            if (!TextUtils.isEmpty(telNo)) {
+                // phoneNumber = Uri.parse("tel:" + telNo);
+                phoneNumber = telNo;
+            }
+        }
+
+        if (!TextUtils.isEmpty(name)) {
+            return new PersonalInfo(name, phoneNumber);
+        }
+
+        return null;
+    }
+
+    class PersonalInfo {
+        public final String name;
+        public final String number;
+        PersonalInfo(final String name, final String phoneNumber) {
+            this.name = name;
+            this.number = phoneNumber;
+        }
     }
 }

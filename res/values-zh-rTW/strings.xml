@@ -58,6 +58,7 @@
     <string name="fire_alarm_set_notification_ticker">%s: "再瞇一下還是起來"?</string>
     <string name="phone_handler">P"定時撥號"</string>
     <string name="phone_handler_speakerphone_title">擴音模式</string>
+    <string name="phone_handler_no_number">無電話號碼!!!</string>
     <string name="toggle_handler">T"開關"</string>
     <string name="toggle_handler_operation_title">切換</string>
     <string name="toggle_handler_operation_wifi">無線網路</string>
