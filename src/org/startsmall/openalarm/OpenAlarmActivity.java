@@ -259,7 +259,7 @@ public class OpenAlarmActivity extends ListActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (mFilterButton.getVisibility() == View.GONE) { // current cursor is filtered.
+            if (mFilterButton.getVisibility() == View.INVISIBLE) { // current cursor is filtered.
                 reloadAlarms();
                 return true;
             }
@@ -286,7 +286,7 @@ public class OpenAlarmActivity extends ListActivity
         if (cursor != null) {
             changeCursorForListView(cursor);
         }
-        mBackButton.setVisibility(View.GONE);
+        mBackButton.setVisibility(View.INVISIBLE);
         mFilterButton.setVisibility(View.VISIBLE);
     }
 
@@ -335,7 +335,7 @@ public class OpenAlarmActivity extends ListActivity
 
             // Show back button for user to go back
             if (cursor != null) {
-                mFilterButton.setVisibility(View.GONE);
+                mFilterButton.setVisibility(View.INVISIBLE);
                 mBackButton.setVisibility(View.VISIBLE);
             }
         }
