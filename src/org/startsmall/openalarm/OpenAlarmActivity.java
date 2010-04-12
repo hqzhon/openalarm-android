@@ -46,6 +46,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.util.Log;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -188,6 +189,15 @@ public class OpenAlarmActivity extends ListActivity
             WebView helpWebView = new WebView(this);
             helpWebView.loadUrl("file:///android_asset/" +
                                 getString(R.string.about_html));
+            helpWebView.setWebViewClient(
+                new WebViewClient() {
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                        sendFeedback();
+                        return true;
+                    }
+                });
+
             dialog = builder.
                      setTitle(R.string.about_this_application).
                      setPositiveButton(android.R.string.ok,
@@ -258,17 +268,30 @@ public class OpenAlarmActivity extends ListActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (mFilterButton.getVisibility() == View.INVISIBLE) { // current cursor is filtered.
-                reloadAlarms();
-                return true;
-            }
-        } else if (keyCode == KeyEvent.KEYCODE_SEARCH && event.getRepeatCount() == 0) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0 && isFiltered()) {
+            reloadAlarms();
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_SEARCH && event.getRepeatCount() == 0 && !isFiltered()) {
             editFilterCriteria();
             return true;
         }
-
         return super.onKeyDown(keyCode, event);
+    }
+
+    private boolean isFiltered() {
+        return mFilterButton.getVisibility() == View.INVISIBLE;
+    }
+
+    private void setFilterEnabled(boolean enable) {
+        if (enable) {
+            mBackButton.setVisibility(View.VISIBLE);
+            mFilterButton.setVisibility(View.INVISIBLE);
+            mAddButton.setVisibility(View.INVISIBLE);
+        } else {
+            mBackButton.setVisibility(View.INVISIBLE);
+            mFilterButton.setVisibility(View.VISIBLE);
+            mAddButton.setVisibility(View.VISIBLE);
+        }
     }
 
     private void editFilterCriteria() {
@@ -286,9 +309,8 @@ public class OpenAlarmActivity extends ListActivity
         if (cursor != null) {
             changeCursorForListView(cursor);
         }
-        mBackButton.setVisibility(View.INVISIBLE);
-        mFilterButton.setVisibility(View.VISIBLE);
-        mAddButton.setVisibility(View.VISIBLE);
+
+        setFilterEnabled(false);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -336,9 +358,7 @@ public class OpenAlarmActivity extends ListActivity
 
             // Show back button for user to go back
             if (cursor != null) {
-                mBackButton.setVisibility(View.VISIBLE);
-                mFilterButton.setVisibility(View.INVISIBLE);
-                mAddButton.setVisibility(View.INVISIBLE);
+                setFilterEnabled(true);
             }
         }
     }
