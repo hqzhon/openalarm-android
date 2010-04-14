@@ -76,6 +76,7 @@
     <string name="toggle_handler_operation_wifi">Wi-Fi</string>
     <string name="toggle_handler_operation_airplane_mode">Airplane mode</string>
     <string name="toggle_handler_operation_apn">Mobile network</string>
+    <string name="toggle_handler_activate_title">On/Off</string>
     <string name="text_handler">SText</string>
     <string name="text_handler_subject_title">Subject</string>
     <string name="text_handler_body_title">Body</string>

@@ -5,17 +5,17 @@ import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.preference.Preference;
 import android.os.Bundle;
-import android.content.pm.PackageManager;
+import android.preference.CheckBoxPreference;
 import android.preference.PreferenceCategory;
 import android.preference.ListPreference;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-// import java.util.Calendar;
 
 public class ToggleHandler extends AbsHandler {
     private static final String TAG = "ToggleHandler";
     private static final String KEY_OPERATION = "operation";
+    public  static final String KEY_ONOFF = "onoff";
 
     private static final int OPERATION_AIRPLANE_MODE = 0;
     private static final int OPERATION_APN = 1;
@@ -32,17 +32,19 @@ public class ToggleHandler extends AbsHandler {
 
         // Get operation to perform
         int operation = intent.getIntExtra(KEY_OPERATION, -1);
+        boolean onOff = intent.getBooleanExtra(KEY_ONOFF, false);
         switch (operation) {
         case OPERATION_WIFI:
-            toggleWifi(context);
+            toggleWifi(context, onOff);
             break;
 
         case OPERATION_AIRPLANE_MODE:
-            toggleAirplaneMode(context);
+            toggleAirplaneMode(context, onOff);
             break;
 
         case OPERATION_APN:
             Intent serviceIntent = new Intent();
+            serviceIntent.putExtra(KEY_ONOFF, onOff);
             serviceIntent.setClassName("org.startsmall.openalarm",
                                        "org.startsmall.openalarm.ApnService");
             context.startService(serviceIntent);
@@ -52,33 +54,13 @@ public class ToggleHandler extends AbsHandler {
         // Reshedule this alarm.
         final int alarmId = intent.getIntExtra(AlarmColumns._ID, -1);
         Alarms.dismissAlarm(context, alarmId);
-
-        Log.v(TAG, "===>.onReceive()");
     }
 
+    @Override
     public void addMyPreferences(final Context context,
                                  final PreferenceCategory category,
                                  final String defaultValue) {
-        ListPreference operationPref = new ListPreference(context);
-        CharSequence[] entries =
-            new CharSequence[]{
-            context.getString(R.string.toggle_handler_operation_airplane_mode),
-            context.getString(R.string.toggle_handler_operation_apn),
-            context.getString(R.string.toggle_handler_operation_wifi)};
-        CharSequence[] entryValues =
-            new CharSequence[]{String.valueOf(OPERATION_AIRPLANE_MODE),
-                               String.valueOf(OPERATION_APN),
-                               String.valueOf(OPERATION_WIFI)};
-        operationPref.setKey(KEY_OPERATION);
-        operationPref.setPersistent(true);
-        operationPref.setEntries(entries);
-        operationPref.setEntryValues(entryValues);
-        category.addPreference(operationPref);
-
-        operationPref.setValueIndex(OPERATION_AIRPLANE_MODE);
-        operationPref.setTitle(context.getString(R.string.toggle_handler_operation_title));
-        operationPref.setDialogTitle(context.getString(R.string.toggle_handler_operation_title));
-        operationPref.setOnPreferenceChangeListener(
+        Preference.OnPreferenceChangeListener prefChangeListener =
             new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference pref,
@@ -88,22 +70,60 @@ public class ToggleHandler extends AbsHandler {
                     preference.setSummary(preference.getEntry());
                     return true;
                 }
-            });
+            };
 
+        ListPreference operationPref = new ListPreference(context);
+        operationPref.setKey(KEY_OPERATION);
+        operationPref.setPersistent(true);
+        operationPref.setEntries(
+            new CharSequence[]{
+                context.getString(R.string.toggle_handler_operation_airplane_mode),
+                context.getString(R.string.toggle_handler_operation_apn),
+                context.getString(R.string.toggle_handler_operation_wifi)});
+        operationPref.setEntryValues(
+            new CharSequence[]{String.valueOf(OPERATION_AIRPLANE_MODE),
+                               String.valueOf(OPERATION_APN),
+                               String.valueOf(OPERATION_WIFI)});
+        category.addPreference(operationPref);
+
+        operationPref.setValueIndex(OPERATION_AIRPLANE_MODE);
+        operationPref.setTitle(R.string.toggle_handler_operation_title);
+        operationPref.setDialogTitle(R.string.toggle_handler_operation_title);
+        operationPref.setOnPreferenceChangeListener(prefChangeListener);
+
+        ListPreference onOffPref = new ListPreference(context);
+        onOffPref.setTitle(R.string.toggle_handler_activate_title);
+        onOffPref.setDialogTitle(R.string.toggle_handler_activate_title);
+        onOffPref.setKey(KEY_ONOFF);
+        onOffPref.setPersistent(true);
+        onOffPref.setEntries(new CharSequence[]{context.getString(R.string.on),
+                                                context.getString(R.string.off)});
+        onOffPref.setEntryValues(new CharSequence[]{"true", "false"});
+        category.addPreference(onOffPref);
+        onOffPref.setOnPreferenceChangeListener(prefChangeListener);
         if (TextUtils.isEmpty(defaultValue)) {
-            operationPref.setValueIndex(-1); // set to false.
+            operationPref.setValueIndex(0);
+            onOffPref.setValueIndex(1);
         } else {
             Bundle result = getBundleFromExtra(defaultValue);
             int operation = result.getInt(KEY_OPERATION, -1);
             operationPref.setValueIndex(operation);
+
+            boolean onOff = result.getBoolean(KEY_ONOFF, false);
+            onOffPref.setValueIndex(onOff ? 0 : 1);
         }
+
         operationPref.setSummary(operationPref.getEntry());
+        onOffPref.setSummary(onOffPref.getEntry());
     }
 
     @Override
     protected void putBundleIntoIntent(Intent intent, Bundle bundle) {
         final int operation = bundle.getInt(KEY_OPERATION, -1);
         intent.putExtra(KEY_OPERATION, operation);
+
+        final boolean onOff = bundle.getBoolean(KEY_ONOFF, false);
+        intent.putExtra(KEY_ONOFF, onOff);
     }
 
     @Override
@@ -123,10 +143,23 @@ public class ToggleHandler extends AbsHandler {
                         int operation = Integer.parseInt(elems[1]);
                         result.putInt(KEY_OPERATION, operation);
                     }
+                } else if (elems[0].equals(KEY_ONOFF)) {
+                    boolean onOff = false;
+                    if (elems.length == 2 && !TextUtils.isEmpty(elems[1])) {
+                        onOff = Boolean.parseBoolean(elems[1]);
+                    }
+                    result.putBoolean(KEY_ONOFF, onOff);
                 }
             }
         }
         return result;
+    }
+
+    private void toggleAirplaneMode(Context context, boolean onOff) {
+        boolean enabled = isAirplaneModeOn(context);
+        if (onOff != enabled) {
+            setAirplaneModeEnabled(context, onOff);
+        }
     }
 
     private void setAirplaneModeEnabled(Context context, boolean toggle) {
@@ -154,21 +187,13 @@ public class ToggleHandler extends AbsHandler {
         return false;
     }
 
-    private void toggleAirplaneMode(Context context) {
-        boolean enabled = isAirplaneModeOn(context);
-
-        Log.d(TAG, "===> toggle airplane mode " + !enabled);
-
-
-        setAirplaneModeEnabled(context, !enabled);
-    }
-
-    private void toggleWifi(Context context) {
+    private void toggleWifi(Context context, boolean onOff) {
         WifiManager wm =
             (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
 
         boolean enabled = wm.isWifiEnabled();
-        wm.setWifiEnabled(!enabled);
+        if (enabled != onOff) {
+            wm.setWifiEnabled(onOff);
+        }
     }
-
 }

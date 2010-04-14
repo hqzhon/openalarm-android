@@ -42,7 +42,11 @@ public class ApnService extends Service {
         NetworkInfo networkInfo =
             cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
         boolean enabled = networkInfo.isConnectedOrConnecting();
-        toggleAllApns(!enabled);
+        boolean onOff = intent.getBooleanExtra(ToggleHandler.KEY_ONOFF, false);
+        if (enabled != onOff) {
+            Log.d(TAG, "==> toggle all apn " + onOff);
+            toggleAllApns(onOff);
+        }
         stopSelf();
     }
 

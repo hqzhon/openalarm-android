@@ -73,4 +73,5 @@
     <string name="snooze">再瞇一下</string>
     <string name="dismiss">起來了</string>
     <string name="alarm_snoozed_toast">"貪睡"%d"分鐘"</string>
+<string name="toggle_handler_activate_title">開或關</string>
 </resources>
