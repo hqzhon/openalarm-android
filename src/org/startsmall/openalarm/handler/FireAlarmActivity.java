@@ -250,7 +250,12 @@ public class FireAlarmActivity extends Activity {
 
         int lockMode = intent.getIntExtra(AlarmHandler.EXTRA_KEY_LOCK_MODE,
                                           AlarmHandler.LOCK_MODE_NONE);
-
+        // If user select password mode but forget to set
+        // password, fallback to normal mode.
+        if (lockMode == AlarmHandler.LOCK_MODE_PASSWORD &&
+            TextUtils.isEmpty(password)) {
+            lockMode = AlarmHandler.LOCK_MODE_NONE;
+        }
         setPanelVisible(lockMode);
     }
 
