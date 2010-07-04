@@ -245,26 +245,6 @@ public class Alarms {
     }
 
     /**
-     * Return the class object of an alarm handler.
-     *
-     */
-    public static Class<?> getHandlerClass(final String handlerClassName)
-        throws ClassNotFoundException {
-        final int lastDotPos = handlerClassName.lastIndexOf('.');
-        final String apkPaths =
-            USER_APK_DIR + "/" + "org.startsmall.openalarm.apk:" + // myself
-            // handlers defined by other developers
-            USER_APK_DIR + "/" + handlerClassName.substring(0, lastDotPos) + ".apk";
-
-        dalvik.system.PathClassLoader classLoader =
-            new dalvik.system.PathClassLoader(
-                apkPaths,
-                ClassLoader.getSystemClassLoader());
-
-        return Class.forName(handlerClassName, true, classLoader);
-    }
-
-    /**
      * Return list of alarm handlers
      *
      */

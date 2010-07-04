@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.preference.Preference;
@@ -226,15 +228,15 @@ public class AlarmSettingsActivity extends PreferenceActivity {
         mExtraSettingsCategory.removeAll();
 
         try {
-            Class<?> handler = Alarms.getHandlerClass(handlerClassName);
+            Class<?> handler = getHandlerClass(handlerClassName);
             Method m = handler.getDeclaredMethod(
                 "addMyPreferences",
                 Class.forName("android.content.Context"),
                 Class.forName("android.preference.PreferenceCategory"),
                 Class.forName("java.lang.String"));
             m.invoke(handler.newInstance(), this, mExtraSettingsCategory, extraValue);
-        } catch(Exception e) {
-            Log.d(TAG, "ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            Log.d(TAG, "ERROR: Unable to load preferences of this alarm handler - " + handlerClassName);
         }
     }
 
@@ -289,5 +291,20 @@ public class AlarmSettingsActivity extends PreferenceActivity {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Return the class object of an alarm handler.
+     *
+     */
+    private Class<?> getHandlerClass(String handlerClassName)
+        throws ClassNotFoundException, PackageManager.NameNotFoundException {
+        ApplicationInfo appInfo = getPackageManager().getApplicationInfo("org.startsmall.openalarm", 0);
+        dalvik.system.PathClassLoader classLoader =
+            new dalvik.system.PathClassLoader(
+                appInfo.sourceDir,
+                ClassLoader.getSystemClassLoader());
+
+        return Class.forName(handlerClassName, true, classLoader);
     }
 }

@@ -667,12 +667,11 @@ class Alarm {
     }
 
     private void setComponent(Intent i) throws ClassNotFoundException {
-        // The context the handler class is in might be
-        // different than the one OpenAlarm is in. For
-        // instance, ApnHandler and AlarmHandler are in two
-        // different context.
-        Class<?> handlerClass = Alarms.getHandlerClass(mHandler);
-        String contextPackageName = handlerClass.getPackage().getName();
-        i.setClassName(contextPackageName, mHandler);
+        // The context the handler class is in might be different
+        // than the one OpenAlarm is in. For instance, ApnHandler
+        // and AlarmHandler are in two different context (if
+        // handler was writted by someone other than me, it is
+        // the case)
+        i.setClassName("org.startsmall.openalarm", mHandler);
     }
 }
