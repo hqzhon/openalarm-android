@@ -84,9 +84,18 @@ public class AlarmHandler extends AbsHandler {
             new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference p, Object newValue) {
-                    ((EditTextPreference)p).setSummary(
-                        Integer.parseInt((String)newValue) + " minutes");
-                    return true;
+                    int value = 5;
+                    try {
+                        value = Integer.parseInt((String)newValue);
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+
+                    if (value > 0) {
+                        ((EditTextPreference)p).setSummary(Integer.toString(value) + " minutes");
+                        return true;
+                    }
+                    return false;
                 }
             });
         category.addPreference(snoozeDurationPref);
