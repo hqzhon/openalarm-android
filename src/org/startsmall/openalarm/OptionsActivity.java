@@ -21,6 +21,9 @@ import android.widget.Toast;
 public class OptionsActivity extends PreferenceActivity {
     private static final String TAG = "OptionsActivity";
 
+    private SharedPreferences mSharedPreferences;
+    private ListPreference mSideButtonBehavior;
+
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
@@ -30,5 +33,8 @@ public class OptionsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.options);
 
         // setVolumeControlStream(AudioManager.STREAM_ALARM);
+
+        PreferenceManager pm = getPreferenceManager();
+        mSharedPreferences = pm.getSharedPreferences();
     }
 }

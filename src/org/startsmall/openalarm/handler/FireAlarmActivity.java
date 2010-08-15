@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.os.Vibrator;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -50,6 +52,8 @@ public class FireAlarmActivity extends Activity {
     private MathPanel mMathPanel;
     private LinearLayout mButtonPanel;
     private DigitsPanel mPasswordPanel;
+
+    private int mSideButtonBehavior;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -132,6 +136,10 @@ public class FireAlarmActivity extends Activity {
         startVibration();
 
         setVolumeControlStream(AudioManager.STREAM_ALARM);
+
+        //
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        mSideButtonBehavior = Integer.parseInt(sp.getString("side_button_behavior", "0"));
     }
 
     @Override
@@ -471,4 +479,44 @@ public class FireAlarmActivity extends Activity {
             mAudio.prepare();
         }
     }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        // Do this on key down to handle a few of the system keys.
+        boolean up = event.getAction() == KeyEvent.ACTION_UP;
+        switch (event.getKeyCode()) {
+            // Volume keys and camera keys dismiss the alarm
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_CAMERA:
+            case KeyEvent.KEYCODE_FOCUS:
+                if (up) {
+                    switch (mSideButtonBehavior) {
+                    case 1: // SNOOZE
+                        snoozeAlarm();
+                        break;
+
+                    case 2: // DISMISS
+                        dismissAlarm();
+                        break;
+
+                    default: // none,
+                        break;
+                    }
+                }
+                return true;
+            default:
+                break;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Don't allow back to dismiss. This method is overriden by AlarmAlert
+        // so that the dialog is dismissed.
+        return;
+    }
+
+
 }
