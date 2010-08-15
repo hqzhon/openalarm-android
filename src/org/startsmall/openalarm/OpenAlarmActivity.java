@@ -128,6 +128,11 @@ public class OpenAlarmActivity extends ListActivity
             sendFeedback();
             break;
 
+        case R.id.menu_item_options:
+            Intent i = new Intent(this, OptionsActivity.class);
+            startActivity(i);
+            break;
+
         case R.id.menu_item_about:
             showDialog(DIALOG_ID_ABOUT);
             break;

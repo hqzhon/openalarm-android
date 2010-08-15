@@ -10,4 +10,18 @@
     <item>@string/alarm_handler_deep_sleeper_mode_password_title</item>
   </string-array>
 
+  <string-array name="side_button_behaviors">
+    <item>None</item>
+    <item>Snooze</item>
+    <item>Dismiss</item>
+  </string-array>
+
+  <string-array name="side_button_behavior_values">
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
+  </string-array>
+
+
+
 </resources>
