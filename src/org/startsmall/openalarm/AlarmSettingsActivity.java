@@ -299,11 +299,10 @@ public class AlarmSettingsActivity extends PreferenceActivity {
      */
     private Class<?> getHandlerClass(String handlerClassName)
         throws ClassNotFoundException, PackageManager.NameNotFoundException {
-        ApplicationInfo appInfo = getPackageManager().getApplicationInfo("org.startsmall.openalarm", 0);
+        // ApplicationInfo appInfo = getPackageManager().getApplicationInfo("org.startsmall.openalarm", 0);
+        ApplicationInfo appInfo = getApplicationInfo();
         dalvik.system.PathClassLoader classLoader =
-            new dalvik.system.PathClassLoader(
-                appInfo.sourceDir,
-                ClassLoader.getSystemClassLoader());
+            new dalvik.system.PathClassLoader(appInfo.sourceDir, ClassLoader.getSystemClassLoader());
 
         return Class.forName(handlerClassName, true, classLoader);
     }

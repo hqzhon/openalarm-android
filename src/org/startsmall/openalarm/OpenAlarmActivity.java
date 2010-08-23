@@ -610,7 +610,7 @@ public class OpenAlarmActivity extends ListActivity
             // Check if this alarm is ok?
             final TextView indicatorView = attachment.indicatorView;
             if (alarm.isValid()) {
-                indicatorView.setVisibility(View.GONE);
+                indicatorView.setVisibility(View.INVISIBLE);
             } else {
                 indicatorView.setVisibility(View.VISIBLE);
             }
