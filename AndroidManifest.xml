@@ -64,9 +64,6 @@
     <activity android:name=".FilterCriteriaActivity"
               android:label="@string/filter_criteria_title"/>
 
-    <activity android:name=".OptionsActivity"
-              android:label="@string/options"/>
-
     <activity android:name=".AlarmSettingsActivity"
               android:configChanges="orientation|keyboardHidden|keyboard|navigation"/>
 

@@ -128,11 +128,6 @@ public class OpenAlarmActivity extends ListActivity
             sendFeedback();
             break;
 
-        case R.id.menu_item_options:
-            Intent i = new Intent(this, OptionsActivity.class);
-            startActivity(i);
-            break;
-
         case R.id.menu_item_about:
             showDialog(DIALOG_ID_ABOUT);
             break;
@@ -432,20 +427,21 @@ public class OpenAlarmActivity extends ListActivity
 
     private void sendFeedback() {
         Intent i = new Intent(Intent.ACTION_SENDTO);
-        i.setData(Uri.parse("mailto:yenliangl@gmail.com"));
-        i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
+        i.setData(Uri.parse("mailto:openalarm@googlegroups.com"));
+        // i.putExtra(Intent.EXTRA_SUBJECT, "[OpenAlarm] ");
 
         StringBuilder sb = new StringBuilder();
         try {
             sb.append("App version: " + getPackageManager().getPackageInfo("org.startsmall.openalarm", 0).versionName + "\n");
         } catch (PackageManager.NameNotFoundException e) {
         }
-        sb.append("Device model: " + Build.MODEL + "\n");
-        sb.append("Firmware fingerprint: " + Build.FINGERPRINT + "\n");
-        sb.append("Android version: " + Build.VERSION.RELEASE + "\n\n");
+        // sb.append("Device model: " + Build.MODEL + "\n");
+        // sb.append("Firmware fingerprint: " + Build.FINGERPRINT + "\n");
+        // sb.append("Android version: " + Build.VERSION.RELEASE + "\n\n");
 
         i.putExtra(Intent.EXTRA_TEXT,
                    getString(R.string.feedback_mail_content, sb.toString()));
+
         startActivity(
             Intent.createChooser(
                 i, getString(R.string.menu_item_send_feedback)));

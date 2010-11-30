@@ -11,8 +11,6 @@
     <string name="menu_item_report_next_alarm">Next alarm</string>
     <string name="menu_item_send_feedback">Feedback</string>
     <string name="menu_item_about">About</string>
-    <string name="options">Options</string>
-    <string name="side_button_behavior">Side button behavior</string>
     <string name="feedback_mail_content">Hi Josh!\n\n\n====================\nFollowing lines are ONLY used in debugging. No malicious use.\n====================\n%s</string>
     <string name="menu_item_delete_alarm">Delete</string>
     <string name="confirm_alarm_deletion_title">Confirm deletion</string>
