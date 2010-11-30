@@ -5,15 +5,13 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
-  <LinearLayout android:orientation="horizontal"
-                android:background="@color/android:white"
-                android:layout_width="fill_parent"
-                android:layout_height="60dp"
-                android:paddingLeft="3dp"
-                android:paddingRight="3dp">
+  <RelativeLayout android:background="@drawable/titlebar_bg"
+                  android:layout_width="fill_parent"
+                  android:layout_height="60dp">
     <FrameLayout android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
-                 android:layout_gravity="center_vertical">
+                 android:layout_centerVertical="true"
+                 android:layout_alignParentLeft="true">
       <ImageButton style="@style/TitleBarButtonStyle"
                    android:id="@+id/back"
                    android:src="@drawable/ic_btn_back"/>
@@ -22,20 +20,12 @@
                    android:src="@drawable/ic_btn_search"/>
     </FrameLayout>
 
-    <TextView android:id="@+id/banner"
-              android:layout_width="0dp"
-              android:layout_height="fill_parent"
-              android:layout_weight="1"
-              android:gravity="center"
-              android:text="@string/app_name"
-              android:textColor="@color/android:black"
-              android:textSize="26sp"/>
-
     <ImageButton style="@style/TitleBarButtonStyle"
                  android:id="@+id/add"
-                 android:src="@drawable/ic_btn_add"/>
-
-  </LinearLayout>
+                 android:src="@drawable/ic_btn_add"
+                 android:layout_alignParentRight="true"
+                 android:layout_centerVertical="true"/>
+  </RelativeLayout>
 
   <ListView android:id="@id/android:list"
             android:layout_width="fill_parent"
@@ -46,7 +36,6 @@
             android:id="@id/android:empty"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/no_alarms_found"/>
 </LinearLayout>

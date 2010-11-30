@@ -58,7 +58,6 @@
     <style name="TitleBarButtonStyle">
       <item name="android:layout_width">50dp</item>
       <item name="android:layout_height">50dp</item>
-      <item name="android:layout_gravity">center_vertical</item>
       <item name="android:scaleType">center</item>
     </style>
 

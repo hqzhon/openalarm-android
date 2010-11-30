@@ -74,7 +74,6 @@ public class OpenAlarmActivity extends ListActivity
     private static final int PICK_FILTER = 0;
 
     private ListView mAlarmListView;
-    private TextView mBannerTextView;
     private ImageButton mFilterButton;
     private ImageButton mBackButton;
     private ImageButton mAddButton;
@@ -326,7 +325,6 @@ public class OpenAlarmActivity extends ListActivity
 
     private void reloadAlarms() {
         // Set banner to application name
-        mBannerTextView.setText(R.string.app_name);
         Cursor cursor = managedQuery(Alarms.getAlarmUri(-1),
                                      AlarmColumns.QUERY_COLUMNS, null, null,
                                      AlarmColumns.DEFAULT_SORT_ORDER);
@@ -342,9 +340,6 @@ public class OpenAlarmActivity extends ListActivity
             Cursor cursor = null;
             if (resultCode == RESULT_FIRST_USER + FilterCriteriaActivity.FILTER_BY_ACTION) {
                 // Set banner to filter label
-                String label = data.getStringExtra(HandlerInfo.EXTRA_KEY_LABEL);
-                mBannerTextView.setText(label);
-
                 String handler = data.getStringExtra(HandlerInfo.EXTRA_KEY_HANDLER);
                 cursor = managedQuery(Alarms.getAlarmUri(-1),
                                       AlarmColumns.QUERY_COLUMNS,
@@ -354,21 +349,14 @@ public class OpenAlarmActivity extends ListActivity
                 int repeatDays = data.getIntExtra(AlarmColumns.REPEAT_DAYS, -1);
                 int operatorId = data.getIntExtra(FilterCriteriaActivity.EXTRA_KEY_FILTER_BY_REPEAT_DAYS_OPERATOR, -1);
 
-                String filterString =
-                    Alarms.RepeatWeekdays.toString(this, repeatDays);
                 String where;
                 if (operatorId == R.id.and) {
                     where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " = " + repeatDays;
-                    filterString = filterString.replace(" ", " & ");
                 } else if (operatorId == R.id.or) {
                     where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " != 0";
-                    filterString = filterString.replace(" ", " | ");
                 } else {
                     throw new IllegalArgumentException("no operator id for filter");
                 }
-
-                mBannerTextView.setText(filterString);
-
                 cursor = managedQuery(Alarms.getAlarmUri(-1),
                                       AlarmColumns.QUERY_COLUMNS,
                                       where,
@@ -398,8 +386,6 @@ public class OpenAlarmActivity extends ListActivity
 
     private void updateLayout() {
         setContentView(R.layout.openalarm_activity);
-
-        mBannerTextView = (TextView)findViewById(R.id.banner);
 
         mSlideInLeft = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
         mSlideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
