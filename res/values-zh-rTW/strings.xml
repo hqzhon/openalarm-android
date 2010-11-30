@@ -29,6 +29,25 @@
     <string name="everyday">每天</string>
     <string name="never">未定</string>
     <string name="day_concat">、</string>
+
+    <string name="mon">一</string>
+    <string name="tue">二</string>
+    <string name="wed">三</string>
+    <string name="thr">四</string>
+    <string name="fri">五</string>
+    <string name="sat">六</string>
+    <string name="sun">日</string>
+
+    <string-array name="days_of_week">
+      <item>星期一</item>
+      <item>星期二</item>
+      <item>星期三</item>
+      <item>星期四</item>
+      <item>星期五</item>
+      <item>星期六</item>
+      <item>星期日</item>
+    </string-array>
+
     <string name="alarm_set_toast_text">"鬧鐘"%s"會在"%s"動作"</string>
     <string name="alarm_handler_unset_message">請指定要我要做甚麼!!!</string>
     <string name="alarm_repeat_days_unset_message">請指定哪幾天要動作!!!</string>
@@ -74,5 +93,5 @@
     <string name="snooze">再瞇一下</string>
     <string name="dismiss">起來了</string>
     <string name="alarm_snoozed_toast">"貪睡"%d"分鐘"</string>
-<string name="toggle_handler_activate_title">開或關</string>
+    <string name="toggle_handler_activate_title">開或關</string>
 </resources>

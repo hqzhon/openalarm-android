@@ -64,6 +64,45 @@
     <string name="snooze">Snooze</string>
     <string name="dismiss">Dismiss</string>
     <string name="day_concat">, </string>
+    <string name="mon">Mon</string>
+    <string name="tue">Tue</string>
+    <string name="wed">Wed</string>
+    <string name="thr">Thr</string>
+    <string name="fri">Fri</string>
+    <string name="sat">Sat</string>
+    <string name="sun">Sun</string>
+
+    <string-array name="filter_by">
+      <item>@string/alarm_settings_action_title</item>
+      <item>@string/alarm_settings_repeat_days_title</item>
+    </string-array>
+
+    <string-array name="alarm_handler_deep_sleeper_mode">
+      <item>@string/alarm_handler_deep_sleeper_mode_none_title</item>
+      <item>@string/alarm_handler_deep_sleeper_mode_math_title</item>
+      <item>@string/alarm_handler_deep_sleeper_mode_password_title</item>
+    </string-array>
+
+    <string-array name="days_of_week">
+      <item>Monday</item>
+      <item>Tuesday</item>
+      <item>Wednesday</item>
+      <item>Thursday</item>
+      <item>Friday</item>
+      <item>Saturday</item>
+      <item>Sunday</item>
+    </string-array>
+
+    <string-array name="days_of_week_short">
+      <item>@string/mon</item>
+      <item>@string/tue</item>
+      <item>@string/wed</item>
+      <item>@string/thr</item>
+      <item>@string/fri</item>
+      <item>@string/sat</item>
+      <item>@string/sun</item>
+    </string-array>
+
     <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>
     <string name="alarm_snoozed_toast">Snoozed in %d minutes</string>
     <string name="snoozed">Snoozed</string>

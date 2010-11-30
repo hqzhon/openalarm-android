@@ -27,6 +27,25 @@
     <string name="alarm_settings_repeat_days_summary">每天</string>
     <string name="alarm_settings_repeat_days_dialog_title">哪几天啊？</string>
     <string name="day_concat">、</string>
+
+    <string name="mon">一</string>
+    <string name="tue">二</string>
+    <string name="wed">三</string>
+    <string name="thr">四</string>
+    <string name="fri">五</string>
+    <string name="sat">六</string>
+    <string name="sun">日</string>
+
+    <string-array name="days_of_week">
+      <item>星期一</item>
+      <item>星期二</item>
+      <item>星期三</item>
+      <item>星期四</item>
+      <item>星期五</item>
+      <item>星期六</item>
+      <item>星期日</item>
+    </string-array>
+
     <string name="everyday">每天</string>
     <string name="never">未定</string>
     <string name="alarm_set_toast_text">"闹钟"%s"会在"%s"动作"</string>
@@ -74,5 +93,5 @@
     <string name="snooze">再眯一下</string>
     <string name="dismiss">起来了</string>
     <string name="alarm_snoozed_toast">"打盹"%d"分钟"</string>
-<string name="toggle_handler_activate_title">开或关</string>
+    <string name="toggle_handler_activate_title">开或关</string>
 </resources>

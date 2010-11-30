@@ -26,6 +26,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -564,27 +565,14 @@ public class OpenAlarmActivity extends ListActivity
 
             // RepeatDays
             final LinearLayout repeatDaysView = attachment.repeatDaysView;
-            repeatDaysView.removeAllViews();
-            Iterator<String> days =
-                Alarms.RepeatWeekdays.toStringList(
-                    context,
-                    alarm.getIntField(Alarm.FIELD_REPEAT_DAYS)).iterator();
-
-            LinearLayout.LayoutParams params =
-                new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            params.setMargins(1, 1, 1, 1);
-
-            while(days.hasNext()) {
-                TextView dayLabel = new TextView(context);
-                dayLabel.setClickable(false);
-                dayLabel.setBackgroundResource(R.drawable.rounded_background);
-                dayLabel.setTextAppearance(context, R.style.RepeatDaysTextAppearance);
-                dayLabel.setText(days.next());
-                repeatDaysView.addView(dayLabel, params);
+            final int repeatDays = alarm.getIntField(Alarm.FIELD_REPEAT_DAYS);
+            Resources res = getResources();
+            TextView tv;
+            for (int d = Alarms.RepeatWeekdays.MONDAY; d <= Alarms.RepeatWeekdays.SUNDAY; d++) {
+                tv = (TextView)repeatDaysView.getChildAt(d);
+                int color = Alarms.RepeatWeekdays.isSet(repeatDays, d) ? res.getColor(R.color.red) : res.getColor(android.R.color.white);
+                tv.setTextColor(color);
             }
-            repeatDaysView.setVisibility(View.VISIBLE);
 
             // Check if this alarm is ok?
             final TextView indicatorView = attachment.indicatorView;
