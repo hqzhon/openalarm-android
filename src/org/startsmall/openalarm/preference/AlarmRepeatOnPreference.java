@@ -47,30 +47,25 @@ public class AlarmRepeatOnPreference extends MyPreference
 
     @Override
     protected void onBindView(View view) {
-        setSummary(Alarms.RepeatWeekdays.toString(
-                       (Integer)getPreferenceValue(),
-                       getContext().getString(R.string.repeat_on_everyday),
-                       getContext().getString(R.string.no_repeat_days)));
+        setSummary(
+            Alarms.RepeatWeekdays.toString(getContext(), (Integer)getPreferenceValue()));
         super.onBindView(view);
     }
 
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         boolean[] checked = new boolean[7];
-        for(int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
-            if(Alarms.RepeatWeekdays.isSet(
-                   (Integer)getPreferenceValue(), i)) {
-                checked[i-1] = true;
+        for(int i = Alarms.RepeatWeekdays.MONDAY; i <= Alarms.RepeatWeekdays.SUNDAY; i++) {
+            if(Alarms.RepeatWeekdays.isSet((Integer)getPreferenceValue(), i)) {
+                checked[i] = true;
             }
         }
 
-        DateFormatSymbols dateFormatSymbols =
-            ((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.MEDIUM)).getDateFormatSymbols();
         CharSequence[] weekdays = new CharSequence[7];
-        System.arraycopy(dateFormatSymbols.getWeekdays(),
-                         Calendar.SUNDAY,
+        System.arraycopy(getContext().getResources().getStringArray(R.array.days_of_week),
+                         Alarms.RepeatWeekdays.MONDAY,
                          weekdays,
                          0,
-                         7);
+                         Alarms.RepeatWeekdays.SUNDAY + 1);
         builder
             .setTitle(R.string.alarm_settings_repeat_days_dialog_title)
             .setMultiChoiceItems(weekdays, checked, this)
@@ -82,7 +77,7 @@ public class AlarmRepeatOnPreference extends MyPreference
                         int which,
                         boolean isChecked) {
         mWhichDaysChecked = Alarms.RepeatWeekdays.set(mWhichDaysChecked,
-                                                      which+1,
+                                                      which,
                                                       isChecked);
     }
 

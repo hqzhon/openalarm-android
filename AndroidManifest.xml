@@ -62,16 +62,13 @@
     </activity>
 
     <activity android:name=".FilterCriteriaActivity"
-              android:label="@string/filter_criteria_title">
-    </activity>
+              android:label="@string/filter_criteria_title"/>
 
     <activity android:name=".OptionsActivity"
-              android:label="@string/options">
-    </activity>
+              android:label="@string/options"/>
 
     <activity android:name=".AlarmSettingsActivity"
-              android:configChanges="orientation|keyboardHidden|keyboard|navigation">
-    </activity>
+              android:configChanges="orientation|keyboardHidden|keyboard|navigation"/>
 
     <activity android:name=".FireAlarmActivity"
               android:theme="@style/Theme.Dialog.NoTitleBar"
@@ -79,8 +76,7 @@
               android:excludeFromRecents="true"
               android:exported="false"
               android:configChanges="orientation|keyboardHidden|keyboard|navigation"
-              android:screenOrientation="portrait">
-    </activity>
+              android:screenOrientation="portrait"/>
 
     <receiver android:name=".AlarmHandler"
               android:label="@string/alarm_handler">

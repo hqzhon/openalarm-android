@@ -22,6 +22,7 @@ package org.startsmall.openalarm;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -104,68 +105,71 @@ public class Alarms {
      *
      */
     public static class RepeatWeekdays {
-        //
-        // 0x00 No days
-        // 0x01 Calendar.SUNDAY
-        // 0x02 Calendar.MONDAY
-        // 0x04 Calendar.TUESDAY
-        // 0x08 Calendar.WEDNESDAY
-        // 0x10 Calendar.THURSDAY
-        // 0x20 Calendar.FRIDAY
-        // 0x40 Calendar.SATURDAY
-        // 0x7F Everyday
-        //
+        public static final int MONDAY    = 0;
+        public static final int TUESDAY   = 1;
+        public static final int WEDNESDAY = 2;
+        public static final int THURSDAY  = 3;
+        public static final int FRIDAY    = 4;
+        public static final int SATURDAY  = 5;
+        public static final int SUNDAY    = 6;
 
         // Suppress default constructor for noninstantiability.
         private RepeatWeekdays() {}
 
         public static boolean isSet(int code, int day) {
-            return (code & encode(day)) > 0;
+            return ((code >> day) & 1) == 1;
         }
 
         public static int set(int code, int day, boolean enabled) {
-            if(enabled) {
-                code = code | encode(day);
-            } else {
-                code = code & ~encode(day);
-            }
-            return code;
+            return enabled ? (code | (1 << day)) : (code & ~(1 << day));
         }
 
-        private static int encode(int day) {
-            if(day < Calendar.SUNDAY || day > Calendar.SATURDAY) {
-                throw new IllegalArgumentException(
-                    "Weekday must be among SUNDAY to SATURDAY");
+        private static int getNumDaysSet(int code) {
+            int count = 0;
+            while (code > 0) {
+                if ((code & 1) == 1) count++;
+                code >>= 1;
             }
-            return (1 << (day - 1));
+            return count;
         }
 
-        public static String toString(int code, String everyday, String notSet) {
-            String result = "";
-            if(code > 0) {
-                if(code == 0x7F) { // b1111111
-                    result = everyday;
-                } else {
-                    for(int i = 1; i < 8; i++) { // From SUNDAY to SATURDAY
-                        if(isSet(code, i)) {
-                            result =
-                                result +
-                                DateUtils.getDayOfWeekString(
-                                    i,
-                                    DateUtils.LENGTH_MEDIUM) +
-                                " ";
-                        }
+        private static final int EVERYDAY = 0x7F;
+        public static String toString(Context context, int code) {
+            if (code == 0) {
+                return context.getString(R.string.never);
+            } else if (code == EVERYDAY) {
+                return context.getString(R.string.everyday);
+            }
+
+            Resources resources = context.getResources();
+            int dayCount = getNumDaysSet(code);
+            String[] dayList = dayCount > 1 ?
+                               resources.getStringArray(R.array.days_of_week_short) :
+                               resources.getStringArray(R.array.days_of_week);
+
+            // Should we show long format or short format of weekdays,
+            String dayConcat = context.getString(R.string.day_concat);
+            String result;
+            StringBuilder sb = new StringBuilder();
+            for (int d = MONDAY; d <= SUNDAY; d++) {
+                if (isSet(code, d)) {
+                    sb.append(dayList[d]);
+                    dayCount -= 1;
+                    if (dayCount > 0) {
+                        sb.append(dayConcat);
                     }
                 }
-            } else {
-                result = notSet;
             }
-            return result.trim();
+
+            return sb.toString();
         }
 
-        public static List<String> toStringList(int code, String everyday, String notSet) {
-            return Arrays.asList(
-                toString(code, everyday, notSet).split(" "));
+        public static ArrayList<String> toStringList(Context context, int code) {
+            String dayConcat = context.getString(R.string.day_concat);
+            String[] dayArray = toString(context, code).split(dayConcat);
+            ArrayList<String> result = new ArrayList<String>(dayArray.length);
+            Collections.addAll(result, dayArray);
+            return result;
         }
     }
 

@@ -53,7 +53,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -75,9 +75,9 @@ public class OpenAlarmActivity extends ListActivity
 
     private ListView mAlarmListView;
     private TextView mBannerTextView;
-    private ImageView mFilterButton;
-    private ImageView mBackButton;
-    private ImageView mAddButton;
+    private ImageButton mFilterButton;
+    private ImageButton mBackButton;
+    private ImageButton mAddButton;
     private Animation mSlideInLeft;
     private Animation mSlideOutRight;
     private WebView mHelpView;
@@ -360,27 +360,25 @@ public class OpenAlarmActivity extends ListActivity
                 int operatorId = data.getIntExtra(FilterCriteriaActivity.EXTRA_KEY_FILTER_BY_REPEAT_DAYS_OPERATOR, -1);
 
                 String filterString =
-                        Alarms.RepeatWeekdays.toString(repeatDays,
-                                                       getString(R.string.repeat_on_everyday),
-                                                       getString(R.string.no_repeat_days));
-                    String where;
-                    if (operatorId == R.id.and) {
-                        where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " = " + repeatDays;
-                        filterString = filterString.replace(" ", " & ");
-                    } else if (operatorId == R.id.or) {
-                        where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " != 0";
-                        filterString = filterString.replace(" ", " | ");
-                    } else {
-                        throw new IllegalArgumentException("no operator id for filter");
-                    }
+                    Alarms.RepeatWeekdays.toString(this, repeatDays);
+                String where;
+                if (operatorId == R.id.and) {
+                    where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " = " + repeatDays;
+                    filterString = filterString.replace(" ", " & ");
+                } else if (operatorId == R.id.or) {
+                    where =  AlarmColumns.REPEAT_DAYS + " & " + repeatDays + " != 0";
+                    filterString = filterString.replace(" ", " | ");
+                } else {
+                    throw new IllegalArgumentException("no operator id for filter");
+                }
 
-                    mBannerTextView.setText(filterString);
+                mBannerTextView.setText(filterString);
 
-                    cursor = managedQuery(Alarms.getAlarmUri(-1),
-                                          AlarmColumns.QUERY_COLUMNS,
-                                          where,
-                                          null,
-                                          AlarmColumns.DEFAULT_SORT_ORDER);
+                cursor = managedQuery(Alarms.getAlarmUri(-1),
+                                      AlarmColumns.QUERY_COLUMNS,
+                                      where,
+                                      null,
+                                      AlarmColumns.DEFAULT_SORT_ORDER);
             }
 
             changeCursorForListView(cursor);
@@ -422,13 +420,13 @@ public class OpenAlarmActivity extends ListActivity
             mAlarmListView.setAdapter(new AlarmAdapter(this, cursor));
         }
 
-        mFilterButton = (ImageView)findViewById(R.id.filter);
+        mFilterButton = (ImageButton)findViewById(R.id.filter);
         mFilterButton.setOnClickListener(this);
 
-        mBackButton = (ImageView)findViewById(R.id.back);
+        mBackButton = (ImageButton)findViewById(R.id.back);
         mBackButton.setOnClickListener(this);
 
-        mAddButton = (ImageView)findViewById(R.id.add);
+        mAddButton = (ImageButton)findViewById(R.id.add);
         mAddButton.setOnClickListener(this);
     }
 
@@ -587,9 +585,8 @@ public class OpenAlarmActivity extends ListActivity
             repeatDaysView.removeAllViews();
             Iterator<String> days =
                 Alarms.RepeatWeekdays.toStringList(
-                    alarm.getIntField(Alarm.FIELD_REPEAT_DAYS),
-                    context.getString(R.string.repeat_on_everyday),
-                    context.getString(R.string.no_repeat_days)).iterator();
+                    context,
+                    alarm.getIntField(Alarm.FIELD_REPEAT_DAYS)).iterator();
 
             LinearLayout.LayoutParams params =
                 new LinearLayout.LayoutParams(

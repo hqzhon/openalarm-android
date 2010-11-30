@@ -34,8 +34,8 @@
     <string name="alarm_settings_repeat_days_summary">On everyday</string>
     <string name="alarm_settings_repeat_days_key">repeat_days</string>
     <string name="alarm_settings_repeat_days_dialog_title">Repeat on</string>
-    <string name="repeat_on_everyday">Everyday</string>
-    <string name="no_repeat_days">Never</string>
+    <string name="everyday">Everyday</string>
+    <string name="never">Never</string>
     <string name="alarm_set_toast_text">Alarm %s will action at %s</string>
     <string name="alarm_handler_unset_message">Please specify action!!!</string>
     <string name="alarm_repeat_days_unset_message">Please specify repeat days!!!</string>
@@ -65,6 +65,7 @@
     <string name="alarm_handler_deep_sleeper_mode_password_dialog_title">Set Password</string>
     <string name="snooze">Snooze</string>
     <string name="dismiss">Dismiss</string>
+    <string name="day_concat">, </string>
     <string name="fire_alarm_set_notification_ticker">%s: Snooze or Dimiss?</string>
     <string name="alarm_snoozed_toast">Snoozed in %d minutes</string>
     <string name="snoozed">Snoozed</string>

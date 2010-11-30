@@ -37,9 +37,7 @@
       <item name="android:windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.OpenAlarm" parent="android:Theme">
-      <item name="android:windowBackground">@null</item>
-      <item name="android:windowNoTitle">true</item>
+    <style name="Theme.OpenAlarm" parent="android:Theme.NoTitleBar">
     </style>
 
     <style name="button_style">
@@ -56,5 +54,14 @@
       <item name="android:background">@drawable/blue_button</item>
       <item name="android:textColor">#fff</item>
     </style>
+
+    <style name="TitleBarButtonStyle">
+      <item name="android:layout_width">50dp</item>
+      <item name="android:layout_height">50dp</item>
+      <item name="android:layout_gravity">center_vertical</item>
+      <item name="android:scaleType">center</item>
+    </style>
+
+
 </resources>
 

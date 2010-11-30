@@ -26,8 +26,9 @@
     <string name="alarm_settings_repeat_days_title">重複</string>
     <string name="alarm_settings_repeat_days_summary">每天</string>
     <string name="alarm_settings_repeat_days_dialog_title">哪幾天啊？</string>
-    <string name="repeat_on_everyday">每天</string>
-    <string name="no_repeat_days">未定</string>
+    <string name="everyday">每天</string>
+    <string name="never">未定</string>
+    <string name="day_concat">、</string>
     <string name="alarm_set_toast_text">"鬧鐘"%s"會在"%s"動作"</string>
     <string name="alarm_handler_unset_message">請指定要我要做甚麼!!!</string>
     <string name="alarm_repeat_days_unset_message">請指定哪幾天要動作!!!</string>

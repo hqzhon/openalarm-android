@@ -40,7 +40,7 @@
               android:ellipsize="marquee"
               android:gravity="center_vertical" />
 
-    <!-- Dynamic container for days alarm is activated -->
+    <!-- Dynamic container for days alarm are activated -->
     <LinearLayout android:id="@+id/repeat_days"
                   android:orientation="horizontal"
                   android:layout_width="fill_parent"

@@ -577,8 +577,7 @@ class Alarm {
             .append(", label=").append(mLabel)
             .append(", hourOfDay=").append(mHourOfDay)
             .append(", minutes=").append(mMinutes)
-            .append(", repeatDays='").append(
-                Alarms.RepeatWeekdays.toString(mRepeatDays, "everyday", "no days")).append("'")
+            .append(", repeatDays='").append(mRepeatDays)
             .append(", timeInMillis=").append(mTimeInMillis)
             .append(", handler=").append(mHandler)
             .append(", extra=").append(mExtra);
