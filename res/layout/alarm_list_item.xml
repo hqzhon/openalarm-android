@@ -7,7 +7,6 @@
               android:paddingBottom="2dp"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content">
-
   <!-- Enabled -->
   <CheckBox android:id="@+id/enabled"
             android:layout_width="wrap_content"
@@ -45,7 +44,41 @@
                   android:orientation="horizontal"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
-                  android:layout_marginTop="2dp"/>
+                  android:layout_marginTop="2dp">
+      <TextView style="@style/RepeatDayViewStyle"
+                android:id="@+id/monday"
+                android:layout_marginRight="1dp"
+                android:text="@string/mon"/>
+
+      <TextView style="@style/RepeatDayViewStyle"
+                android:id="@+id/tuesday"
+                android:layout_marginRight="1dp"
+                android:text="@string/tue"/>
+
+      <TextView style="@style/RepeatDayViewStyle"
+                android:id="@+id/wednesday"
+                android:layout_marginRight="1dp"
+                android:text="@string/wed"/>
+
+      <TextView style="@style/RepeatDayViewStyle"
+                android:id="@+id/thursday"
+                android:layout_marginRight="1dp"
+                android:text="@string/thr"/>
+
+      <TextView style="@style/RepeatDayViewStyle"
+                android:id="@+id/friday"
+                android:layout_marginRight="1dp"
+                android:text="@string/fri"/>
+
+      <TextView style="@style/RepeatDayViewStyle"
+                android:id="@+id/saturday"
+                android:layout_marginRight="1dp"
+                android:text="@string/sat"/>
+
+      <TextView style="@style/RepeatDayViewStyle"
+                android:id="@+id/sunday"
+                android:text="@string/sun"/>
+    </LinearLayout>
   </LinearLayout>
 
   <!-- Time with AM/PM label -->
