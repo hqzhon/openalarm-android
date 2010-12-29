@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">OpenAlarm</string>
     <string name="on">開啟</string>
     <string name="off">關閉</string>
@@ -29,7 +29,7 @@
     <string name="everyday">每天</string>
     <string name="never">未定</string>
     <string name="day_concat">、</string>
-    <string name="alarm_set_toast_text">"鬧鐘"%s"會在"%s"動作"</string>
+    <string name="alarm_set_toast_text">"鬧鐘"<xliff:g id="label">%s</xliff:g>"會在"<xliff:g id="time">%s</xliff:g>"動作"</string>
     <string name="alarm_handler_unset_message">請指定要我要做甚麼!!!</string>
     <string name="alarm_repeat_days_unset_message">請指定哪幾天要動作!!!</string>
     <string name="alarm_set_notification_ticker">"下個鬧鐘": %s</string>
