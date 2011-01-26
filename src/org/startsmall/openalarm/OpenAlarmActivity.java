@@ -89,9 +89,9 @@ public class OpenAlarmActivity extends ListActivity
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        if (!Alarm.hasAlarms()) {
-            Alarm.foreach(this, Alarms.getAlarmUri(-1), new BootService.ScheduleEnabledAlarm());
-        }
+        // if (!Alarm.hasAlarms()) {
+        //     Alarm.foreach(this, Alarms.getAlarmUri(-1), new BootService.ScheduleEnabledAlarm());
+        // }
 
         Notification.getInstance().set(this);
 
